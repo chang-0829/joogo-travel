@@ -78,7 +78,7 @@
                 <p class="text-[10px] text-slate-400 mt-0.5">把一句想去，變成一起出發</p>
             </div>
 
-            <!-- 右側動作按鈕 -->
+            <!-- 右側動作按鈕與頭貼 -->
             <div class="flex items-center gap-2 sm:gap-3">
                 <div class="relative">
                     <button id="add-trip-btn" class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 rounded-xl transition-all shadow-xs">
@@ -99,8 +99,11 @@
                     </div>
                 </div>
 
+                <!-- 點擊頭貼登出 -->
                 <div class="pl-2.5 border-l border-slate-200">
-                    <img id="user-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120" class="w-8 h-8 rounded-full object-cover ring-2 ring-slate-200">
+                    <button type="button" id="btn-user-profile" title="點擊登出帳號" class="rounded-full ring-2 ring-slate-200 hover:ring-brand-500 active:scale-95 transition-all">
+                        <img id="user-avatar" src="" alt="頭貼" class="w-8 h-8 rounded-full object-cover">
+                    </button>
                 </div>
             </div>
         </div>
@@ -110,7 +113,7 @@
     <div class="sticky top-14 z-30 bg-slate-50/95 backdrop-blur-md py-3 border-b border-slate-200/40">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
-                <h2 class="text-lg font-bold text-slate-900 tracking-tight">你好，<span id="user-display-name">Alex</span></h2>
+                <h2 class="text-lg font-bold text-slate-900 tracking-tight">你好，<span id="user-display-name">載入中...</span></h2>
                 <p class="text-slate-500 text-xs mt-0.5">準備好展開下一趟旅程了嗎？以下是你的行程列表。</p>
             </div>
 
@@ -241,15 +244,16 @@
         </div>
     </div>
 
-    <!-- 首頁專屬邏輯 (原生 ESM 模組引入) -->
+    <!-- 首頁邏輯 -->
     <script type="module">
         import { createTrip, getUserTrips, joinTripByCode } from "./js/api/tripApi.js";
+        import { subscribeAuthState, logoutUser } from "./js/api/authApi.js";
 
-        // 預設當前使用者 (日後串接 Firebase Auth 登入時會自動替換)
-        const currentUser = {
-            uid: "user_alex_default",
-            name: "Alex",
-            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+        // 動態登入使用者資料容器
+        let currentUser = {
+            uid: null,
+            name: "",
+            avatar: ""
         };
 
         let myTrips = [];
@@ -277,7 +281,9 @@
         }
 
         async function loadTrips() {
+            if (!currentUser.uid) return;
             try {
+                document.getElementById('loading-state').classList.remove('hidden');
                 myTrips = await getUserTrips(currentUser.uid);
                 renderTrips();
                 updateCounts();
@@ -385,7 +391,7 @@
         });
         document.addEventListener('click', () => dropdown.classList.add('hidden'));
 
-        // Modal 控制
+        // Modal 開關
         const createModal = document.getElementById('create-modal');
         const joinModal = document.getElementById('join-modal');
         document.getElementById('btn-open-create').addEventListener('click', () => {
@@ -449,7 +455,7 @@
             }
         });
 
-        // 分類切換
+        // 分類頁籤切換
         document.querySelectorAll('.tab-filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 currentFilter = btn.getAttribute('data-filter');
@@ -461,16 +467,37 @@
             });
         });
 
-        // 初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            const today = new Date();
-            const future = new Date();
-            future.setDate(today.getDate() + 6);
-            document.getElementById('trip-start').value = today.toISOString().split('T')[0];
-            document.getElementById('trip-end').value = future.toISOString().split('T')[0];
-            
-            loadTrips();
-            if (window.lucide) lucide.createIcons();
+        // 點擊大頭貼登出
+        document.getElementById('btn-user-profile').addEventListener('click', async () => {
+            if (confirm(`確定要登出「${currentUser.name}」嗎？`)) {
+                await logoutUser();
+            }
+        });
+
+        // ==================== 身份狀態驗證與初始化 ====================
+        subscribeAuthState((user) => {
+            if (!user) {
+                // 未登入直接導回登入頁
+                window.location.href = "login.html";
+            } else {
+                // 已登入：載入使用者真實資料
+                currentUser.uid = user.uid;
+                currentUser.name = user.displayName || user.email.split('@')[0];
+                currentUser.avatar = user.photoURL || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120";
+
+                document.getElementById('user-display-name').innerText = currentUser.name;
+                document.getElementById('user-avatar').src = currentUser.avatar;
+
+                // 預設日期
+                const today = new Date();
+                const future = new Date();
+                future.setDate(today.getDate() + 6);
+                document.getElementById('trip-start').value = today.toISOString().split('T')[0];
+                document.getElementById('trip-end').value = future.toISOString().split('T')[0];
+
+                loadTrips();
+                if (window.lucide) lucide.createIcons();
+            }
         });
     </script>
 </body>
