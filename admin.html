@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>揪行 JooGO - 系統管理後台</title>
+    <title>JooGO 後台管理</title>
     
     <!-- Tailwind CSS & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,7 +17,7 @@
                         brand: {
                             50: '#f0f9ff',
                             100: '#e0f2fe',
-                            500: '#0284c7', // 品牌主色
+                            500: '#0284c7', // 品牌藍
                             600: '#0369a1',
                             700: '#075985',
                         }
@@ -43,31 +43,20 @@
 <body class="h-full flex flex-col font-sans text-slate-800 antialiased bg-[#f8fafc]">
 
     <!-- ==================== 頂部全域導覽列 ==================== -->
-    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/70 pt-[env(safe-area-inset-top)]">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-15 flex items-center justify-between">
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/70 pt-[env(safe-area-inset-top)]">
+        <div class="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
             
-            <!-- 品牌與後台標誌 -->
-            <div class="flex items-center gap-3">
-                <a href="index.html" class="p-2 -ml-2 text-slate-500 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors">
-                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                </a>
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600 font-black text-xs">
-                        J
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-1.5">
-                            <h1 class="font-bold text-base leading-none text-slate-900 tracking-tight">揪行 JooGO</h1>
-                            <span class="px-2 py-0.5 text-[10px] font-mono font-bold bg-slate-900 text-white rounded-md tracking-wider">ADMIN</span>
-                        </div>
-                        <p class="text-[10px] text-slate-400 mt-0.5">系統公版資料庫管理中心</p>
-                    </div>
-                </div>
+            <!-- 品牌與後台標誌區 (乾淨寬鬆、無箭頭) -->
+            <div class="flex items-center gap-2.5">
+                <span class="font-extrabold text-xl tracking-tight text-slate-900 font-mono">JooGO</span>
+                <span class="px-2.5 py-1 text-xs font-bold bg-sky-50 text-sky-600 border border-sky-200/80 rounded-lg tracking-wide">
+                    後台管理
+                </span>
             </div>
 
-            <!-- 桌面端右側快捷功能 -->
-            <div class="hidden md:flex items-center gap-4">
-                <div class="flex items-center bg-slate-100/80 p-1 rounded-xl">
+            <!-- 桌面端切換選單 -->
+            <div class="hidden md:flex items-center gap-5">
+                <div class="flex items-center bg-slate-100 p-1 rounded-xl">
                     <button onclick="switchTab('airlines')" id="desk-tab-airlines" class="tab-btn px-4 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5">
                         <i data-lucide="plane" class="w-4 h-4 text-brand-600"></i>
                         <span>航空公司行李庫</span>
@@ -77,45 +66,44 @@
                         <span>急難救助須知庫</span>
                     </button>
                 </div>
-                <a href="index.html" class="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-brand-600 pl-2 transition-colors">
+                <a href="index.html" class="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-brand-600 transition-colors pl-1">
                     <span>回到前台首頁</span>
                     <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                 </a>
             </div>
 
-            <!-- 手機端漢堡選單按鈕 (44x44pt 觸控熱區) -->
+            <!-- 手機端漢堡選單按鈕 (舒展間距、輕透視覺) -->
             <div class="flex md:hidden items-center">
-                <button id="btn-hamburger" type="button" aria-label="打開選單" class="w-11 h-11 flex items-center justify-center text-slate-700 hover:text-slate-900 active:scale-95 rounded-xl hover:bg-slate-100 transition-all">
-                    <i data-lucide="menu" class="w-6 h-6"></i>
+                <button id="btn-hamburger" type="button" aria-label="打開選單" class="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 active:scale-95 rounded-xl border border-slate-200/70 hover:bg-slate-50 transition-all">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- ==================== 漢堡選單抽屜 (Drawer & Mask) ==================== -->
+    <!-- ==================== 漢堡選單側邊抽屜 (Drawer & Mask) ==================== -->
     <div id="drawer-backdrop" class="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-xs hidden opacity-0 transition-opacity duration-300"></div>
     <aside id="drawer-menu" class="fixed top-0 right-0 bottom-0 z-50 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
-        <div class="p-5 space-y-6">
+        <div class="p-6 space-y-6">
             <!-- 抽屜頂部 -->
             <div class="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs">
-                        J
-                    </div>
-                    <span class="font-bold text-sm text-slate-900">管理後台選單</span>
+                    <span class="font-extrabold text-base tracking-tight text-slate-900 font-mono">JooGO</span>
+                    <span class="px-2 py-0.5 text-[11px] font-bold bg-sky-50 text-sky-600 rounded-md border border-sky-100">管理中心</span>
                 </div>
-                <button id="btn-close-drawer" class="p-2 text-slate-400 hover:text-slate-700 active:scale-90 rounded-xl hover:bg-slate-100 transition-all">
+                <button id="btn-close-drawer" class="p-1.5 text-slate-400 hover:text-slate-700 active:scale-90 rounded-xl hover:bg-slate-100 transition-all">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <!-- 模組快速導航 -->
-            <div class="space-y-1">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">資料庫管理</p>
+            <!-- 資料庫項目導航 -->
+            <div class="space-y-1.5">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">公版資料庫管理</p>
+                
                 <button onclick="switchTab('airlines'); closeDrawer();" id="drawer-tab-airlines" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold bg-brand-50 text-brand-600 transition-all">
                     <div class="flex items-center gap-2.5">
                         <i data-lucide="plane" class="w-4 h-4"></i>
-                        <span>航空公司行李規範庫</span>
+                        <span>航空公司行李庫</span>
                     </div>
                     <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
                 </button>
@@ -123,26 +111,26 @@
                 <button onclick="switchTab('countries'); closeDrawer();" id="drawer-tab-countries" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
                     <div class="flex items-center gap-2.5">
                         <i data-lucide="globe" class="w-4 h-4 text-emerald-600"></i>
-                        <span>各國急難救助須知庫</span>
+                        <span>各國急難救助庫</span>
                     </div>
                     <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
                 </button>
             </div>
 
-            <!-- 系統資訊 -->
+            <!-- 系統環境狀態卡 -->
             <div class="pt-4 border-t border-slate-100 space-y-2">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-1">系統環境</p>
-                <div class="px-3.5 py-2 bg-slate-50 rounded-xl border border-slate-200/60 text-[11px] text-slate-500 space-y-1">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">系統環境狀態</p>
+                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 text-[11px] text-slate-500 space-y-1.5">
                     <div class="flex justify-between"><span>版本</span><span class="font-mono font-bold text-slate-700">v2.0-ESM</span></div>
                     <div class="flex justify-between"><span>資料庫</span><span class="font-mono text-emerald-600 font-bold">Cloud Firestore</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- 抽屜底部導航 -->
-        <div class="p-5 border-t border-slate-100">
+        <!-- 抽屜底部快速跳轉 -->
+        <div class="p-6 border-t border-slate-100">
             <a href="index.html" class="w-full h-11 bg-slate-100 hover:bg-slate-200 active:scale-98 rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-slate-700 transition-all">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <i data-lucide="external-link" class="w-4 h-4"></i>
                 <span>返回前台列表</span>
             </a>
         </div>
@@ -159,7 +147,7 @@
                         <span class="w-2 h-2 rounded-full bg-brand-500"></span>
                         <h2 class="text-base font-bold text-slate-900">航空公司行李規範庫</h2>
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">主揪在前台設定航班資訊時，可直接搜尋並一鍵自動帶入這套公版規範。</p>
+                    <p class="text-xs text-slate-400 mt-1">主揪在前台設定航班資訊時，可直接搜尋並一鍵自動帶入這套公版規範[span_0](start_span)[span_0](end_span)。</p>
                 </div>
                 <button id="btn-add-airline" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer">
                     <i data-lucide="plus" class="w-4 h-4"></i>
@@ -179,7 +167,7 @@
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                         <h2 class="text-base font-bold text-slate-900">各國急難救助資訊庫</h2>
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">根據行程選定的目的地國家，系統自動推播給旅伴急難求助電話與外館專線。</p>
+                    <p class="text-xs text-slate-400 mt-1">根據行程選定的目的地國家，系統自動推播給旅伴急難求助電話與外館專線[span_1](start_span)[span_1](end_span)。</p>
                 </div>
                 <button id="btn-add-country" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer">
                     <i data-lucide="plus" class="w-4 h-4"></i>
@@ -348,7 +336,7 @@
             document.getElementById('section-airlines').classList.toggle('hidden', !isAirline);
             document.getElementById('section-countries').classList.toggle('hidden', isAirline);
 
-            // 桌面端樣式同步
+            // 桌面端樣式切換
             const deskAir = document.getElementById('desk-tab-airlines');
             const deskCountry = document.getElementById('desk-tab-countries');
             if (isAirline) {
