@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="h-full bg-[#f8fafc]">
+<html lang="zh-TW" class="h-full overflow-hidden">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>登入 - 揪行 JooGO</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
@@ -34,56 +32,59 @@
     </script>
 
     <style>
+        /* 1. 徹底鎖定 iOS 視窗滑動，消除橡皮筋與漂浮晃動 */
+        html, body {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: none;
+            -webkit-overflow-scrolling: auto;
+        }
+
+        /* 2. 清除點擊灰框與文字反白 */
         * {
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
+        /* 3. 安全區域適配 */
         body {
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
-            user-select: none;
-            -webkit-user-select: none;
         }
     </style>
 </head>
-<body class="h-full flex flex-col justify-between bg-[#f8fafc] text-ui-title antialiased selection:bg-brand-500 selection:text-white">
+<body class="bg-[#f8fafc] text-ui-title antialiased flex flex-col justify-between">
 
-    <!-- 頂部防呆留白（適配 iOS 動態島 / 瀏海安全區） -->
-    <div class="h-6 w-full"></div>
+    <div class="shrink-0 h-4 sm:h-8 w-full"></div>
 
-    <!-- 主內容核心區塊 -->
-    <main class="w-full max-w-sm mx-auto px-6 py-4 flex flex-col items-center">
+    <main class="w-full max-w-sm mx-auto px-6 flex flex-col items-center justify-center">
         
-        <!-- 品牌視覺卡片 -->
-        <div class="w-full bg-white rounded-[28px] p-8 sm:p-9 shadow-sm border border-slate-200/70 flex flex-col items-center text-center">
+        <div class="w-full bg-white rounded-[32px] p-8 sm:p-9 shadow-sm border border-slate-200/80 flex flex-col items-center text-center">
             
-            <!-- 品牌圖標 (款式三雙 oo 微笑同心環概念) -->
-            <div class="w-16 h-16 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-500 mb-5 shadow-xs">
-                <svg class="w-10 h-10" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                    <!-- 左環 -->
+            <div class="w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-brand-100 flex items-center justify-center text-brand-500 mb-6 shadow-xs p-3">
+                <svg class="w-full h-full" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="18" cy="24" r="9" class="stroke-brand-500" />
-                    <!-- 右環交疊 -->
                     <circle cx="30" cy="24" r="9" class="stroke-brand-600" />
-                    <!-- 微笑連結弧線 -->
                     <path d="M18 28c3 4 9 4 12 0" class="stroke-brand-500" stroke-width="2.5" />
                 </svg>
             </div>
 
-            <!-- 品牌名稱與 Slogan -->
-            <div class="space-y-1.5 mb-8">
-                <h1 class="font-bold text-2xl text-ui-title tracking-tight flex items-center justify-center gap-1.5">
+            <div class="space-y-2 mb-8">
+                <h1 class="font-black text-3xl text-ui-title tracking-tight flex items-baseline justify-center gap-2">
                     <span>揪行</span>
-                    <span class="text-sm font-mono font-extrabold text-brand-500 tracking-wider">JooGO</span>
+                    <span class="font-mono text-2xl font-black text-brand-500 tracking-normal">JooGO</span>
                 </h1>
-                <p class="text-xs text-ui-subtitle tracking-wide">把一句想去，變成一起出發</p>
+                <p class="text-xs text-ui-subtitle font-medium tracking-wide">把一句想去，變成一起出發</p>
             </div>
 
-            <!-- iOS 觸控規範 Google 登入按鈕 (高度 50px > 44pt，點擊更舒適) -->
-            <button id="btn-google-login" type="button" class="w-full h-[50px] px-5 bg-white hover:bg-slate-50 active:bg-slate-100 active:scale-[0.98] border border-slate-200 rounded-2xl flex items-center justify-center gap-3 transition-all duration-150 shadow-xs cursor-pointer">
-                <!-- 原生 Google 4 色 Logo -->
+            <button id="btn-google-login" type="button" class="w-full h-[52px] px-5 bg-white hover:bg-slate-50 active:bg-slate-100 active:scale-[0.98] border border-slate-200 rounded-2xl flex items-center justify-center gap-3 transition-all duration-150 shadow-xs cursor-pointer">
                 <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -93,27 +94,24 @@
                 <span class="text-sm font-bold text-slate-700 tracking-tight" id="login-text">使用 Google 帳號快速登入</span>
             </button>
 
-            <!-- 隱私與服務提示 -->
             <p class="text-[11px] text-slate-400 mt-6 leading-relaxed">
-                登入即代表您同意揪行之服務條款。<br>系統將直接同步您的頭貼與暱稱。
+                登入即代表您同意揪行之服務條款。<br>系統將直接同步您的 Google 個人暱稱與頭貼。
             </p>
         </div>
 
     </main>
 
-    <!-- 底部版權與環境適配（避開 iOS Home Bar） -->
-    <footer class="w-full pb-6 text-center text-[11px] text-slate-400 font-mono">
+    <footer class="shrink-0 w-full pb-6 text-center text-[11px] text-slate-400 font-mono">
         &copy; JooGO. All rights reserved.
     </footer>
 
-    <!-- 模組化邏輯 -->
     <script type="module">
         import { loginWithGoogle, subscribeAuthState } from "./js/api/authApi.js";
 
         const btnLogin = document.getElementById('btn-google-login');
         const loginText = document.getElementById('login-text');
 
-        // 若已登入狀態，自動跳轉回首頁列表
+        // 已登入自動跳轉
         subscribeAuthState((user) => {
             if (user) {
                 window.location.href = "index.html";
@@ -128,7 +126,6 @@
                 loginText.innerText = "驗證中，請稍候...";
 
                 await loginWithGoogle();
-                // 成功後 subscribeAuthState 會自動導向 index.html
             } catch (err) {
                 alert("Google 登入失敗: " + err.message);
                 btnLogin.disabled = false;
