@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>登入 - 揪行 JooGO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        input { font-size: 16px !important; outline: none !important; }
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+</head>
+<body class="h-full flex items-center justify-center p-4 bg-slate-50 antialiased">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full border border-slate-100 shadow-xl space-y-5">
+        <div class="text-center space-y-1">
+            <h1 class="font-bold text-2xl text-slate-900 tracking-tight flex items-center justify-center gap-1.5">
+                <span>揪行</span>
+                <span class="text-xs font-mono font-extrabold text-sky-600 tracking-wider">JooGO</span>
+            </h1>
+            <p class="text-xs text-slate-400">把一句想去，變成一起出發</p>
+        </div>
+
+        <!-- Google 登入按鈕 -->
+        <button id="btn-google-login" type="button" class="w-full py-3 px-4 border border-slate-200 rounded-2xl flex items-center justify-center gap-2.5 hover:bg-slate-50 active:scale-95 transition-all text-xs font-bold text-slate-700 shadow-2xs">
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>使用 Google 帳號快速登入</span>
+        </button>
+
+        <div class="flex items-center gap-3">
+            <div class="h-px bg-slate-100 flex-1"></div>
+            <span class="text-[10px] text-slate-300 font-medium">或使用 Email</span>
+            <div class="h-px bg-slate-100 flex-1"></div>
+        </div>
+
+        <form id="form-auth" class="space-y-3">
+            <div id="box-name" class="hidden">
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">您的暱稱</label>
+                <input type="text" id="auth-name" placeholder="例如：小明" class="w-full h-[44px] px-3 border border-slate-200 rounded-xl text-xs bg-white">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">電子信箱</label>
+                <input type="email" id="auth-email" required placeholder="name@example.com" class="w-full h-[44px] px-3 border border-slate-200 rounded-xl text-xs bg-white">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">密碼</label>
+                <input type="password" id="auth-password" required placeholder="至少 6 位字元" class="w-full h-[44px] px-3 border border-slate-200 rounded-xl text-xs bg-white">
+            </div>
+
+            <button type="submit" id="btn-submit-auth" class="w-full h-[44px] bg-sky-600 hover:bg-sky-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all shadow-xs">
+                登入
+            </button>
+        </form>
+
+        <div class="text-center">
+            <button type="button" id="btn-toggle-auth-mode" class="text-xs font-semibold text-slate-500 hover:text-sky-600 transition-colors">
+                還沒有帳號？前往註冊
+            </button>
+        </div>
+    </div>
+
+    <!-- 邏輯腳本 -->
+    <script type="module">
+        import { loginWithGoogle, loginWithEmail, registerWithEmail, subscribeAuthState } from "./js/api/authApi.js";
+
+        // 若已登入，直接重導向回首頁
+        subscribeAuthState((user) => {
+            if (user) {
+                window.location.href = "index.html";
+            }
+        });
+
+        let isRegisterMode = false;
+        const boxName = document.getElementById('box-name');
+        const btnSubmit = document.getElementById('btn-submit-auth');
+        const btnToggle = document.getElementById('btn-toggle-auth-mode');
+
+        btnToggle.addEventListener('click', () => {
+            isRegisterMode = !isRegisterMode;
+            if (isRegisterMode) {
+                boxName.classList.remove('hidden');
+                btnSubmit.innerText = "立即註冊";
+                btnToggle.innerText = "已有帳號？返回登入";
+            } else {
+                boxName.classList.add('hidden');
+                btnSubmit.innerText = "登入";
+                btnToggle.innerText = "還沒有帳號？前往註冊";
+            }
+        });
+
+        document.getElementById('btn-google-login').addEventListener('click', async () => {
+            try {
+                await loginWithGoogle();
+            } catch (err) {
+                alert("Google 登入失敗: " + err.message);
+            }
+        });
+
+        document.getElementById('form-auth').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-password').value;
+            btnSubmit.disabled = true;
+
+            try {
+                if (isRegisterMode) {
+                    const name = document.getElementById('auth-name').value;
+                    await registerWithEmail(email, pass, name);
+                } else {
+                    await loginWithEmail(email, pass);
+                }
+            } catch (err) {
+                alert((isRegisterMode ? "註冊失敗：" : "登入失敗：") + err.message);
+            } finally {
+                btnSubmit.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
