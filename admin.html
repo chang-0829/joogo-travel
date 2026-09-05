@@ -80,7 +80,7 @@
                 </a>
             </div>
 
-            <!-- 手機端漢堡按鈕 -->
+            <!-- 手機端漢堡按鈕 (44pt 熱區) -->
             <div class="flex md:hidden items-center">
                 <button id="btn-hamburger" type="button" aria-label="選單" class="w-11 h-11 flex items-center justify-center text-slate-600 hover:text-slate-900 active:scale-95 rounded-xl border border-slate-200/80 bg-white/60 transition-all">
                     <i data-lucide="menu" class="w-5 h-5"></i>
@@ -157,7 +157,7 @@
 
         <!-- ==================== VIEW 2: 國家專屬細部設定 (iOS Grouped List 原生分組風格) ==================== -->
         <section id="view-country-detail" class="hidden space-y-6 pb-12">
-            <!-- 頂部導覽列：左邊主標題與返回鍵，右邊儲存按鈕（尺寸與新增按鈕一致：h-11 rounded-2xl） -->
+            <!-- 頂部導覽列 -->
             <div class="flex items-center justify-between gap-4">
                 <div class="flex items-center gap-2">
                     <button onclick="switchView('country-list')" class="w-11 h-11 -ml-2 flex items-center justify-center text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
@@ -166,7 +166,7 @@
                     <h2 class="text-2xl font-bold text-slate-900 tracking-tight">管理國家/地區</h2>
                 </div>
                 
-                <button onclick="saveCurrentCountryDetail()" class="h-11 px-5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0">
+                <button id="btn-save-country-detail" onclick="saveCurrentCountryDetail()" class="h-11 px-5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0">
                     <i data-lucide="check" class="w-4 h-4"></i>
                     <span>儲存</span>
                 </button>
@@ -177,21 +177,19 @@
                 <h3 class="text-xl font-extrabold text-slate-900 tracking-tight" id="detail-country-name">-</h3>
             </div>
 
-            <!-- 分組 1：基本設定 -->
+            <!-- 分組 1：基本設定 (含 Cloudinary 圖片上傳與即時縮圖預覽) -->
             <div class="space-y-2">
                 <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">基本設定</div>
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
-                    <!-- 通用幣別 (無範例) -->
                     <div class="p-3.5 px-4 flex items-center justify-between">
                         <span class="text-sm font-bold text-slate-800">通用幣別</span>
                         <input type="text" id="detail-base-currency" class="text-right font-mono font-bold text-slate-700 uppercase bg-transparent border-none w-36 p-0">
                     </div>
-                    <!-- 時區 (UTC) (無範例) -->
                     <div class="p-3.5 px-4 flex items-center justify-between">
                         <span class="text-sm font-bold text-slate-800">時區 (UTC)</span>
                         <input type="text" id="detail-base-timezone" class="text-right font-mono font-bold text-slate-700 bg-transparent border-none w-36 p-0">
                     </div>
-                    <!-- 包含地區 -->
+                    <!-- 包含地區標籤 -->
                     <div class="p-4 space-y-2">
                         <span class="text-sm font-bold text-slate-800 block">包含地區標籤</span>
                         <div class="min-h-[44px] p-2 border border-slate-200/80 rounded-xl flex flex-wrap items-center gap-1.5 bg-slate-50/50">
@@ -199,10 +197,26 @@
                             <input type="text" id="detail-region-tag-input" placeholder="輸入後按 Enter 新增" class="flex-1 min-w-[140px] border-none bg-transparent p-1 text-xs">
                         </div>
                     </div>
-                    <!-- 預設封面圖 -->
-                    <div class="p-4 space-y-1.5">
-                        <span class="text-sm font-bold text-slate-800 block">預設封面圖連結 (每行一張)</span>
-                        <textarea id="detail-base-covers" rows="2" placeholder="https://..." class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl font-mono text-xs" autocorrect="off" autocapitalize="none"></textarea>
+
+                    <!-- 預設封面圖：Cloudinary 點擊上傳 + 本機即時預覽 -->
+                    <div class="p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-bold text-slate-800">封面圖片庫</span>
+                            <span class="text-xs text-slate-400 font-mono" id="cover-count-label">共 0 張</span>
+                        </div>
+
+                        <!-- 檔案選擇按鈕 (相容手機相簿與電腦拖曳) -->
+                        <label class="border-2 border-dashed border-slate-200 hover:border-brand-500 bg-slate-50/60 hover:bg-brand-50/30 rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99]">
+                            <div class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center">
+                                <i data-lucide="image-plus" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-700">點擊選取或拍照上傳封面圖</span>
+                            <span class="text-[11px] text-slate-400">支援多張上傳，系統將自動同步儲存至雲端</span>
+                            <input type="file" id="cover-file-input" accept="image/*" multiple class="hidden">
+                        </label>
+
+                        <!-- 即時縮圖網格展示 -->
+                        <div id="cover-thumbnails-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 pt-1"></div>
                     </div>
                 </div>
             </div>
@@ -272,7 +286,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">航空公司行李規範庫</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">主揪設定航班時可一鍵套用[span_0](start_span)[span_0](end_span)。</p>
+                    <p class="text-xs text-slate-400 mt-0.5">主揪設定航班時可一鍵套用[span_2](start_span)[span_2](end_span)。</p>
                 </div>
                 <button id="btn-add-airline" class="h-11 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 active:scale-95 rounded-2xl transition-all shadow-xs cursor-pointer">
                     <i data-lucide="plus" class="w-4 h-4"></i>
@@ -359,11 +373,13 @@
         import { 
             collection, doc, onSnapshot, getDoc, setDoc, deleteDoc 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { uploadToCloudinary } from "./js/api/uploadApi.js";
 
         let currentCountries = [];
         let activeCountryId = null;
         let activeCountryData = null;
         let detailRegionTags = [];
+        let currentCovers = []; // 當前國家封面圖片 URL 陣列
         let searchQuery = "";
 
         function showToast(msg) {
@@ -429,6 +445,63 @@
                     detailRegionInput.value = '';
                 }
             }
+        });
+
+        // ==================== 封面圖 Cloudinary 上傳與即時預覽 ====================
+        function renderCoverThumbnails() {
+            const container = document.getElementById('cover-thumbnails-grid');
+            const countLabel = document.getElementById('cover-count-label');
+            countLabel.innerText = `共 ${currentCovers.length} 張`;
+
+            if (currentCovers.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-4 text-center text-xs text-slate-300">尚未上傳封面圖片</div>`;
+                return;
+            }
+
+            container.innerHTML = currentCovers.map((imgUrl, idx) => `
+                <div class="relative group rounded-xl overflow-hidden aspect-video bg-slate-100 border border-slate-200/80 shadow-2xs">
+                    <img src="${imgUrl}" class="w-full h-full object-cover">
+                    <!-- 刪除照片按鈕 -->
+                    <button type="button" onclick="window.removeCoverImage(${idx})" class="w-7 h-7 bg-slate-900/75 hover:bg-rose-600 text-white rounded-full flex items-center justify-center absolute top-1 right-1 shadow-md transition-all active:scale-90">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        window.removeCoverImage = function(idx) {
+            currentCovers.splice(idx, 1);
+            renderCoverThumbnails();
+        };
+
+        // 監聽選檔上傳
+        const coverFileInput = document.getElementById('cover-file-input');
+        coverFileInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (!files.length) return;
+
+            showToast(`正在上傳 ${files.length} 張照片至 Cloudinary...`);
+            
+            for (const file of files) {
+                try {
+                    // 本機即時預覽（先畫出來不用等）
+                    const tempLocalUrl = URL.createObjectURL(file);
+                    
+                    // 背景直傳 Cloudinary
+                    const cloudUrl = await uploadToCloudinary(file);
+                    currentCovers.push(cloudUrl);
+                    renderCoverThumbnails();
+                } catch (err) {
+                    console.error("上傳失敗", err);
+                    showToast("圖片上傳失敗：" + err.message);
+                }
+            }
+
+            // 清除 input 避免選取同一檔案無反應
+            coverFileInput.value = "";
+            showToast("圖片上傳完成！");
         });
 
         // ==================== 頁面視圖切換 ====================
@@ -535,10 +608,15 @@
 
             document.getElementById('detail-country-name').innerText = countryId;
 
-            // 回填基本資料 (無範例)
+            // 回填基本資料
             document.getElementById('detail-base-currency').value = activeCountryData.currency || '';
             document.getElementById('detail-base-timezone').value = activeCountryData.timezone || '';
-            document.getElementById('detail-base-covers').value = (activeCountryData.coverImages || []).join('\n');
+            
+            // 回填 Cloudinary 封面圖清單並渲染縮圖
+            currentCovers = [...(activeCountryData.coverImages || [])];
+            renderCoverThumbnails();
+
+            // 回填地區標籤
             detailRegionTags = [...(activeCountryData.regions || [])];
             renderDetailRegionTags();
 
@@ -564,43 +642,50 @@
         window.saveCurrentCountryDetail = async function() {
             if (!activeCountryId) return;
 
-            const leftover = detailRegionInput.value.trim();
-            if (leftover && !detailRegionTags.includes(leftover)) {
-                detailRegionTags.push(leftover);
-                detailRegionInput.value = '';
-                renderDetailRegionTags();
-            }
+            const saveBtn = document.getElementById('btn-save-country-detail');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<span>儲存中...</span>`;
 
-            const coverImages = document.getElementById('detail-base-covers').value
-                .split('\n')
-                .map(url => url.trim())
-                .filter(url => url.startsWith('http'));
+            try {
+                const leftover = detailRegionInput.value.trim();
+                if (leftover && !detailRegionTags.includes(leftover)) {
+                    detailRegionTags.push(leftover);
+                    detailRegionInput.value = '';
+                    renderDetailRegionTags();
+                }
 
-            const updated = {
-                currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
-                timezone: document.getElementById('detail-base-timezone').value.trim(),
-                regions: detailRegionTags,
-                coverImages: coverImages,
-                notice: {
-                    voltage: document.getElementById('detail-notice-voltage').value.trim(),
-                    visa: document.getElementById('detail-notice-visa').value.trim(),
-                    traffic: document.getElementById('detail-notice-traffic').value.trim(),
-                    tax: document.getElementById('detail-notice-tax').value.trim()
-                },
-                emergency: {
+                const updated = {
+                    currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
+                    timezone: document.getElementById('detail-base-timezone').value.trim(),
+                    regions: detailRegionTags,
+                    coverImages: currentCovers, // 儲存 Cloudinary URL 陣列
+                    notice: {
+                        voltage: document.getElementById('detail-notice-voltage').value.trim(),
+                        visa: document.getElementById('detail-notice-visa').value.trim(),
+                        traffic: document.getElementById('detail-notice-traffic').value.trim(),
+                        tax: document.getElementById('detail-notice-tax').value.trim()
+                    },
+                    emergency: {
+                        police: document.getElementById('detail-emg-police').value.trim(),
+                        ambulance: document.getElementById('detail-emg-ambulance').value.trim(),
+                        embassy: document.getElementById('detail-emg-embassy').value.trim(),
+                        memo: document.getElementById('detail-emg-memo').value.trim()
+                    },
                     police: document.getElementById('detail-emg-police').value.trim(),
                     ambulance: document.getElementById('detail-emg-ambulance').value.trim(),
-                    embassy: document.getElementById('detail-emg-embassy').value.trim(),
+                    foreignEmergency: document.getElementById('detail-emg-embassy').value.trim(),
                     memo: document.getElementById('detail-emg-memo').value.trim()
-                },
-                police: document.getElementById('detail-emg-police').value.trim(),
-                ambulance: document.getElementById('detail-emg-ambulance').value.trim(),
-                foreignEmergency: document.getElementById('detail-emg-embassy').value.trim(),
-                memo: document.getElementById('detail-emg-memo').value.trim()
-            };
+                };
 
-            await setDoc(doc(db, "templates", "countries", "items", activeCountryId), updated, { merge: true });
-            showToast(`已儲存「${activeCountryId}」所有資料！`);
+                await setDoc(doc(db, "templates", "countries", "items", activeCountryId), updated, { merge: true });
+                showToast(`已儲存「${activeCountryId}」所有資料！`);
+            } catch (err) {
+                showToast("儲存失敗：" + err.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i><span>儲存</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
         };
 
         // ==================== 優惠券清單渲染 ====================
