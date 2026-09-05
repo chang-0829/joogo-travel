@@ -17,7 +17,7 @@
                         brand: {
                             50: '#f0f9ff',
                             100: '#e0f2fe',
-                            500: '#0284c7', // 品牌藍
+                            500: '#0284c7',
                             600: '#0369a1',
                             700: '#075985',
                         }
@@ -34,7 +34,7 @@
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
         }
-        input, select, textarea { font-size: 15px !important; outline: none !important; }
+        input, select, textarea { font-size: 14px !important; outline: none !important; }
         input:focus, select:focus, textarea:focus { border-color: #0284c7 !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -46,7 +46,6 @@
     <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/70 pt-[env(safe-area-inset-top)]">
         <div class="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
             
-            <!-- 品牌與後台標誌區 (乾淨寬鬆、無箭頭) -->
             <div class="flex items-center gap-2.5">
                 <span class="font-extrabold text-xl tracking-tight text-slate-900 font-mono">JooGO</span>
                 <span class="px-2.5 py-1 text-xs font-bold bg-sky-50 text-sky-600 border border-sky-200/80 rounded-lg tracking-wide">
@@ -54,16 +53,16 @@
                 </span>
             </div>
 
-            <!-- 桌面端切換選單 -->
+            <!-- 桌面端導覽 -->
             <div class="hidden md:flex items-center gap-5">
                 <div class="flex items-center bg-slate-100 p-1 rounded-xl">
-                    <button onclick="switchTab('airlines')" id="desk-tab-airlines" class="tab-btn px-4 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5">
-                        <i data-lucide="plane" class="w-4 h-4 text-brand-600"></i>
-                        <span>航空公司行李庫</span>
+                    <button onclick="switchView('country-list')" id="desk-tab-countries" class="tab-btn px-4 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5">
+                        <i data-lucide="globe" class="w-4 h-4 text-brand-600"></i>
+                        <span>國家與地區公版庫</span>
                     </button>
-                    <button onclick="switchTab('countries')" id="desk-tab-countries" class="tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
-                        <i data-lucide="globe" class="w-4 h-4 text-emerald-600"></i>
-                        <span>急難救助須知庫</span>
+                    <button onclick="switchView('airlines')" id="desk-tab-airlines" class="tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="plane" class="w-4 h-4 text-sky-600"></i>
+                        <span>航空公司行李庫</span>
                     </button>
                 </div>
                 <a href="index.html" class="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-brand-600 transition-colors pl-1">
@@ -72,7 +71,7 @@
                 </a>
             </div>
 
-            <!-- 手機端漢堡選單按鈕 (舒展間距、輕透視覺) -->
+            <!-- 手機端漢堡按鈕 -->
             <div class="flex md:hidden items-center">
                 <button id="btn-hamburger" type="button" aria-label="打開選單" class="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 active:scale-95 rounded-xl border border-slate-200/70 hover:bg-slate-50 transition-all">
                     <i data-lucide="menu" class="w-5 h-5"></i>
@@ -81,11 +80,10 @@
         </div>
     </header>
 
-    <!-- ==================== 漢堡選單側邊抽屜 (Drawer & Mask) ==================== -->
+    <!-- ==================== 漢堡選單側邊抽屜 ==================== -->
     <div id="drawer-backdrop" class="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-xs hidden opacity-0 transition-opacity duration-300"></div>
     <aside id="drawer-menu" class="fixed top-0 right-0 bottom-0 z-50 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
         <div class="p-6 space-y-6">
-            <!-- 抽屜頂部 -->
             <div class="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div class="flex items-center gap-2">
                     <span class="font-extrabold text-base tracking-tight text-slate-900 font-mono">JooGO</span>
@@ -96,38 +94,26 @@
                 </button>
             </div>
 
-            <!-- 資料庫項目導航 -->
             <div class="space-y-1.5">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">公版資料庫管理</p>
-                
-                <button onclick="switchTab('airlines'); closeDrawer();" id="drawer-tab-airlines" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold bg-brand-50 text-brand-600 transition-all">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">資料庫選單</p>
+                <button onclick="switchView('country-list'); closeDrawer();" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold bg-brand-50 text-brand-600 transition-all">
                     <div class="flex items-center gap-2.5">
-                        <i data-lucide="plane" class="w-4 h-4"></i>
+                        <i data-lucide="globe" class="w-4 h-4"></i>
+                        <span>國家與地區公版庫</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
+                </button>
+
+                <button onclick="switchView('airlines'); closeDrawer();" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="plane" class="w-4 h-4 text-sky-600"></i>
                         <span>航空公司行李庫</span>
                     </div>
                     <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
                 </button>
-
-                <button onclick="switchTab('countries'); closeDrawer();" id="drawer-tab-countries" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
-                    <div class="flex items-center gap-2.5">
-                        <i data-lucide="globe" class="w-4 h-4 text-emerald-600"></i>
-                        <span>各國急難救助庫</span>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
-                </button>
-            </div>
-
-            <!-- 系統環境狀態卡 -->
-            <div class="pt-4 border-t border-slate-100 space-y-2">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">系統環境狀態</p>
-                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 text-[11px] text-slate-500 space-y-1.5">
-                    <div class="flex justify-between"><span>版本</span><span class="font-mono font-bold text-slate-700">v2.0-ESM</span></div>
-                    <div class="flex justify-between"><span>資料庫</span><span class="font-mono text-emerald-600 font-bold">Cloud Firestore</span></div>
-                </div>
             </div>
         </div>
 
-        <!-- 抽屜底部快速跳轉 -->
         <div class="p-6 border-t border-slate-100">
             <a href="index.html" class="w-full h-11 bg-slate-100 hover:bg-slate-200 active:scale-98 rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-slate-700 transition-all">
                 <i data-lucide="external-link" class="w-4 h-4"></i>
@@ -136,49 +122,256 @@
         </div>
     </aside>
 
-    <!-- ==================== 主內容管理區 ==================== -->
+    <!-- ==================== 主內容區域 ==================== -->
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6 overflow-y-auto">
 
-        <!-- ==================== 1. 航空公司行李規範庫 ==================== -->
-        <section id="section-airlines" class="space-y-4">
+        <!-- ==================== VIEW 1: 國家列表視圖 ==================== -->
+        <section id="view-country-list" class="space-y-5">
             <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-brand-500"></span>
-                        <h2 class="text-base font-bold text-slate-900">航空公司行李規範庫</h2>
+                        <h2 class="text-base font-bold text-slate-900">國家與地區主庫</h2>
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">主揪在前台設定航班資訊時，可直接搜尋並一鍵自動帶入這套公版規範[span_0](start_span)[span_0](end_span)。</p>
+                    <p class="text-xs text-slate-400 mt-1">管理各旅遊國家之地區分佈、時差、幣別、預設封面圖，點入卡片可細部設定行前須知與優惠券。</p>
                 </div>
-                <button id="btn-add-airline" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer">
+                <button id="btn-add-country-modal" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer">
                     <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>新增航司公版</span>
+                    <span>新增國家</span>
                 </button>
             </div>
 
-            <!-- 卡片容器網格 -->
+            <!-- 國家卡片 Grid -->
+            <div id="countries-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+        </section>
+
+        <!-- ==================== VIEW 2: 國家專屬細部管理 (行前須知 / 急難救助 / 優惠券) ==================== -->
+        <section id="view-country-detail" class="hidden space-y-5">
+            <!-- 回上一層導覽列 -->
+            <div class="flex items-center justify-between bg-white px-5 py-4 rounded-3xl border border-slate-200/80 shadow-xs">
+                <div class="flex items-center gap-3">
+                    <button onclick="switchView('country-list')" class="p-2 -ml-2 text-slate-500 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base font-bold text-slate-900" id="detail-country-name">日本 Japan</h2>
+                            <span class="px-2 py-0.5 text-[11px] font-mono font-bold bg-brand-50 text-brand-600 rounded-md" id="detail-country-badge">JPY / UTC+9</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-0.5">公版行前須知、急難救助電話、專屬合作優惠券設定</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="saveCurrentCountryDetail()" class="h-9 px-4 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-xl transition-all shadow-xs flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>儲存變更</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 次 Tab 切換 -->
+            <div class="flex items-center bg-slate-200/80 p-1 rounded-2xl w-full sm:w-fit">
+                <button onclick="switchDetailSubTab('notice')" id="subtab-notice" class="px-4 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5">
+                    <i data-lucide="info" class="w-4 h-4 text-brand-600"></i>
+                    <span>公版行前須知</span>
+                </button>
+                <button onclick="switchDetailSubTab('emergency')" id="subtab-emergency" class="px-4 py-2 text-xs font-semibold rounded-xl transition-all text-slate-600 flex items-center gap-1.5">
+                    <i data-lucide="phone-call" class="w-4 h-4 text-rose-600"></i>
+                    <span>急難救助資訊</span>
+                </button>
+                <button onclick="switchDetailSubTab('coupons')" id="subtab-coupons" class="px-4 py-2 text-xs font-semibold rounded-xl transition-all text-slate-600 flex items-center gap-1.5">
+                    <i data-lucide="ticket-percent" class="w-4 h-4 text-amber-600"></i>
+                    <span>公版優惠券 (<span id="coupon-count">0</span>)</span>
+                </button>
+            </div>
+
+            <!-- 1. 行前須知 Tab -->
+            <div id="detail-panel-notice" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+                <div class="border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900">行前必備公版提醒</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">主揪選擇此國家時，行程助手會自動帶出此國家的行前須知清單。</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">電壓與插座規格</label>
+                        <input type="text" id="detail-notice-voltage" placeholder="例如：100V、雙平腳插頭（與台灣相同規格）" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">簽證 / 入境申報規範</label>
+                        <input type="text" id="detail-notice-visa" placeholder="例如：免簽證 90 天，需事先填寫 Visit Japan Web" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">交通與支付小撇步</label>
+                    <textarea id="detail-notice-traffic" rows="3" placeholder="例如：可使用 iPhone 錢包綁定西瓜卡 (Suica)，多數商家支援 PayPay 與信用卡..." class="w-full p-3 border border-slate-200 rounded-xl text-xs"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">退稅與其他注意事項</label>
+                    <textarea id="detail-notice-tax" rows="3" placeholder="例如：免稅門檻 5,000 日圓，消耗品不可在境內拆封..." class="w-full p-3 border border-slate-200 rounded-xl text-xs"></textarea>
+                </div>
+            </div>
+
+            <!-- 2. 急難救助 Tab -->
+            <div id="detail-panel-emergency" class="hidden bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+                <div class="border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900">各國急難救助專線</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">提供當地警消、駐外辦事處之直撥電話，旅伴可一鍵撥號[span_3](start_span)[span_3](end_span)。</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">當地報警專線</label>
+                        <input type="text" id="detail-emg-police" placeholder="例如：110" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">當地火警 / 救護車專線</label>
+                        <input type="text" id="detail-emg-ambulance" placeholder="例如：119" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-mono font-bold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">台灣駐外館處 / 急難救助電話</label>
+                    <input type="text" id="detail-emg-embassy" placeholder="例如：+81-3-3280-7811 (台北駐日經濟文化代表處)" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">外籍旅客求助專線備註</label>
+                    <textarea id="detail-emg-memo" rows="3" placeholder="例如：撥通後可直接說 Chinese please 請求中文翻譯服務..." class="w-full p-3 border border-slate-200 rounded-xl text-xs"></textarea>
+                </div>
+            </div>
+
+            <!-- 3. 優惠券 Tab -->
+            <div id="detail-panel-coupons" class="hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">該國專屬公版優惠券</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">旅伴前往該國行程時，優惠專區會自動出示這些商戶折扣條碼與兌換資訊。</p>
+                    </div>
+                    <button onclick="openAddCouponModal()" class="h-9 px-3.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-95 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>新增優惠券</span>
+                    </button>
+                </div>
+
+                <div id="coupons-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 3: 航司行李庫 (保留既有功能) ==================== -->
+        <section id="view-airlines" class="hidden space-y-4">
+            <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">航空公司行李規範庫</h2>
+                    <p class="text-xs text-slate-400 mt-1">主揪設定航班時可一鍵套用的航司公版[span_4](start_span)[span_4](end_span)。</p>
+                </div>
+                <button id="btn-add-airline" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 active:scale-95 rounded-xl transition-all shadow-xs">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>新增航司</span>
+                </button>
+            </div>
             <div id="airlines-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </section>
+    </main>
 
-        <!-- ==================== 2. 國家急難救助庫 ==================== -->
-        <section id="section-countries" class="hidden space-y-4">
-            <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        <h2 class="text-base font-bold text-slate-900">各國急難救助資訊庫</h2>
+    <!-- ==================== 彈窗 A：新增 / 編輯 國家基本資料 ==================== -->
+    <div id="modal-country" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto space-y-4 no-scrollbar">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-sm">
+                        <i data-lucide="globe" class="w-4 h-4"></i>
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">根據行程選定的目的地國家，系統自動推播給旅伴急難求助電話與外館專線[span_1](start_span)[span_1](end_span)。</p>
+                    <h3 class="text-sm font-bold text-slate-900" id="modal-country-title">新增國家資料</h3>
                 </div>
-                <button id="btn-add-country" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>新增國家求助資訊</span>
-                </button>
+                <button type="button" id="btn-close-country-modal" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
 
-            <!-- 國家容器網格 -->
-            <div id="countries-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        </section>
-    </main>
+            <form id="form-country-base" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">國家 / 地區名稱</label>
+                    <input type="text" id="country-name" required placeholder="例如：日本、韓國、泰國" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-bold text-slate-900">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">通用幣別代碼</label>
+                        <input type="text" id="country-currency" required placeholder="如：JPY, KRW, THB" maxlength="5" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl uppercase font-mono font-bold text-slate-900">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">與台灣時差 (台灣 UTC+8)</label>
+                        <select id="country-timezone" class="w-full h-11 px-3 border border-slate-200 rounded-xl font-bold text-slate-900 bg-white">
+                            <option value="-8">慢 8 小時 (如: 英國/西歐)</option>
+                            <option value="-7">慢 7 小時 (如: 歐陸夏令)</option>
+                            <option value="-6">慢 6 小時 (如: 埃及)</option>
+                            <option value="-1">慢 1 小時 (如: 泰國/越南)</option>
+                            <option value="0" selected>無時差 (0 小時，如: 台灣/港澳)</option>
+                            <option value="+1">快 1 小時 (如: 日本/韓國)</option>
+                            <option value="+2">快 2 小時 (如: 澳洲東部)</option>
+                            <option value="-13">慢 13 小時 (如: 美東)</option>
+                            <option value="-16">慢 16 小時 (如: 美西)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">包含地區 (以逗號分隔)</label>
+                    <input type="text" id="country-regions" required placeholder="例如：東京, 大阪, 京都, 北海道, 沖繩" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl text-xs font-semibold">
+                    <p class="text-[11px] text-slate-400 mt-1">主揪在前台挑選地區時會作為快捷標籤提供選擇。</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">預設封面圖連結 (每行一張，可支援多張)</label>
+                    <textarea id="country-covers" rows="3" required placeholder="https://images.unsplash.com/...&#10;https://images.unsplash.com/..." class="w-full p-3 border border-slate-200 rounded-xl text-xs font-mono"></textarea>
+                    <p class="text-[11px] text-slate-400 mt-1">主揪建立該國行程時，系統會自動輪播或預選這些優美預設封面[span_5](start_span)[span_5](end_span)。</p>
+                </div>
+
+                <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+                    <button type="button" id="btn-cancel-country-modal" class="w-1/2 h-11 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                    <button type="submit" class="w-1/2 h-11 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-xl transition-all">儲存國家主檔</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== 彈窗 B：新增 / 編輯 優惠券 ==================== -->
+    <div id="modal-coupon" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-bold text-slate-900" id="modal-coupon-title">新增公版優惠券</h3>
+                <button type="button" id="btn-close-coupon-modal" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-coupon" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">商戶 / 店名</label>
+                    <input type="text" id="coupon-store" required placeholder="例如：Bic Camera, 唐吉訶德" class="w-full h-11 px-3 border border-slate-200 rounded-xl font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">優惠內容簡稱</label>
+                    <input type="text" id="coupon-discount" required placeholder="例如：免稅 10% + 最高 7% 折扣" class="w-full h-11 px-3 border border-slate-200 rounded-xl text-xs font-semibold text-amber-600">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">優惠代碼 (若有)</label>
+                        <input type="text" id="coupon-code" placeholder="如：JOOGO2026" class="w-full h-11 px-3 border border-slate-200 rounded-xl font-mono text-xs uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">有效期限</label>
+                        <input type="text" id="coupon-expiry" placeholder="長期有效 / 2026-12-31" class="w-full h-11 px-3 border border-slate-200 rounded-xl text-xs">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">條碼圖片 / 領取連結</label>
+                    <input type="url" id="coupon-link" placeholder="https://..." class="w-full h-11 px-3 border border-slate-200 rounded-xl text-xs font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">使用限制說明</label>
+                    <input type="text" id="coupon-notes" placeholder="例如：結帳前請出示條碼，菸酒不適用" class="w-full h-11 px-3 border border-slate-200 rounded-xl text-xs">
+                </div>
+                <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+                    <button type="button" id="btn-cancel-coupon" class="w-1/2 h-11 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                    <button type="submit" class="w-1/2 h-11 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-95 rounded-xl transition-all">儲存優惠券</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Toast 提示 -->
     <div id="toast-message" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-xl backdrop-blur-md transition-all flex items-center gap-2">
@@ -186,117 +379,21 @@
         <span id="toast-text">提示訊息</span>
     </div>
 
-    <!-- ==================== 彈窗 1：新增/編輯 航空公司 ==================== -->
-    <div id="modal-airline" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto space-y-4 no-scrollbar">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
-                        <i data-lucide="plane" class="w-4 h-4"></i>
-                    </div>
-                    <h3 class="text-sm font-bold text-slate-900" id="modal-airline-title">航空公司行李規範</h3>
-                </div>
-                <button type="button" id="btn-close-airline-modal" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <form id="form-airline" class="space-y-3.5">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">二字代碼 (IATA)</label>
-                        <input type="text" id="airline-code" required placeholder="例如：CI, BR" maxlength="3" class="w-full h-11 px-3 border border-slate-200 rounded-xl uppercase font-mono font-bold text-slate-900">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">航司全名</label>
-                        <input type="text" id="airline-name" required placeholder="例如：中華航空" class="w-full h-11 px-3 border border-slate-200 rounded-xl font-bold text-slate-900">
-                    </div>
-                </div>
-
-                <!-- 托運 -->
-                <div class="p-3 bg-slate-50 border border-slate-200/70 rounded-2xl space-y-2">
-                    <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5"><i data-lucide="luggage" class="w-3.5 h-3.5 text-brand-600"></i>托運行李 (Checked)</span>
-                    <input type="text" id="airline-checked-quota" required placeholder="件數與重量：2 件 (每件 23 kg)" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold">
-                    <input type="text" id="airline-checked-dim" required placeholder="尺寸規範：三邊總和 ≤ 158 cm" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs">
-                </div>
-
-                <!-- 手提 -->
-                <div class="p-3 bg-slate-50 border border-slate-200/70 rounded-2xl space-y-2">
-                    <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5"><i data-lucide="briefcase" class="w-3.5 h-3.5 text-brand-600"></i>手提行李 (Carry-on)</span>
-                    <input type="text" id="airline-carry-quota" required placeholder="件數與重量：1 件 (7 kg)" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold">
-                    <input type="text" id="airline-carry-dim" required placeholder="長寬高尺寸：55 x 40 x 23 cm" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs">
-                </div>
-
-                <!-- 隨身 -->
-                <div class="p-3 bg-slate-50 border border-slate-200/70 rounded-2xl space-y-2">
-                    <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5"><i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-brand-600"></i>隨身物品 (Personal Item)</span>
-                    <input type="text" id="airline-personal-quota" required placeholder="件數與型態：1 件隨身包/筆電包" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold">
-                    <input type="text" id="airline-personal-dim" required placeholder="長寬高尺寸：40 x 30 x 10 cm" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs">
-                </div>
-
-                <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
-                    <button type="button" id="btn-cancel-airline" class="w-1/2 h-11 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
-                    <button type="submit" class="w-1/2 h-11 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-xl transition-all">儲存規範</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ==================== 彈窗 2：新增/編輯 國家求助 ==================== -->
-    <div id="modal-country" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                        <i data-lucide="globe" class="w-4 h-4"></i>
-                    </div>
-                    <h3 class="text-sm font-bold text-slate-900" id="modal-country-title">國家急難求助資訊</h3>
-                </div>
-                <button type="button" id="btn-close-country-modal" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <form id="form-country" class="space-y-3.5">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">國家 / 地區名稱</label>
-                    <input type="text" id="country-name" required placeholder="例如：日本、韓國、泰國" class="w-full h-11 px-3 border border-slate-200 rounded-xl font-bold text-slate-900">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">報警電話</label>
-                        <input type="text" id="country-police" required placeholder="如：110" class="w-full h-11 px-3 border border-slate-200 rounded-xl font-mono font-bold text-slate-900">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">救護車電話</label>
-                        <input type="text" id="country-ambulance" required placeholder="如：119" class="w-full h-11 px-3 border border-slate-200 rounded-xl font-mono font-bold text-slate-900">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">駐外館處 / 急難救助電話</label>
-                    <input type="text" id="country-emergency" required placeholder="如：+81-3-3280-7811 (台北駐日代表處)" class="w-full h-11 px-3 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">旅遊須知備忘</label>
-                    <textarea id="country-memo" rows="3" placeholder="外籍旅客求助專線、語言翻譯服務等" class="w-full p-3 border border-slate-200 rounded-xl text-xs"></textarea>
-                </div>
-                <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
-                    <button type="button" id="btn-cancel-country" class="w-1/2 h-11 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
-                    <button type="submit" class="w-1/2 h-11 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-xl transition-all">儲存資訊</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 後台主邏輯 -->
+    <!-- ==================== JS 模組控制 ==================== -->
     <script type="module">
+        import { db } from "./js/config/firebase.js";
+        import { 
+            collection, doc, getDocs, getDoc, setDoc, deleteDoc 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { 
             getAirlineTemplates, 
             saveAirlineTemplate, 
-            deleteAirlineTemplate,
-            getCountryTemplates,
-            saveCountryTemplate,
-            deleteCountryTemplate
+            deleteAirlineTemplate 
         } from "./js/api/templateApi.js";
 
-        let airlineList = [];
-        let countryList = [];
+        let currentCountries = [];
+        let activeCountryId = null;
+        let activeCountryData = null;
 
         function showToast(msg) {
             const toast = document.getElementById('toast-message');
@@ -308,7 +405,7 @@
             }
         }
 
-        // ==================== 抽屜選單邏輯 ====================
+        // ==================== 抽屜選單控制 ====================
         const drawer = document.getElementById('drawer-menu');
         const backdrop = document.getElementById('drawer-backdrop');
 
@@ -330,227 +427,293 @@
         document.getElementById('btn-close-drawer').addEventListener('click', window.closeDrawer);
         backdrop.addEventListener('click', window.closeDrawer);
 
-        // ==================== 標籤頁切換 ====================
-        window.switchTab = function(type) {
-            const isAirline = type === 'airlines';
-            document.getElementById('section-airlines').classList.toggle('hidden', !isAirline);
-            document.getElementById('section-countries').classList.toggle('hidden', isAirline);
+        // ==================== 頂層頁面視圖切換 ====================
+        window.switchView = function(viewName) {
+            const isCountryList = viewName === 'country-list';
+            const isCountryDetail = viewName === 'country-detail';
+            const isAirlines = viewName === 'airlines';
 
-            // 桌面端樣式切換
-            const deskAir = document.getElementById('desk-tab-airlines');
+            document.getElementById('view-country-list').classList.toggle('hidden', !isCountryList);
+            document.getElementById('view-country-detail').classList.toggle('hidden', !isCountryDetail);
+            document.getElementById('view-airlines').classList.toggle('hidden', !isAirlines);
+
+            // 桌面 Tab 外觀切換
             const deskCountry = document.getElementById('desk-tab-countries');
-            if (isAirline) {
+            const deskAir = document.getElementById('desk-tab-airlines');
+            if (isAirlines) {
                 deskAir.className = "tab-btn px-4 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5";
                 deskCountry.className = "tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-slate-800 flex items-center gap-1.5";
             } else {
                 deskCountry.className = "tab-btn px-4 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5";
                 deskAir.className = "tab-btn px-4 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-slate-800 flex items-center gap-1.5";
             }
-
-            // 抽屜選單樣式同步
-            const drawAir = document.getElementById('drawer-tab-airlines');
-            const drawCountry = document.getElementById('drawer-tab-countries');
-            if (isAirline) {
-                drawAir.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold bg-brand-50 text-brand-600 transition-all";
-                drawCountry.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all";
-            } else {
-                drawCountry.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold bg-emerald-50 text-emerald-600 transition-all";
-                drawAir.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all";
-            }
         };
 
-        // ==================== 渲染航空公司 ====================
-        async function loadAirlines() {
-            airlineList = await getAirlineTemplates();
-            const grid = document.getElementById('airlines-grid');
-            if (airlineList.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-12">尚未建立任何航空公司行李規範</div>';
-                return;
-            }
-            grid.innerHTML = airlineList.map(a => `
-                <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4">
-                    <div>
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 text-xs font-mono font-black bg-brand-50 text-brand-600 rounded-lg border border-brand-100">${a.id}</span>
-                                <h3 class="text-sm font-bold text-slate-900">${a.name}</h3>
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <button onclick="window.editAirline('${a.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded-lg hover:bg-slate-50 transition-colors"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                                <button onclick="window.removeAirline('${a.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-50 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                            </div>
-                        </div>
-                        <div class="mt-3 space-y-2 text-xs">
-                            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                                <span class="font-bold text-slate-700 block mb-0.5">托運</span>
-                                <span class="text-slate-900 font-semibold">${a.checkedQuota}</span>
-                                <span class="text-slate-400 text-[11px] block">${a.checkedDim}</span>
-                            </div>
-                            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                                <span class="font-bold text-slate-700 block mb-0.5">手提</span>
-                                <span class="text-slate-900 font-semibold">${a.carryQuota}</span>
-                                <span class="text-slate-400 text-[11px] block">${a.carryDim}</span>
-                            </div>
-                            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                                <span class="font-bold text-slate-700 block mb-0.5">隨身</span>
-                                <span class="text-slate-900 font-semibold">${a.personalQuota}</span>
-                                <span class="text-slate-400 text-[11px] block">${a.personalDim}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            if (window.lucide) lucide.createIcons();
-        }
-
-        // ==================== 渲染各國救助 ====================
+        // ==================== 載入國家列表 ====================
         async function loadCountries() {
-            countryList = await getCountryTemplates();
+            const querySnapshot = await getDocs(collection(db, "templates", "countries", "items"));
+            currentCountries = [];
+            querySnapshot.forEach(docSnap => {
+                currentCountries.push({ id: docSnap.id, ...docSnap.data() });
+            });
+
             const grid = document.getElementById('countries-grid');
-            if (countryList.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-12">尚未建立任何國家急難救助資訊</div>';
+            if (currentCountries.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-xs text-slate-400">目前尚無國家資料，請點擊右上角新增。</div>`;
                 return;
             }
-            grid.innerHTML = countryList.map(c => `
-                <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+
+            grid.innerHTML = currentCountries.map(c => {
+                const cover = (c.coverImages && c.coverImages.length > 0) ? c.coverImages[0] : 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=600';
+                const regions = c.regions || [];
+                return `
+                <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600"></i>
-                                <h3 class="text-sm font-bold text-slate-900">${c.id}</h3>
+                        <div class="relative h-36 w-full bg-slate-100 overflow-hidden">
+                            <img src="${cover}" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                            <div class="absolute top-3 right-3 flex items-center gap-1.5">
+                                <span class="px-2.5 py-1 text-[11px] font-mono font-bold bg-white/90 backdrop-blur-md rounded-lg text-slate-800 shadow-xs">
+                                    ${c.currency || 'USD'}
+                                </span>
+                                <span class="px-2.5 py-1 text-[11px] font-bold bg-slate-900/80 backdrop-blur-md rounded-lg text-white">
+                                    時差 ${c.timezone >= 0 ? '+' + c.timezone : c.timezone}h
+                                </span>
                             </div>
-                            <div class="flex items-center gap-1">
-                                <button onclick="window.editCountry('${c.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded-lg hover:bg-slate-50 transition-colors"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                                <button onclick="window.removeCountry('${c.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-50 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                            <div class="absolute bottom-3 left-3 text-white">
+                                <h3 class="font-extrabold text-base leading-tight">${c.id}</h3>
+                                <p class="text-[10px] text-slate-200 mt-0.5">${c.coverImages ? c.coverImages.length : 0} 張備選封面圖</p>
                             </div>
                         </div>
-                        <div class="mt-3 space-y-2 text-xs">
-                            <div class="p-2.5 bg-emerald-50/50 rounded-xl border border-emerald-100 text-slate-700">
-                                <span class="font-bold text-emerald-800 block mb-0.5">警消緊急專線</span>
-                                <div>報警：<span class="font-mono font-bold text-slate-900">${c.police}</span> / 救護車：<span class="font-mono font-bold text-slate-900">${c.ambulance}</span></div>
+
+                        <!-- 地區 Badges -->
+                        <div class="p-4 space-y-3">
+                            <div class="flex flex-wrap gap-1.5">
+                                ${regions.map(r => `<span class="px-2 py-0.5 text-[11px] font-semibold bg-slate-100 text-slate-600 rounded-md">${r}</span>`).join('')}
                             </div>
-                            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                                <span class="font-bold text-slate-700 block mb-0.5">駐外館處聯絡</span>
-                                <span class="text-slate-800 font-medium">${c.foreignEmergency}</span>
-                            </div>
-                            ${c.memo ? `
-                            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-500">
-                                <span class="font-bold text-slate-600 block mb-0.5">旅伴須知備忘</span>
-                                <span>${c.memo}</span>
-                            </div>` : ''}
+                        </div>
+                    </div>
+
+                    <!-- 操作按鈕 -->
+                    <div class="p-4 pt-0 border-t border-slate-100/80 mt-2 flex items-center justify-between">
+                        <button onclick="window.openCountryDetail('${c.id}')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 py-1">
+                            <span>管理公版須知與優惠券</span>
+                            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <div class="flex items-center gap-1">
+                            <button onclick="window.editCountryBase('${c.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded-lg hover:bg-slate-50"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="window.deleteCountry('${c.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-50"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                         </div>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
+
             if (window.lucide) lucide.createIcons();
         }
 
-        // ==================== 編輯與刪除航空公司 ====================
-        window.editAirline = (id) => {
-            const item = airlineList.find(x => x.id === id);
-            if (!item) return;
-            document.getElementById('modal-airline-title').innerText = "編輯航空公司規範";
-            document.getElementById('airline-code').value = item.id;
-            document.getElementById('airline-code').readOnly = true;
-            document.getElementById('airline-name').value = item.name;
-            document.getElementById('airline-checked-quota').value = item.checkedQuota;
-            document.getElementById('airline-checked-dim').value = item.checkedDim;
-            document.getElementById('airline-carry-quota').value = item.carryQuota;
-            document.getElementById('airline-carry-dim').value = item.carryDim;
-            document.getElementById('airline-personal-quota').value = item.personalQuota;
-            document.getElementById('airline-personal-dim').value = item.personalDim;
-            document.getElementById('modal-airline').classList.remove('hidden');
+        // ==================== 國家詳情細部設定 ====================
+        window.openCountryDetail = async function(countryId) {
+            activeCountryId = countryId;
+            const docRef = doc(db, "templates", "countries", "items", countryId);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) return;
+            activeCountryData = docSnap.data();
+
+            document.getElementById('detail-country-name').innerText = countryId;
+            document.getElementById('detail-country-badge').innerText = `${activeCountryData.currency || 'USD'} / 時差 ${activeCountryData.timezone >= 0 ? '+' + activeCountryData.timezone : activeCountryData.timezone}h`;
+
+            // 回填行前須知
+            const n = activeCountryData.notice || {};
+            document.getElementById('detail-notice-voltage').value = n.voltage || '';
+            document.getElementById('detail-notice-visa').value = n.visa || '';
+            document.getElementById('detail-notice-traffic').value = n.traffic || '';
+            document.getElementById('detail-notice-tax').value = n.tax || '';
+
+            // 回填急難救助
+            const emg = activeCountryData.emergency || {};
+            document.getElementById('detail-emg-police').value = emg.police || activeCountryData.police || '';
+            document.getElementById('detail-emg-ambulance').value = emg.ambulance || activeCountryData.ambulance || '';
+            document.getElementById('detail-emg-embassy').value = emg.embassy || activeCountryData.foreignEmergency || '';
+            document.getElementById('detail-emg-memo').value = emg.memo || activeCountryData.memo || '';
+
+            // 渲染優惠券
+            renderCoupons();
+
+            switchView('country-detail');
+            switchDetailSubTab('notice');
         };
 
-        window.removeAirline = async (id) => {
-            if (confirm(`確定要刪除代碼「${id}」的航空公司公版嗎？`)) {
-                await deleteAirlineTemplate(id);
-                showToast("已刪除該航司公版！");
-                loadAirlines();
+        window.switchDetailSubTab = function(subtab) {
+            const tabs = ['notice', 'emergency', 'coupons'];
+            tabs.forEach(t => {
+                const isCurrent = t === subtab;
+                document.getElementById(`detail-panel-${t}`).classList.toggle('hidden', !isCurrent);
+                const btn = document.getElementById(`subtab-${t}`);
+                if (isCurrent) {
+                    btn.className = "px-4 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5";
+                } else {
+                    btn.className = "px-4 py-2 text-xs font-semibold rounded-xl transition-all text-slate-600 flex items-center gap-1.5";
+                }
+            });
+        };
+
+        window.saveCurrentCountryDetail = async function() {
+            if (!activeCountryId) return;
+            const updated = {
+                notice: {
+                    voltage: document.getElementById('detail-notice-voltage').value.trim(),
+                    visa: document.getElementById('detail-notice-visa').value.trim(),
+                    traffic: document.getElementById('detail-notice-traffic').value.trim(),
+                    tax: document.getElementById('detail-notice-tax').value.trim()
+                },
+                emergency: {
+                    police: document.getElementById('detail-emg-police').value.trim(),
+                    ambulance: document.getElementById('detail-emg-ambulance').value.trim(),
+                    embassy: document.getElementById('detail-emg-embassy').value.trim(),
+                    memo: document.getElementById('detail-emg-memo').value.trim()
+                },
+                // 同步相容舊欄位
+                police: document.getElementById('detail-emg-police').value.trim(),
+                ambulance: document.getElementById('detail-emg-ambulance').value.trim(),
+                foreignEmergency: document.getElementById('detail-emg-embassy').value.trim(),
+                memo: document.getElementById('detail-emg-memo').value.trim()
+            };
+
+            await setDoc(doc(db, "templates", "countries", "items", activeCountryId), updated, { merge: true });
+            showToast(`已成功儲存「${activeCountryId}」公版資料！`);
+        };
+
+        // ==================== 優惠券邏輯 ====================
+        function renderCoupons() {
+            const coupons = activeCountryData.coupons || [];
+            document.getElementById('coupon-count').innerText = coupons.length;
+            const grid = document.getElementById('coupons-grid');
+
+            if (coupons.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-slate-400">目前尚無優惠券，點擊右上角新增。</div>`;
+                return;
             }
+
+            grid.innerHTML = coupons.map((cp, idx) => `
+                <div class="bg-white rounded-2xl p-4 border border-amber-200/80 shadow-xs space-y-2 relative">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold text-slate-900">${cp.store}</span>
+                        <button onclick="window.removeCoupon(${idx})" class="text-slate-300 hover:text-rose-600 p-1"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                    <div class="text-xs font-bold text-amber-600">${cp.discount}</div>
+                    ${cp.code ? `<div class="text-[11px] font-mono bg-slate-50 px-2 py-1 rounded text-slate-700">代碼：${cp.code}</div>` : ''}
+                    ${cp.expiry ? `<div class="text-[10px] text-slate-400">有效期限：${cp.expiry}</div>` : ''}
+                    ${cp.link ? `<a href="${cp.link}" target="_blank" class="block text-[11px] text-brand-600 hover:underline truncate">查看條碼或兌換連結 ↗</a>` : ''}
+                </div>
+            `).join('');
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        window.openAddCouponModal = () => {
+            document.getElementById('form-coupon').reset();
+            document.getElementById('modal-coupon').classList.remove('hidden');
         };
 
-        // ==================== 編輯與刪除國家資訊 ====================
-        window.editCountry = (id) => {
-            const item = countryList.find(x => x.id === id);
-            if (!item) return;
-            document.getElementById('modal-country-title').innerText = "編輯國家求助資訊";
-            document.getElementById('country-name').value = item.id;
-            document.getElementById('country-name').readOnly = true;
-            document.getElementById('country-police').value = item.police;
-            document.getElementById('country-ambulance').value = item.ambulance;
-            document.getElementById('country-emergency').value = item.foreignEmergency;
-            document.getElementById('country-memo').value = item.memo || '';
+        window.removeCoupon = async (index) => {
+            if (!confirm("確定刪除此優惠券嗎？")) return;
+            const coupons = activeCountryData.coupons || [];
+            coupons.splice(index, 1);
+            activeCountryData.coupons = coupons;
+            await setDoc(doc(db, "templates", "countries", "items", activeCountryId), { coupons }, { merge: true });
+            renderCoupons();
+            showToast("已刪除優惠券！");
+        };
+
+        document.getElementById('form-coupon').onsubmit = async (e) => {
+            e.preventDefault();
+            const coupons = activeCountryData.coupons || [];
+            const newCoupon = {
+                store: document.getElementById('coupon-store').value.trim(),
+                discount: document.getElementById('coupon-discount').value.trim(),
+                code: document.getElementById('coupon-code').value.trim(),
+                expiry: document.getElementById('coupon-expiry').value.trim(),
+                link: document.getElementById('coupon-link').value.trim(),
+                notes: document.getElementById('coupon-notes').value.trim()
+            };
+            coupons.push(newCoupon);
+            activeCountryData.coupons = coupons;
+            await setDoc(doc(db, "templates", "countries", "items", activeCountryId), { coupons }, { merge: true });
+            document.getElementById('modal-coupon').classList.add('hidden');
+            renderCoupons();
+            showToast("成功加入優惠券！");
+        };
+
+        document.getElementById('btn-close-coupon-modal').onclick = () => document.getElementById('modal-coupon').classList.add('hidden');
+        document.getElementById('btn-cancel-coupon').onclick = () => document.getElementById('modal-coupon').classList.add('hidden');
+
+        // ==================== 國家基本主檔 Modal 控制 ====================
+        document.getElementById('btn-add-country-modal').onclick = () => {
+            document.getElementById('modal-country-title').innerText = "新增國家主檔";
+            document.getElementById('form-country-base').reset();
+            document.getElementById('country-name').readOnly = false;
             document.getElementById('modal-country').classList.remove('hidden');
         };
 
-        window.removeCountry = async (id) => {
-            if (confirm(`確定要刪除「${id}」的急難求助資訊嗎？`)) {
-                await deleteCountryTemplate(id);
-                showToast("已刪除該國家求助資訊！");
+        window.editCountryBase = (id) => {
+            const item = currentCountries.find(x => x.id === id);
+            if (!item) return;
+            document.getElementById('modal-country-title').innerText = "編輯國家主檔";
+            document.getElementById('country-name').value = item.id;
+            document.getElementById('country-name').readOnly = true;
+            document.getElementById('country-currency').value = item.currency || 'USD';
+            document.getElementById('country-timezone').value = item.timezone !== undefined ? item.timezone : "0";
+            document.getElementById('country-regions').value = (item.regions || []).join(', ');
+            document.getElementById('country-covers').value = (item.coverImages || []).join('\n');
+            document.getElementById('modal-country').classList.remove('hidden');
+        };
+
+        window.deleteCountry = async (id) => {
+            if (confirm(`確定要刪除「${id}」及其所有下屬公版資料嗎？`)) {
+                await deleteDoc(doc(db, "templates", "countries", "items", id));
+                showToast("已刪除該國家！");
                 loadCountries();
             }
         };
 
-        // ==================== 表單提交與初始化 ====================
-        window.addEventListener('DOMContentLoaded', () => {
-            loadAirlines();
+        document.getElementById('btn-close-country-modal').onclick = () => document.getElementById('modal-country').classList.add('hidden');
+        document.getElementById('btn-cancel-country-modal').onclick = () => document.getElementById('modal-country').classList.add('hidden');
+
+        document.getElementById('form-country-base').onsubmit = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('country-name').value.trim();
+            const currency = document.getElementById('country-currency').value.trim().toUpperCase();
+            const timezone = parseInt(document.getElementById('country-timezone').value, 10);
+            
+            // 拆分地區
+            const regions = document.getElementById('country-regions').value
+                .split(/[,，]/)
+                .map(r => r.trim())
+                .filter(r => r.length > 0);
+
+            // 拆分多張封面圖連結
+            const coverImages = document.getElementById('country-covers').value
+                .split('\n')
+                .map(url => url.trim())
+                .filter(url => url.startsWith('http'));
+
+            const data = {
+                currency,
+                timezone,
+                regions,
+                coverImages
+            };
+
+            await setDoc(doc(db, "templates", "countries", "items", name), data, { merge: true });
+            document.getElementById('modal-country').classList.add('hidden');
+            showToast("國家主檔已儲存！");
             loadCountries();
+        };
 
-            // 航司 Modal 控制
-            document.getElementById('btn-add-airline').onclick = () => {
-                document.getElementById('modal-airline-title').innerText = "新增航空公司規範";
-                document.getElementById('form-airline').reset();
-                document.getElementById('airline-code').readOnly = false;
-                document.getElementById('modal-airline').classList.remove('hidden');
-            };
-            document.getElementById('btn-close-airline-modal').onclick = () => document.getElementById('modal-airline').classList.add('hidden');
-            document.getElementById('btn-cancel-airline').onclick = () => document.getElementById('modal-airline').classList.add('hidden');
-
-            document.getElementById('form-airline').onsubmit = async (e) => {
-                e.preventDefault();
-                const code = document.getElementById('airline-code').value.trim().toUpperCase();
-                const data = {
-                    name: document.getElementById('airline-name').value.trim(),
-                    mode: "piece",
-                    checkedQuota: document.getElementById('airline-checked-quota').value.trim(),
-                    checkedDim: document.getElementById('airline-checked-dim').value.trim(),
-                    carryQuota: document.getElementById('airline-carry-quota').value.trim(),
-                    carryDim: document.getElementById('airline-carry-dim').value.trim(),
-                    personalQuota: document.getElementById('airline-personal-quota').value.trim(),
-                    personalDim: document.getElementById('airline-personal-dim').value.trim()
-                };
-                await saveAirlineTemplate(code, data);
-                document.getElementById('modal-airline').classList.add('hidden');
-                showToast("航司行李公版已儲存！");
-                loadAirlines();
-            };
-
-            // 國家 Modal 控制
-            document.getElementById('btn-add-country').onclick = () => {
-                document.getElementById('modal-country-title').innerText = "新增國家求助資訊";
-                document.getElementById('form-country').reset();
-                document.getElementById('country-name').readOnly = false;
-                document.getElementById('modal-country').classList.remove('hidden');
-            };
-            document.getElementById('btn-close-country-modal').onclick = () => document.getElementById('modal-country').classList.add('hidden');
-            document.getElementById('btn-cancel-country').onclick = () => document.getElementById('modal-country').classList.add('hidden');
-
-            document.getElementById('form-country').onsubmit = async (e) => {
-                e.preventDefault();
-                const name = document.getElementById('country-name').value.trim();
-                const data = {
-                    police: document.getElementById('country-police').value.trim(),
-                    ambulance: document.getElementById('country-ambulance').value.trim(),
-                    foreignEmergency: document.getElementById('country-emergency').value.trim(),
-                    memo: document.getElementById('country-memo').value.trim()
-                };
-                await saveCountryTemplate(name, data);
-                document.getElementById('modal-country').classList.add('hidden');
-                showToast("國家求助資訊已儲存！");
-                loadCountries();
-            };
-
+        // ==================== 初始化 ====================
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCountries();
             if (window.lucide) lucide.createIcons();
         });
     </script>
