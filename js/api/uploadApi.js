@@ -1,0 +1,32 @@
+// js/api/uploadApi.js
+
+// 請替換為你在 Cloudinary 取得的兩個參數
+const CLOUD_NAME = "ddkqopoxl"; 
+const UPLOAD_PRESET = "joogo_preset";
+
+/**
+ * 將 File 物件直傳至 Cloudinary
+ * @param {File} file 圖片檔案
+ * @returns {Promise<string>} 回傳 Cloudinary 圖片 CDN 公開網址
+ */
+export async function uploadToCloudinary(file) {
+  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+  
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  const response = await fetch(url, {
+    method: "POST",
+    body: formData
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || "圖片上傳失敗");
+  }
+
+  const data = await response.json();
+  // 回傳 Cloudinary 給的 HTTPS 圖片網址
+  return data.secure_url;
+}
