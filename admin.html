@@ -42,7 +42,7 @@
 </head>
 <body class="h-full flex flex-col font-sans text-slate-800 antialiased bg-[#f8fafc]">
 
-    <!-- ==================== 頂部導覽列 (完全融入背景、移除分隔線) ==================== -->
+    <!-- ==================== 頂部導覽列 (融入背景、無底部分隔線) ==================== -->
     <header class="sticky top-0 z-30 bg-[#f8fafc]/90 backdrop-blur-md pt-[env(safe-area-inset-top)]">
         <div class="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
             
@@ -148,11 +148,11 @@
                 </div>
             </div>
 
-            <!-- 國家卡片 Grid (移除幣別、時差、封面張數，清爽純粹) -->
+            <!-- 國家卡片 Grid (移除文字按鈕，保留編輯與刪除) -->
             <div id="countries-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </section>
 
-        <!-- ==================== VIEW 2: 國家專屬細部設定 ==================== -->
+        <!-- ==================== VIEW 2: 國家專屬細部整合管理 (基本設定 + 須知 + 急難 + 優惠券) ==================== -->
         <section id="view-country-detail" class="hidden space-y-5">
             <div class="flex items-center justify-between bg-white px-5 py-4 rounded-3xl border border-slate-200/80 shadow-xs">
                 <div class="flex items-center gap-3">
@@ -164,7 +164,7 @@
                             <h2 class="text-base font-bold text-slate-900" id="detail-country-name">-</h2>
                             <span class="px-2 py-0.5 text-[11px] font-mono font-bold bg-brand-50 text-brand-600 rounded-md" id="detail-country-badge">-</span>
                         </div>
-                        <p class="text-xs text-slate-400 mt-0.5">公版行前須知、急難救助電話、專屬合作優惠券設定</p>
+                        <p class="text-xs text-slate-400 mt-0.5">公版資料一站式設定</p>
                     </div>
                 </div>
 
@@ -176,24 +176,60 @@
                 </div>
             </div>
 
-            <!-- 次 Tab 切換 -->
-            <div class="flex items-center bg-slate-200/80 p-1 rounded-2xl w-full sm:w-fit">
-                <button onclick="switchDetailSubTab('notice')" id="subtab-notice" class="px-4 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5">
+            <!-- 次 Tab 切換 (包含基本資料) -->
+            <div class="flex items-center bg-slate-200/80 p-1 rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar">
+                <button onclick="switchDetailSubTab('base')" id="subtab-base" class="px-4 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="settings-2" class="w-4 h-4 text-brand-600"></i>
+                    <span>國家基本資料</span>
+                </button>
+                <button onclick="switchDetailSubTab('notice')" id="subtab-notice" class="px-4 py-2 text-xs font-semibold rounded-xl transition-all text-slate-600 flex items-center gap-1.5 whitespace-nowrap">
                     <i data-lucide="info" class="w-4 h-4 text-brand-600"></i>
                     <span>公版行前須知</span>
                 </button>
-                <button onclick="switchDetailSubTab('emergency')" id="subtab-emergency" class="px-4 py-2 text-xs font-semibold rounded-xl transition-all text-slate-600 flex items-center gap-1.5">
+                <button onclick="switchDetailSubTab('emergency')" id="subtab-emergency" class="px-4 py-2 text-xs font-semibold rounded-xl transition-all text-slate-600 flex items-center gap-1.5 whitespace-nowrap">
                     <i data-lucide="phone-call" class="w-4 h-4 text-rose-600"></i>
                     <span>急難救助資訊</span>
                 </button>
-                <button onclick="switchDetailSubTab('coupons')" id="subtab-coupons" class="px-4 py-2 text-xs font-semibold rounded-xl transition-all text-slate-600 flex items-center gap-1.5">
+                <button onclick="switchDetailSubTab('coupons')" id="subtab-coupons" class="px-4 py-2 text-xs font-semibold rounded-xl transition-all text-slate-600 flex items-center gap-1.5 whitespace-nowrap">
                     <i data-lucide="ticket-percent" class="w-4 h-4 text-amber-600"></i>
                     <span>公版優惠券 (<span id="coupon-count">0</span>)</span>
                 </button>
             </div>
 
+            <!-- 0. 國家基本資料 Tab (幣別、自訂時區、地區標籤、封面圖) -->
+            <div id="detail-panel-base" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+                <div class="pb-1">
+                    <h3 class="text-sm font-bold text-slate-900">國家與地區主設定</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">時區改採手動自由填寫，完整支援半小時制或特殊時區規範。</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">通用幣別</label>
+                        <input type="text" id="detail-base-currency" placeholder="JPY, KRW, USD" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-mono uppercase font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">時區 (支援半小時制)</label>
+                        <input type="text" id="detail-base-timezone" placeholder="例如：+9, +5.5, -3.5 或 UTC+9" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-mono font-bold">
+                    </div>
+                </div>
+
+                <!-- 包含地區標籤 -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">包含地區</label>
+                    <div class="min-h-[46px] p-2 border border-slate-200 rounded-xl flex flex-wrap items-center gap-1.5 bg-white focus-within:border-brand-500">
+                        <div id="detail-tag-badge-list" class="flex flex-wrap gap-1.5"></div>
+                        <input type="text" id="detail-region-tag-input" placeholder="輸入地區名稱後按 Enter" class="flex-1 min-w-[140px] border-none bg-transparent text-xs p-1">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">預設封面圖連結 (每行一張，可支援多張)</label>
+                    <textarea id="detail-base-covers" rows="3" placeholder="https://...&#10;https://..." class="w-full p-3 border border-slate-200 rounded-xl text-xs font-mono"></textarea>
+                </div>
+            </div>
+
             <!-- 1. 行前須知 Tab -->
-            <div id="detail-panel-notice" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+            <div id="detail-panel-notice" class="hidden bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
                 <div class="pb-1">
                     <h3 class="text-sm font-bold text-slate-900">行前必備公版提醒</h3>
                     <p class="text-xs text-slate-400 mt-0.5">主揪選擇此國家時，行程助手會自動帶出此清單。</p>
@@ -222,7 +258,7 @@
             <div id="detail-panel-emergency" class="hidden bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
                 <div class="pb-1">
                     <h3 class="text-sm font-bold text-slate-900">各國急難救助專線</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">提供當地警消、駐外辦事處直撥號碼，旅伴可一鍵直撥[span_0](start_span)[span_0](end_span)。</p>
+                    <p class="text-xs text-slate-400 mt-0.5">提供當地警消、駐外辦事處直撥號碼，旅伴可一鍵直撥[span_4](start_span)[span_4](end_span)。</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -265,7 +301,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">航空公司行李規範庫</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">主揪設定航班時可一鍵套用[span_1](start_span)[span_1](end_span)。</p>
+                    <p class="text-xs text-slate-400 mt-0.5">主揪設定航班時可一鍵套用[span_5](start_span)[span_5](end_span)。</p>
                 </div>
                 <button id="btn-add-airline" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer">
                     <i data-lucide="plus" class="w-4 h-4"></i>
@@ -276,88 +312,44 @@
         </section>
     </main>
 
-    <!-- ==================== 彈窗 A：新增 / 編輯 國家/地區 ==================== -->
+    <!-- ==================== 彈窗：新增國家/地區 (僅建立時快速輸入名稱) ==================== -->
     <div id="modal-country" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto space-y-4 no-scrollbar">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-sm">
                         <i data-lucide="globe" class="w-4 h-4"></i>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-900" id="modal-country-title">新增國家/地區</h3>
+                    <h3 class="text-sm font-bold text-slate-900">新增國家/地區</h3>
                 </div>
                 <button type="button" id="btn-close-country-modal" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
 
-            <form id="form-country-base" class="space-y-4">
+            <form id="form-country-create" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">國家 / 地區名稱</label>
-                    <input type="text" id="country-name" required placeholder="日本、韓國、泰國" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-bold text-slate-900">
+                    <input type="text" id="create-country-name" required placeholder="例如：日本、尼泊爾、印度" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-bold text-slate-900">
                 </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">通用幣別</label>
-                        <input type="text" id="country-currency" required placeholder="JPY, KRW, THB" maxlength="5" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl uppercase font-mono font-bold text-slate-900">
+                        <input type="text" id="create-country-currency" required placeholder="JPY, INR, USD" maxlength="5" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl uppercase font-mono font-bold">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">時區</label>
-                        <!-- 完整時區 (單選，不含台灣時差文字) -->
-                        <select id="country-timezone" class="w-full h-11 px-3 border border-slate-200 rounded-xl font-bold text-slate-900 bg-white">
-                            <option value="-12">UTC-12:00</option>
-                            <option value="-11">UTC-11:00</option>
-                            <option value="-10">UTC-10:00</option>
-                            <option value="-9">UTC-09:00</option>
-                            <option value="-8">UTC-08:00</option>
-                            <option value="-7">UTC-07:00</option>
-                            <option value="-6">UTC-06:00</option>
-                            <option value="-5">UTC-05:00</option>
-                            <option value="-4">UTC-04:00</option>
-                            <option value="-3">UTC-03:00</option>
-                            <option value="-2">UTC-02:00</option>
-                            <option value="-1">UTC-01:00</option>
-                            <option value="0">UTC±00:00</option>
-                            <option value="1">UTC+01:00</option>
-                            <option value="2">UTC+02:00</option>
-                            <option value="3">UTC+03:00</option>
-                            <option value="4">UTC+04:00</option>
-                            <option value="5">UTC+05:00</option>
-                            <option value="6">UTC+06:00</option>
-                            <option value="7">UTC+07:00</option>
-                            <option value="8" selected>UTC+08:00</option>
-                            <option value="9">UTC+09:00</option>
-                            <option value="10">UTC+10:00</option>
-                            <option value="11">UTC+11:00</option>
-                            <option value="12">UTC+12:00</option>
-                            <option value="13">UTC+13:00</option>
-                            <option value="14">UTC+14:00</option>
-                        </select>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">時區 (輸入制)</label>
+                        <input type="text" id="create-country-timezone" required placeholder="+9, +5.5, -3.5" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-mono font-bold">
                     </div>
-                </div>
-
-                <!-- 包含地區：按 Enter 自動轉標籤，附帶叉叉刪除 -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">包含地區</label>
-                    <div id="regions-tag-container" class="min-h-[46px] p-2 border border-slate-200 rounded-xl flex flex-wrap items-center gap-1.5 bg-white focus-within:border-brand-500">
-                        <div id="tag-badge-list" class="flex flex-wrap gap-1.5"></div>
-                        <input type="text" id="region-tag-input" placeholder="輸入地區名稱後按 Enter" class="flex-1 min-w-[140px] border-none bg-transparent text-xs p-1">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">預設封面圖連結 (每行一張，可支援多張)</label>
-                    <textarea id="country-covers" rows="3" required placeholder="https://...&#10;https://..." class="w-full p-3 border border-slate-200 rounded-xl text-xs font-mono"></textarea>
                 </div>
 
                 <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
                     <button type="button" id="btn-cancel-country-modal" class="w-1/2 h-11 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
-                    <button type="submit" class="w-1/2 h-11 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-xl transition-all">儲存國家/地區</button>
+                    <button type="submit" class="w-1/2 h-11 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-xl transition-all">建立並前往設定</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- ==================== 彈窗 B：新增 / 編輯 優惠券 ==================== -->
+    <!-- ==================== 彈窗：新增 / 編輯 優惠券 ==================== -->
     <div id="modal-coupon" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -420,7 +412,7 @@
         let currentCountries = [];
         let activeCountryId = null;
         let activeCountryData = null;
-        let currentRegionTags = [];
+        let detailRegionTags = [];
         let searchQuery = "";
 
         function showToast(msg) {
@@ -456,14 +448,14 @@
         backdrop.addEventListener('click', window.closeDrawer);
 
         // ==================== 地區標籤交互 (Enter 新增 / 叉叉刪除) ====================
-        const regionInput = document.getElementById('region-tag-input');
-        const badgeList = document.getElementById('tag-badge-list');
+        const detailRegionInput = document.getElementById('detail-region-tag-input');
+        const detailBadgeList = document.getElementById('detail-tag-badge-list');
 
-        function renderRegionTags() {
-            badgeList.innerHTML = currentRegionTags.map((tag, idx) => `
+        function renderDetailRegionTags() {
+            detailBadgeList.innerHTML = detailRegionTags.map((tag, idx) => `
                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-colors">
                     <span>${tag}</span>
-                    <button type="button" onclick="window.removeRegionTag(${idx})" class="text-slate-400 hover:text-rose-600 focus:outline-none">
+                    <button type="button" onclick="window.removeDetailRegionTag(${idx})" class="text-slate-400 hover:text-rose-600 focus:outline-none">
                         <i data-lucide="x" class="w-3 h-3"></i>
                     </button>
                 </span>
@@ -471,19 +463,19 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        window.removeRegionTag = function(idx) {
-            currentRegionTags.splice(idx, 1);
-            renderRegionTags();
+        window.removeDetailRegionTag = function(idx) {
+            detailRegionTags.splice(idx, 1);
+            renderDetailRegionTags();
         };
 
-        regionInput.addEventListener('keydown', (e) => {
+        detailRegionInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                const val = regionInput.value.trim();
-                if (val && !currentRegionTags.includes(val)) {
-                    currentRegionTags.push(val);
-                    renderRegionTags();
-                    regionInput.value = '';
+                const val = detailRegionInput.value.trim();
+                if (val && !detailRegionTags.includes(val)) {
+                    detailRegionTags.push(val);
+                    renderDetailRegionTags();
+                    detailRegionInput.value = '';
                 }
             }
         });
@@ -516,11 +508,10 @@
             renderCountries();
         });
 
-        // ==================== 渲染國家卡片列表 (純淨無雜訊) ====================
+        // ==================== 渲染國家卡片列表 (移除文字按鈕，點擊編輯直接前往設定) ====================
         function renderCountries() {
             const grid = document.getElementById('countries-grid');
             
-            // 模糊搜尋過濾（支援國名與所屬地區）
             const filtered = currentCountries.filter(c => {
                 if (!searchQuery) return true;
                 const matchName = c.id.toLowerCase().includes(searchQuery);
@@ -542,23 +533,21 @@
                             <img src="${cover}" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent"></div>
                             
-                            <!-- 僅保留國名，去除幣別、時差、封面數量 -->
+                            <!-- 僅保留國名 -->
                             <div class="absolute bottom-3 left-3 text-white">
                                 <h3 class="font-extrabold text-base leading-tight drop-shadow-xs">${c.id}</h3>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 操作區 -->
-                    <div class="p-4 flex items-center justify-between">
-                        <button onclick="window.openCountryDetail('${c.id}')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 py-1">
-                            <span>管理公版須知與優惠券</span>
-                            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    <!-- 操作區：移除原有的「管理公版須知與優惠券」長文字，保留編輯與刪除按鈕 -->
+                    <div class="p-4 flex items-center justify-end gap-1">
+                        <button onclick="window.openCountryDetail('${c.id}')" title="編輯國家與公版資料" class="p-2 text-slate-400 hover:text-brand-600 rounded-xl hover:bg-slate-50 transition-colors">
+                            <i data-lucide="pencil" class="w-4 h-4"></i>
                         </button>
-                        <div class="flex items-center gap-1">
-                            <button onclick="window.editCountryBase('${c.id}')" class="p-1.5 text-slate-400 hover:text-brand-600 rounded-lg hover:bg-slate-50 transition-colors"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="window.deleteCountry('${c.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-50 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                        </div>
+                        <button onclick="window.deleteCountry('${c.id}')" title="刪除國家" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-50 transition-colors">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </div>
                 `;
@@ -576,7 +565,7 @@
             renderCountries();
         }
 
-        // ==================== 國家詳情細部設定 ====================
+        // ==================== 國家詳情整合設定 (編輯國家與公版合一) ====================
         window.openCountryDetail = async function(countryId) {
             activeCountryId = countryId;
             const docRef = doc(db, "templates", "countries", "items", countryId);
@@ -585,9 +574,15 @@
             activeCountryData = docSnap.data();
 
             document.getElementById('detail-country-name').innerText = countryId;
-            const tz = activeCountryData.timezone !== undefined ? activeCountryData.timezone : "8";
-            const tzStr = Number(tz) >= 0 ? `+${String(tz).padStart(2, '0')}:00` : `-${String(Math.abs(tz)).padStart(2, '0')}:00`;
-            document.getElementById('detail-country-badge').innerText = `${activeCountryData.currency || 'USD'} / UTC${tzStr}`;
+            const tz = activeCountryData.timezone !== undefined ? activeCountryData.timezone : "+8";
+            document.getElementById('detail-country-badge').innerText = `${activeCountryData.currency || 'USD'} / 時區 ${tz}`;
+
+            // 回填國家基本設定
+            document.getElementById('detail-base-currency').value = activeCountryData.currency || 'USD';
+            document.getElementById('detail-base-timezone').value = activeCountryData.timezone !== undefined ? activeCountryData.timezone : "+8";
+            document.getElementById('detail-base-covers').value = (activeCountryData.coverImages || []).join('\n');
+            detailRegionTags = [...(activeCountryData.regions || [])];
+            renderDetailRegionTags();
 
             // 回填行前須知
             const n = activeCountryData.notice || {};
@@ -605,26 +600,45 @@
 
             renderCoupons();
             switchView('country-detail');
-            switchDetailSubTab('notice');
+            switchDetailSubTab('base');
         };
 
         window.switchDetailSubTab = function(subtab) {
-            const tabs = ['notice', 'emergency', 'coupons'];
+            const tabs = ['base', 'notice', 'emergency', 'coupons'];
             tabs.forEach(t => {
                 const isCurrent = t === subtab;
                 document.getElementById(`detail-panel-${t}`).classList.toggle('hidden', !isCurrent);
                 const btn = document.getElementById(`subtab-${t}`);
                 if (isCurrent) {
-                    btn.className = "px-4 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5";
+                    btn.className = "px-4 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5 whitespace-nowrap";
                 } else {
-                    btn.className = "px-4 py-2 text-xs font-semibold rounded-xl transition-all text-slate-600 flex items-center gap-1.5";
+                    btn.className = "px-4 py-2 text-xs font-semibold rounded-xl transition-all text-slate-600 flex items-center gap-1.5 whitespace-nowrap";
                 }
             });
         };
 
+        // 儲存國家所有整合資料（基本資料 + 須知 + 急難電話）
         window.saveCurrentCountryDetail = async function() {
             if (!activeCountryId) return;
+
+            // 檢查若地區輸入框有尚未按 Enter 的文字，自動吸收
+            const leftover = detailRegionInput.value.trim();
+            if (leftover && !detailRegionTags.includes(leftover)) {
+                detailRegionTags.push(leftover);
+                detailRegionInput.value = '';
+                renderDetailRegionTags();
+            }
+
+            const coverImages = document.getElementById('detail-base-covers').value
+                .split('\n')
+                .map(url => url.trim())
+                .filter(url => url.startsWith('http'));
+
             const updated = {
+                currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
+                timezone: document.getElementById('detail-base-timezone').value.trim(),
+                regions: detailRegionTags,
+                coverImages: coverImages,
                 notice: {
                     voltage: document.getElementById('detail-notice-voltage').value.trim(),
                     visa: document.getElementById('detail-notice-visa').value.trim(),
@@ -644,7 +658,11 @@
             };
 
             await setDoc(doc(db, "templates", "countries", "items", activeCountryId), updated, { merge: true });
-            showToast(`已儲存「${activeCountryId}」公版資料！`);
+            
+            // 更新視圖 Badge
+            document.getElementById('detail-country-badge').innerText = `${updated.currency} / 時區 ${updated.timezone}`;
+            showToast(`已成功儲存「${activeCountryId}」所有資料！`);
+            loadCountries();
         };
 
         // ==================== 優惠券設定 ====================
@@ -711,33 +729,7 @@
         document.getElementById('btn-close-coupon-modal').onclick = () => document.getElementById('modal-coupon').classList.add('hidden');
         document.getElementById('btn-cancel-coupon').onclick = () => document.getElementById('modal-coupon').classList.add('hidden');
 
-        // ==================== 國家基本主檔 Modal 控制 ====================
-        document.getElementById('btn-add-country-modal').onclick = () => {
-            document.getElementById('modal-country-title').innerText = "新增國家/地區";
-            document.getElementById('form-country-base').reset();
-            document.getElementById('country-name').readOnly = false;
-            document.getElementById('country-timezone').value = "8"; // 預設 UTC+8
-            currentRegionTags = [];
-            renderRegionTags();
-            document.getElementById('modal-country').classList.remove('hidden');
-        };
-
-        window.editCountryBase = (id) => {
-            const item = currentCountries.find(x => x.id === id);
-            if (!item) return;
-            document.getElementById('modal-country-title').innerText = "編輯國家/地區";
-            document.getElementById('country-name').value = item.id;
-            document.getElementById('country-name').readOnly = true;
-            document.getElementById('country-currency').value = item.currency || 'USD';
-            document.getElementById('country-timezone').value = item.timezone !== undefined ? String(item.timezone) : "8";
-            
-            currentRegionTags = [...(item.regions || [])];
-            renderRegionTags();
-
-            document.getElementById('country-covers').value = (item.coverImages || []).join('\n');
-            document.getElementById('modal-country').classList.remove('hidden');
-        };
-
+        // ==================== 刪除國家 ====================
         window.deleteCountry = async (id) => {
             if (confirm(`確定要刪除「${id}」及其所有公版資料嗎？`)) {
                 await deleteDoc(doc(db, "templates", "countries", "items", id));
@@ -746,36 +738,33 @@
             }
         };
 
+        // ==================== 新增國家/地區 Modal 控制 ====================
+        document.getElementById('btn-add-country-modal').onclick = () => {
+            document.getElementById('form-country-create').reset();
+            document.getElementById('modal-country').classList.remove('hidden');
+        };
+
         document.getElementById('btn-close-country-modal').onclick = () => document.getElementById('modal-country').classList.add('hidden');
         document.getElementById('btn-cancel-country-modal').onclick = () => document.getElementById('modal-country').classList.add('hidden');
 
-        document.getElementById('form-country-base').onsubmit = async (e) => {
+        document.getElementById('form-country-create').onsubmit = async (e) => {
             e.preventDefault();
-            const name = document.getElementById('country-name').value.trim();
-            const currency = document.getElementById('country-currency').value.trim().toUpperCase();
-            const timezone = parseInt(document.getElementById('country-timezone').value, 10);
-            
-            const leftover = regionInput.value.trim();
-            if (leftover && !currentRegionTags.includes(leftover)) {
-                currentRegionTags.push(leftover);
-            }
+            const name = document.getElementById('create-country-name').value.trim();
+            const currency = document.getElementById('create-country-currency').value.trim().toUpperCase();
+            const timezone = document.getElementById('create-country-timezone').value.trim();
 
-            const coverImages = document.getElementById('country-covers').value
-                .split('\n')
-                .map(url => url.trim())
-                .filter(url => url.startsWith('http'));
-
-            const data = {
+            const initData = {
                 currency,
                 timezone,
-                regions: currentRegionTags,
-                coverImages
+                regions: [],
+                coverImages: []
             };
 
-            await setDoc(doc(db, "templates", "countries", "items", name), data, { merge: true });
+            await setDoc(doc(db, "templates", "countries", "items", name), initData, { merge: true });
             document.getElementById('modal-country').classList.add('hidden');
-            showToast("國家/地區資料已儲存！");
-            loadCountries();
+            showToast("國家已建立！進入設定詳細資訊");
+            await loadCountries();
+            window.openCountryDetail(name);
         };
 
         // ==================== 初始化 ====================
