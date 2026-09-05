@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full bg-slate-50 overscroll-none">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>揪行 JooGO - 行程房間</title>
+    
+    <!-- Tailwind CSS & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        input, select, textarea, button {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+        input:focus, select:focus, textarea:focus {
+            box-shadow: none !important;
+            border-color: #0284c7 !important;
+        }
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            overscroll-behavior-y: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        input, select, textarea { font-size: 16px !important; }
+        input[type="date"] {
+            -webkit-appearance: none;
+            appearance: none;
+            min-height: 2.875rem;
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+        }
+        input[type="date"]::-webkit-date-and-time-value {
+            text-align: left;
+            margin: 0;
+            padding: 0;
+            height: 1.5rem;
+            line-height: 1.5rem;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-brand-600 selection:text-white bg-slate-50">
+
+    <!-- 頂部導覽列 (含身分切換預視) -->
+    <header class="sticky top-0 z-40 bg-slate-50/90 backdrop-blur-md pt-[env(safe-area-inset-top)] border-b border-slate-200/50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-3">
+            <button onclick="window.location.href='index.html'" class="flex items-center gap-1.5 py-1.5 px-2.5 -ml-2 text-slate-700 hover:text-slate-900 font-semibold text-sm rounded-xl hover:bg-slate-200/60 active:scale-95 transition-all shrink-0">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span>返回行程列表</span>
+            </button>
+
+            <!-- 視角切換器 (預視用) -->
+            <div class="flex items-center bg-slate-200/80 p-0.5 rounded-xl text-xs shrink-0">
+                <button id="preview-user-p1" class="px-2.5 py-1 font-bold rounded-lg transition-all bg-white text-slate-900 shadow-2xs">
+                    👑 Alex (管理員)
+                </button>
+                <button id="preview-user-p2" class="px-2.5 py-1 font-semibold rounded-lg transition-all text-slate-600">
+                    👤 小明 (成員)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 凍結三大 Tab 切換列 -->
+    <div class="sticky top-14 z-30 bg-slate-50/90 backdrop-blur-md py-3 border-b border-slate-200/40">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center bg-slate-200/80 p-1 rounded-xl w-full">
+                <button id="tab-btn-overview" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="compass" class="w-4 h-4"></i>
+                    <span>房間首頁</span>
+                </button>
+                <button id="tab-btn-itinerary" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all text-slate-600 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <span>行程規劃</span>
+                </button>
+                <button id="tab-btn-bookkeeping" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all text-slate-600 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                    <span>旅遊記帳</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主內容區 -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 overflow-y-auto">
+
+        <!-- ==================== TAB 1: 房間首頁 (Overview) ==================== -->
+        <section id="tab-content-overview" class="space-y-6 pb-12">
+            <!-- 1. 封面卡片 (資料庫動態驅動) -->
+            <div class="relative h-56 sm:h-64 w-full rounded-3xl overflow-hidden bg-slate-200 border border-slate-200/80 shadow-xs">
+                <img id="overview-cover-img" src="" alt="Cover" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/30 to-transparent"></div>
+                
+                <div class="absolute bottom-4 left-4 right-4 text-white space-y-1.5">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span id="overview-country-tag" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-white/90 text-slate-800 backdrop-blur-md border border-white/80 shadow-xs">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-600"></i>載入中
+                        </span>
+                        <span id="overview-days-tag" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white/90 text-slate-800 backdrop-blur-md border border-white/80 shadow-xs">
+                            - 天 - 夜
+                        </span>
+                    </div>
+                    <h2 id="overview-title" class="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-xs pt-0.5">載入行程中...</h2>
+                    <p class="text-xs text-slate-200 font-medium tracking-wide flex items-center gap-1.5">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-300"></i>
+                        <span id="overview-dates">----/--/-- ~ ----/--/--</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 2. 行程工具與設定 8+8 矩陣 -->
+            <div class="space-y-3">
+                <!-- 全員 8 大工具 -->
+                <div class="grid grid-cols-4 gap-3">
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="plane" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">航班資訊</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="building-2" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">住宿資訊</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="clipboard-list" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">行前須知</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="siren" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">急難求助</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="ticket" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">我的票券</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="percent" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">優惠券</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="shopping-bag" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">購物清單</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="list-checks" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">準備清單</span>
+                    </button>
+                </div>
+
+                <!-- 管理員專屬 8 大按鈕 (依權限切換) -->
+                <div id="admin-control-section" class="grid grid-cols-4 gap-3 pt-0">
+                    <button id="btn-open-trip-settings" class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="sliders" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">行程設定</span>
+                    </button>
+                    <button id="btn-copy-invite-code" class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="key-round" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">複製邀請碼</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="plane-takeoff" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">航班設定</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="building-2" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">住宿設定</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="file-badge" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">憑證管理</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="calendar-check" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">預訂管理</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="coins" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">匯率管理</span>
+                    </button>
+                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="settings" class="w-5 h-5 text-slate-600"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-2">其他設定</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. 同行夥伴列表 -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <i data-lucide="users" class="w-4 h-4 text-brand-600"></i> 同行夥伴 (<span id="partner-count-display">0</span> 人)
+                    </h3>
+                </div>
+                <div class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs">
+                    <div id="partner-list-container" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: 行程規劃 (Itinerary) ==================== -->
+        <section id="tab-content-itinerary" class="hidden space-y-4">
+            <div class="p-8 text-center bg-white rounded-3xl border border-slate-200 text-slate-400 text-xs">
+                行程時間軸功能模組化串接中...
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: 旅遊記帳 (Bookkeeping) ==================== -->
+        <section id="tab-content-bookkeeping" class="hidden space-y-4">
+            <div class="p-8 text-center bg-white rounded-3xl border border-slate-200 text-slate-400 text-xs">
+                旅遊記帳與清算模組串接中...
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast 提示 -->
+    <div id="toast-message" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg backdrop-blur-md transition-all flex items-center gap-2">
+        <i data-lucide="info" class="w-4 h-4 text-brand-400"></i>
+        <span id="toast-text">提示訊息</span>
+    </div>
+
+    <!-- 行程設定 Modal (管理員) -->
+    <div id="admin-trip-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-5 sm:p-6 border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 bg-brand-50 text-brand-600 rounded-xl">
+                        <i data-lucide="sliders" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900">行程基本設定</h3>
+                </div>
+                <button type="button" id="btn-close-trip-settings" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="form-trip-settings" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">行程名稱</label>
+                    <input type="text" id="admin-trip-title" required class="w-full h-[46px] px-3.5 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">目的地國家 / 地區</label>
+                    <select id="admin-trip-country" class="w-full h-[46px] px-3 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
+                        <option value="日本">日本</option>
+                        <option value="韓國">韓國</option>
+                        <option value="台灣">台灣</option>
+                        <option value="泰國">泰國</option>
+                        <option value="歐洲地區">歐洲地區</option>
+                        <option value="其他">其他地區</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">開始日期</label>
+                        <input type="date" id="admin-trip-startdate" required class="w-full h-[46px] px-3 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">結束日期</label>
+                        <input type="date" id="admin-trip-enddate" required class="w-full h-[46px] px-3 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">封面圖片網址 (URL)</label>
+                    <input type="url" id="admin-trip-cover" required class="w-full h-[46px] px-3.5 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
+                </div>
+
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                    <span class="text-slate-500 font-medium">房間邀請代碼</span>
+                    <span id="admin-invite-code-val" class="font-mono font-bold text-slate-900 tracking-widest">------</span>
+                </div>
+
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                    <button type="button" id="btn-cancel-trip-settings" class="w-1/2 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                    <button type="submit" class="w-1/2 py-2.5 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 rounded-xl transition-all">更新行程</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 載入頁面主控模組 -->
+    <script type="module" src="./js/pages/app.js"></script>
+</body>
+</html>
