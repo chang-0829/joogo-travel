@@ -42,7 +42,7 @@
 </head>
 <body class="h-full flex flex-col font-sans text-slate-800 antialiased bg-[#f8fafc]">
 
-    <!-- ==================== 頂部導覽列 (融入背景、無底部分隔線) ==================== -->
+    <!-- ==================== 頂部導覽列 ==================== -->
     <header class="sticky top-0 z-30 bg-[#f8fafc]/90 backdrop-blur-md pt-[env(safe-area-inset-top)]">
         <div class="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
             
@@ -130,12 +130,10 @@
 
         <!-- ==================== VIEW 1: 國家列表視圖 ==================== -->
         <section id="view-country-list" class="space-y-5">
-            <!-- 標題與操作區 -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h2 class="text-xl font-bold text-slate-900 tracking-tight">管理國家/地區</h2>
                 
                 <div class="flex items-center gap-3">
-                    <!-- 搜尋框 -->
                     <div class="relative w-full sm:w-64">
                         <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                         <input type="text" id="country-search-input" placeholder="搜尋國家或地區..." class="w-full h-10 pl-9 pr-3.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:border-brand-500 transition-all shadow-xs">
@@ -148,11 +146,10 @@
                 </div>
             </div>
 
-            <!-- 國家卡片 Grid (移除文字按鈕，保留編輯與刪除) -->
             <div id="countries-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </section>
 
-        <!-- ==================== VIEW 2: 國家專屬細部整合管理 (基本設定 + 須知 + 急難 + 優惠券) ==================== -->
+        <!-- ==================== VIEW 2: 國家專屬細部整合管理 ==================== -->
         <section id="view-country-detail" class="hidden space-y-5">
             <div class="flex items-center justify-between bg-white px-5 py-4 rounded-3xl border border-slate-200/80 shadow-xs">
                 <div class="flex items-center gap-3">
@@ -176,7 +173,7 @@
                 </div>
             </div>
 
-            <!-- 次 Tab 切換 (包含基本資料) -->
+            <!-- 次 Tab 切換 -->
             <div class="flex items-center bg-slate-200/80 p-1 rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar">
                 <button onclick="switchDetailSubTab('base')" id="subtab-base" class="px-4 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5 whitespace-nowrap">
                     <i data-lucide="settings-2" class="w-4 h-4 text-brand-600"></i>
@@ -196,11 +193,11 @@
                 </button>
             </div>
 
-            <!-- 0. 國家基本資料 Tab (幣別、自訂時區、地區標籤、封面圖) -->
+            <!-- 0. 國家基本資料 Tab -->
             <div id="detail-panel-base" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
                 <div class="pb-1">
                     <h3 class="text-sm font-bold text-slate-900">國家與地區主設定</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">時區改採手動自由填寫，完整支援半小時制或特殊時區規範。</p>
+                    <p class="text-xs text-slate-400 mt-0.5">時區自由填寫，支援半小時制或特殊時區規範。</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -209,11 +206,10 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">時區 (支援半小時制)</label>
-                        <input type="text" id="detail-base-timezone" placeholder="例如：+9, +5.5, -3.5 或 UTC+9" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-mono font-bold">
+                        <input type="text" id="detail-base-timezone" placeholder="+9, +5.5, -3.5 或 UTC+9" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-mono font-bold">
                     </div>
                 </div>
 
-                <!-- 包含地區標籤 -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">包含地區</label>
                     <div class="min-h-[46px] p-2 border border-slate-200 rounded-xl flex flex-wrap items-center gap-1.5 bg-white focus-within:border-brand-500">
@@ -258,7 +254,7 @@
             <div id="detail-panel-emergency" class="hidden bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
                 <div class="pb-1">
                     <h3 class="text-sm font-bold text-slate-900">各國急難救助專線</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">提供當地警消、駐外辦事處直撥號碼，旅伴可一鍵直撥[span_4](start_span)[span_4](end_span)。</p>
+                    <p class="text-xs text-slate-400 mt-0.5">提供當地警消、駐外辦事處直撥號碼，旅伴可一鍵直撥[span_1](start_span)[span_1](end_span)。</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -301,7 +297,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">航空公司行李規範庫</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">主揪設定航班時可一鍵套用[span_5](start_span)[span_5](end_span)。</p>
+                    <p class="text-xs text-slate-400 mt-0.5">主揪設定航班時可一鍵套用[span_2](start_span)[span_2](end_span)。</p>
                 </div>
                 <button id="btn-add-airline" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer">
                     <i data-lucide="plus" class="w-4 h-4"></i>
@@ -312,9 +308,9 @@
         </section>
     </main>
 
-    <!-- ==================== 彈窗：新增國家/地區 (僅建立時快速輸入名稱) ==================== -->
+    <!-- ==================== 彈窗：新增國家/地區 (僅輸入名稱) ==================== -->
     <div id="modal-country" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-sm">
@@ -328,17 +324,7 @@
             <form id="form-country-create" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">國家 / 地區名稱</label>
-                    <input type="text" id="create-country-name" required placeholder="例如：日本、尼泊爾、印度" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-bold text-slate-900">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">通用幣別</label>
-                        <input type="text" id="create-country-currency" required placeholder="JPY, INR, USD" maxlength="5" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl uppercase font-mono font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">時區 (輸入制)</label>
-                        <input type="text" id="create-country-timezone" required placeholder="+9, +5.5, -3.5" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-mono font-bold">
-                    </div>
+                    <input type="text" id="create-country-name" required placeholder="日本、韓國、泰國" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl font-bold text-slate-900">
                 </div>
 
                 <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
@@ -349,7 +335,7 @@
         </div>
     </div>
 
-    <!-- ==================== 彈窗：新增 / 編輯 優惠券 ==================== -->
+    <!-- ==================== 彈窗：新增優惠券 ==================== -->
     <div id="modal-coupon" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -401,13 +387,8 @@
     <script type="module">
         import { db } from "./js/config/firebase.js";
         import { 
-            collection, doc, getDocs, getDoc, setDoc, deleteDoc 
+            collection, doc, onSnapshot, getDoc, setDoc, deleteDoc 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { 
-            getAirlineTemplates, 
-            saveAirlineTemplate, 
-            deleteAirlineTemplate 
-        } from "./js/api/templateApi.js";
 
         let currentCountries = [];
         let activeCountryId = null;
@@ -447,7 +428,7 @@
         document.getElementById('btn-close-drawer').addEventListener('click', window.closeDrawer);
         backdrop.addEventListener('click', window.closeDrawer);
 
-        // ==================== 地區標籤交互 (Enter 新增 / 叉叉刪除) ====================
+        // ==================== 地區標籤交互 ====================
         const detailRegionInput = document.getElementById('detail-region-tag-input');
         const detailBadgeList = document.getElementById('detail-tag-badge-list');
 
@@ -508,7 +489,7 @@
             renderCountries();
         });
 
-        // ==================== 渲染國家卡片列表 (移除文字按鈕，點擊編輯直接前往設定) ====================
+        // ==================== 渲染國家卡片列表 (國名移至白色區塊) ====================
         function renderCountries() {
             const grid = document.getElementById('countries-grid');
             
@@ -529,25 +510,25 @@
                 return `
                 <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between">
                     <div>
+                        <!-- 純淨封面圖，不壓任何文字 -->
                         <div class="relative h-36 w-full bg-slate-100 overflow-hidden">
                             <img src="${cover}" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent"></div>
-                            
-                            <!-- 僅保留國名 -->
-                            <div class="absolute bottom-3 left-3 text-white">
-                                <h3 class="font-extrabold text-base leading-tight drop-shadow-xs">${c.id}</h3>
-                            </div>
                         </div>
                     </div>
 
-                    <!-- 操作區：移除原有的「管理公版須知與優惠券」長文字，保留編輯與刪除按鈕 -->
-                    <div class="p-4 flex items-center justify-end gap-1">
-                        <button onclick="window.openCountryDetail('${c.id}')" title="編輯國家與公版資料" class="p-2 text-slate-400 hover:text-brand-600 rounded-xl hover:bg-slate-50 transition-colors">
-                            <i data-lucide="pencil" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="window.deleteCountry('${c.id}')" title="刪除國家" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-50 transition-colors">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
+                    <!-- 下方白色區塊：國名放在左側，操作按鈕在右側 -->
+                    <div class="p-4 flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-base text-slate-900 tracking-tight">${c.id}</h3>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="window.openCountryDetail('${c.id}')" title="編輯國家與公版資料" class="p-2 text-slate-400 hover:text-brand-600 rounded-xl hover:bg-slate-50 transition-colors">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="window.deleteCountry('${c.id}')" title="刪除國家" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-50 transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 `;
@@ -556,16 +537,28 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        async function loadCountries() {
-            const querySnapshot = await getDocs(collection(db, "templates", "countries", "items"));
-            currentCountries = [];
-            querySnapshot.forEach(docSnap => {
-                currentCountries.push({ id: docSnap.id, ...docSnap.data() });
+        // ==================== 即時監聽國家列表 (Realtime onSnapshot) ====================
+        function initCountriesListener() {
+            onSnapshot(collection(db, "templates", "countries", "items"), (snapshot) => {
+                currentCountries = [];
+                snapshot.forEach(docSnap => {
+                    currentCountries.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderCountries();
+
+                // 若當前正開啟該國家頁面，同步更新該國家記憶體資料
+                if (activeCountryId) {
+                    const found = currentCountries.find(x => x.id === activeCountryId);
+                    if (found) {
+                        activeCountryData = found;
+                    }
+                }
+            }, (error) => {
+                showToast("即時監聽失敗：" + error.message);
             });
-            renderCountries();
         }
 
-        // ==================== 國家詳情整合設定 (編輯國家與公版合一) ====================
+        // ==================== 國家詳情整合設定 ====================
         window.openCountryDetail = async function(countryId) {
             activeCountryId = countryId;
             const docRef = doc(db, "templates", "countries", "items", countryId);
@@ -574,12 +567,12 @@
             activeCountryData = docSnap.data();
 
             document.getElementById('detail-country-name').innerText = countryId;
-            const tz = activeCountryData.timezone !== undefined ? activeCountryData.timezone : "+8";
+            const tz = activeCountryData.timezone ? activeCountryData.timezone : "+8";
             document.getElementById('detail-country-badge').innerText = `${activeCountryData.currency || 'USD'} / 時區 ${tz}`;
 
             // 回填國家基本設定
-            document.getElementById('detail-base-currency').value = activeCountryData.currency || 'USD';
-            document.getElementById('detail-base-timezone').value = activeCountryData.timezone !== undefined ? activeCountryData.timezone : "+8";
+            document.getElementById('detail-base-currency').value = activeCountryData.currency || '';
+            document.getElementById('detail-base-timezone').value = activeCountryData.timezone || '';
             document.getElementById('detail-base-covers').value = (activeCountryData.coverImages || []).join('\n');
             detailRegionTags = [...(activeCountryData.regions || [])];
             renderDetailRegionTags();
@@ -617,11 +610,10 @@
             });
         };
 
-        // 儲存國家所有整合資料（基本資料 + 須知 + 急難電話）
+        // 儲存變更（觸發 onSnapshot 即時反饋）
         window.saveCurrentCountryDetail = async function() {
             if (!activeCountryId) return;
 
-            // 檢查若地區輸入框有尚未按 Enter 的文字，自動吸收
             const leftover = detailRegionInput.value.trim();
             if (leftover && !detailRegionTags.includes(leftover)) {
                 detailRegionTags.push(leftover);
@@ -659,15 +651,13 @@
 
             await setDoc(doc(db, "templates", "countries", "items", activeCountryId), updated, { merge: true });
             
-            // 更新視圖 Badge
-            document.getElementById('detail-country-badge').innerText = `${updated.currency} / 時區 ${updated.timezone}`;
+            document.getElementById('detail-country-badge').innerText = `${updated.currency || 'USD'} / 時區 ${updated.timezone || '+8'}`;
             showToast(`已成功儲存「${activeCountryId}」所有資料！`);
-            loadCountries();
         };
 
         // ==================== 優惠券設定 ====================
         function renderCoupons() {
-            const coupons = activeCountryData.coupons || [];
+            const coupons = (activeCountryData && activeCountryData.coupons) ? activeCountryData.coupons : [];
             document.getElementById('coupon-count').innerText = coupons.length;
             const grid = document.getElementById('coupons-grid');
 
@@ -699,7 +689,7 @@
 
         window.removeCoupon = async (index) => {
             if (!confirm("確定刪除此優惠券？")) return;
-            const coupons = activeCountryData.coupons || [];
+            const coupons = (activeCountryData && activeCountryData.coupons) ? activeCountryData.coupons : [];
             coupons.splice(index, 1);
             activeCountryData.coupons = coupons;
             await setDoc(doc(db, "templates", "countries", "items", activeCountryId), { coupons }, { merge: true });
@@ -709,7 +699,7 @@
 
         document.getElementById('form-coupon').onsubmit = async (e) => {
             e.preventDefault();
-            const coupons = activeCountryData.coupons || [];
+            const coupons = (activeCountryData && activeCountryData.coupons) ? activeCountryData.coupons : [];
             const newCoupon = {
                 store: document.getElementById('coupon-store').value.trim(),
                 discount: document.getElementById('coupon-discount').value.trim(),
@@ -734,11 +724,10 @@
             if (confirm(`確定要刪除「${id}」及其所有公版資料嗎？`)) {
                 await deleteDoc(doc(db, "templates", "countries", "items", id));
                 showToast("已刪除該國家/地區！");
-                loadCountries();
             }
         };
 
-        // ==================== 新增國家/地區 Modal 控制 ====================
+        // ==================== 新增國家/地區（僅輸入名稱） ====================
         document.getElementById('btn-add-country-modal').onclick = () => {
             document.getElementById('form-country-create').reset();
             document.getElementById('modal-country').classList.remove('hidden');
@@ -750,12 +739,10 @@
         document.getElementById('form-country-create').onsubmit = async (e) => {
             e.preventDefault();
             const name = document.getElementById('create-country-name').value.trim();
-            const currency = document.getElementById('create-country-currency').value.trim().toUpperCase();
-            const timezone = document.getElementById('create-country-timezone').value.trim();
 
             const initData = {
-                currency,
-                timezone,
+                currency: "USD",
+                timezone: "+8",
                 regions: [],
                 coverImages: []
             };
@@ -763,13 +750,12 @@
             await setDoc(doc(db, "templates", "countries", "items", name), initData, { merge: true });
             document.getElementById('modal-country').classList.add('hidden');
             showToast("國家已建立！進入設定詳細資訊");
-            await loadCountries();
             window.openCountryDetail(name);
         };
 
         // ==================== 初始化 ====================
         window.addEventListener('DOMContentLoaded', () => {
-            loadCountries();
+            initCountriesListener();
             if (window.lucide) lucide.createIcons();
         });
     </script>
