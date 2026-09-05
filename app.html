@@ -774,6 +774,121 @@
         </div>
     </div>
 
+    <!-- ==================== 住宿資訊 Modal (全員可查看) ==================== -->
+    <div id="public-hotel-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl flex flex-col overflow-hidden border border-slate-100 max-h-[92vh]">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 backdrop-blur-md shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 bg-amber-500/10 text-amber-600 rounded-xl">
+                        <i data-lucide="building-2" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 leading-tight">住宿資訊</h3>
+                </div>
+                <button type="button" id="btn-close-public-hotel" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200/60 active:scale-90 transition-all">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5 space-y-3.5">
+                <div id="hotel-tabs-header" class="hidden flex items-center bg-slate-200/80 p-1 rounded-xl w-full overflow-x-auto no-scrollbar gap-1"></div>
+                <div id="hotel-cards-list-container" class="space-y-3"></div>
+            </div>
+
+            <div class="px-5 py-3 border-t border-slate-100 flex justify-end bg-white shrink-0">
+                <button type="button" id="btn-close-public-hotel-footer" class="px-5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 住宿設定 Modal (管理員專用) ==================== -->
+    <div id="admin-hotel-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl flex flex-col overflow-hidden border border-slate-100 max-h-[92vh]">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 backdrop-blur-md shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 bg-stone-500/10 text-stone-700 rounded-xl">
+                        <i data-lucide="building-2" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 leading-tight">住宿與房間設定</h3>
+                </div>
+                <button type="button" id="btn-close-admin-hotel" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200/60 active:scale-90 transition-all">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5 space-y-4">
+                <!-- 下拉切換住宿 & 新增住宿按鈕 -->
+                <div class="flex items-center justify-between gap-2.5">
+                    <div class="relative flex-1">
+                        <select id="admin-hotel-select" class="w-full h-[44px] pl-3.5 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 appearance-none"></select>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                    <button type="button" id="btn-add-new-hotel" class="h-[44px] px-3 text-xs font-bold text-stone-800 bg-stone-100 hover:bg-stone-200/80 active:scale-95 rounded-xl transition-all flex items-center gap-1 shrink-0">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增住宿
+                    </button>
+                </div>
+
+                <!-- 雙頁籤：基本資訊 / 房間分配 -->
+                <div class="flex items-center bg-slate-200/80 p-1 rounded-xl">
+                    <button type="button" id="hotel-subtab-info" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all flex items-center justify-center gap-1.5">
+                        <i data-lucide="info" class="w-3.5 h-3.5 text-stone-700"></i> 基本資訊
+                    </button>
+                    <button type="button" id="hotel-subtab-rooms" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all flex items-center justify-center gap-1.5">
+                        <i data-lucide="door-open" class="w-3.5 h-3.5 text-stone-700"></i> 房間分配
+                    </button>
+                </div>
+
+                <!-- 內容動態注入容器 -->
+                <div id="admin-hotel-single-editor-container"></div>
+            </div>
+
+            <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-end gap-2.5 shrink-0 bg-white">
+                <button type="button" id="btn-cancel-admin-hotel" class="w-1/2 sm:w-auto px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                <button type="button" id="btn-save-all-hotels" class="w-1/2 sm:w-auto px-5 py-2.5 text-xs font-semibold text-white bg-stone-800 hover:bg-stone-900 active:scale-95 rounded-xl transition-all">儲存住宿設定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 原生防呆二次確認 Modals ==================== -->
+    <!-- 刪除整間住宿 -->
+    <div id="confirm-remove-hotel-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4 border border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-rose-50 text-rose-600 rounded-2xl shrink-0"><i data-lucide="trash-2" class="w-5 h-5"></i></div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 leading-tight">確認刪除此住宿？</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">此操作將一併移除該住宿旗下所有房間</p>
+                </div>
+            </div>
+            <p class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                確定要刪除「<span id="confirm-remove-hotel-name" class="font-bold text-slate-900"></span>」嗎？
+            </p>
+            <div class="flex items-center justify-end gap-2.5 pt-1">
+                <button type="button" id="btn-cancel-remove-hotel" class="w-1/2 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                <button type="button" id="btn-confirm-remove-hotel-ok" class="w-1/2 py-2.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:scale-95 rounded-xl">確定刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 刪除房間 -->
+    <div id="confirm-remove-room-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4 border border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-rose-50 text-rose-600 rounded-2xl shrink-0"><i data-lucide="door-closed" class="w-5 h-5"></i></div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 leading-tight">確認刪除此房間？</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">將移除此房間與其密碼設定</p>
+                </div>
+            </div>
+            <p class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                確定要刪除「<span id="confirm-remove-room-no" class="font-bold text-slate-900"></span>」嗎？
+            </p>
+            <div class="flex items-center justify-end gap-2.5 pt-1">
+                <button type="button" id="btn-cancel-remove-room" class="w-1/2 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                <button type="button" id="btn-confirm-remove-room-ok" class="w-1/2 py-2.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:scale-95 rounded-xl">確定刪除</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 載入頁面主控模組 -->
     <script type="module" src="./js/pages/app.js"></script>
 </body>
