@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 輔助驗證函式
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 檢查是否為平台最高系統管理員 (Super Admin)
+    function isSuperAdmin() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/system_admins/$(request.auth.uid));
+    }
+
+    // 檢查是否為特定行程房間的成員
+    function isTripMember(tripId) {
+      return isSignedIn() && 
+        request.auth.uid in get(/databases/$(database)/documents/trips/$(tripId)).data.memberUids;
+    }
+
+    // 檢查是否為特定行程房間的管理員 (Room Admin)
+    function isTripAdmin(tripId) {
+      return isSignedIn() && 
+        get(/databases/$(database)/documents/trips/$(tripId)).data.members[request.auth.uid].role == 'admin';
+    }
+
+    // ==================== 1. 系統公版庫 (templates) ====================
+    // 全員可讀取公版；唯有 Super Admin 能夠寫入更動
+    match /templates/{document=**} {
+      allow read: if true; // 允許所有人檢視公版航司與國家求助電話
+      allow write: if isSuperAdmin();
+    }
+
+    // ==================== 2. 系統管理員名單 (system_admins) ====================
+    match /system_admins/{adminUid} {
+      allow read: if isSignedIn();
+      allow write: if false; // 僅能透過 Firebase 後台直接手動指定
+    }
+
+    // ==================== 3. 行程房間主檔與細節 (trips) ====================
+    match /trips/{tripId} {
+      // 成員可讀取；任何人可藉由輸入 6 碼邀請碼加入
+      allow read: if true; 
+      allow create: if isSignedIn();
+      // 只有房間 Admin 能修改行程基本資料 (標題、日期、封面等)
+      allow update: if isTripAdmin(tripId) || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'memberUids']));
+      allow delete: if isTripAdmin(tripId);
+
+      // 航班與住宿細節集合 (details)
+      match /details/{detailType} {
+        allow read: if isTripMember(tripId);
+        allow write: if isTripAdmin(tripId);
+      }
+
+      // 記帳支出集合 (expenses)
+      match /expenses/{expenseId} {
+        allow read: if isTripMember(tripId);
+        allow create: if isTripMember(tripId);
+        allow update, delete: if isTripAdmin(tripId) || request.auth.uid == resource.data.payerId;
+      }
+
+      // 公費繳交憑證集合 (payments)
+      match /payments/{paymentId} {
+        allow read: if isTripMember(tripId);
+        // 成員只能以自己的名義送出憑證
+        allow create: if isTripMember(tripId) && request.resource.data.uid == request.auth.uid;
+        // 只有房間管理員能更新狀態 (核准通過)
+        allow update: if isTripAdmin(tripId);
+        allow delete: if isTripAdmin(tripId);
+      }
+    }
+  }
+}
