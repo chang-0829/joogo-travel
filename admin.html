@@ -80,7 +80,7 @@
                 </a>
             </div>
 
-            <!-- 手機端漢堡按鈕 (符合 44pt 熱區) -->
+            <!-- 手機端漢堡按鈕 -->
             <div class="flex md:hidden items-center">
                 <button id="btn-hamburger" type="button" aria-label="選單" class="w-11 h-11 flex items-center justify-center text-slate-600 hover:text-slate-900 active:scale-95 rounded-xl border border-slate-200/80 bg-white/60 transition-all">
                     <i data-lucide="menu" class="w-5 h-5"></i>
@@ -145,7 +145,7 @@
                         <input type="text" id="country-search-input" placeholder="搜尋國家或地區..." class="w-full h-11 pl-10 pr-4 bg-white border border-slate-200/80 rounded-2xl font-medium text-slate-800 placeholder:text-slate-400 focus:border-brand-500 transition-all shadow-xs">
                     </div>
 
-                    <button id="btn-add-country-modal" class="h-11 px-4 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0">
+                    <button id="btn-add-country-modal" class="h-11 px-4 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         <span>新增</span>
                     </button>
@@ -157,37 +157,39 @@
 
         <!-- ==================== VIEW 2: 國家專屬細部設定 (iOS Grouped List 原生分組風格) ==================== -->
         <section id="view-country-detail" class="hidden space-y-6 pb-12">
-            <!-- 頂部返回與儲存列 -->
-            <div class="flex items-center justify-between pt-1">
-                <button onclick="switchView('country-list')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
-                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                    <span>國家列表</span>
-                </button>
-                <button onclick="saveCurrentCountryDetail()" class="h-9 px-4 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-full transition-all shadow-xs flex items-center gap-1.5">
+            <!-- 頂部導覽列：左邊主標題與返回鍵，右邊儲存按鈕（尺寸與新增按鈕一致：h-11 rounded-2xl） -->
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <button onclick="switchView('country-list')" class="w-11 h-11 -ml-2 flex items-center justify-center text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
+                        <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                    </button>
+                    <h2 class="text-2xl font-bold text-slate-900 tracking-tight">管理國家/地區</h2>
+                </div>
+                
+                <button onclick="saveCurrentCountryDetail()" class="h-11 px-5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0">
                     <i data-lucide="check" class="w-4 h-4"></i>
                     <span>儲存</span>
                 </button>
             </div>
 
-            <!-- 大標題與副標記 -->
-            <div class="px-1">
-                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight" id="detail-country-name">-</h2>
-                <p class="text-xs text-slate-400 mt-1">公版標準資訊與專屬優惠券設定</p>
+            <!-- 當前國家名稱 -->
+            <div class="px-1 pt-1">
+                <h3 class="text-xl font-extrabold text-slate-900 tracking-tight" id="detail-country-name">-</h3>
             </div>
 
-            <!-- 分組 1：基本設定 (Group 1) -->
+            <!-- 分組 1：基本設定 -->
             <div class="space-y-2">
                 <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">基本設定</div>
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
-                    <!-- 通用幣別 -->
+                    <!-- 通用幣別 (無範例) -->
                     <div class="p-3.5 px-4 flex items-center justify-between">
                         <span class="text-sm font-bold text-slate-800">通用幣別</span>
-                        <input type="text" id="detail-base-currency" placeholder="如 JPY, USD" class="text-right font-mono font-bold text-slate-700 uppercase bg-transparent border-none w-32 p-0">
+                        <input type="text" id="detail-base-currency" class="text-right font-mono font-bold text-slate-700 uppercase bg-transparent border-none w-36 p-0">
                     </div>
-                    <!-- 時區 -->
+                    <!-- 時區 (UTC) (無範例) -->
                     <div class="p-3.5 px-4 flex items-center justify-between">
-                        <span class="text-sm font-bold text-slate-800">時區</span>
-                        <input type="text" id="detail-base-timezone" placeholder="+9 或 +5.5" class="text-right font-mono font-bold text-slate-700 bg-transparent border-none w-36 p-0">
+                        <span class="text-sm font-bold text-slate-800">時區 (UTC)</span>
+                        <input type="text" id="detail-base-timezone" class="text-right font-mono font-bold text-slate-700 bg-transparent border-none w-36 p-0">
                     </div>
                     <!-- 包含地區 -->
                     <div class="p-4 space-y-2">
@@ -205,57 +207,57 @@
                 </div>
             </div>
 
-            <!-- 分組 2：行前須知公版 (Group 2) -->
+            <!-- 分組 2：行前須知公版 -->
             <div class="space-y-2">
                 <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">公版行前須知</div>
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
                     <div class="p-4 space-y-1.5">
                         <label class="text-sm font-bold text-slate-800 block">電壓與插座規格</label>
-                        <input type="text" id="detail-notice-voltage" placeholder="例如：100V、雙平腳插頭" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs">
+                        <input type="text" id="detail-notice-voltage" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs">
                     </div>
                     <div class="p-4 space-y-1.5">
                         <label class="text-sm font-bold text-slate-800 block">簽證 / 入境申報規範</label>
-                        <input type="text" id="detail-notice-visa" placeholder="例如：免簽證 90 天，需事先填寫入境卡" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs">
+                        <input type="text" id="detail-notice-visa" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs">
                     </div>
                     <div class="p-4 space-y-1.5">
                         <label class="text-sm font-bold text-slate-800 block">交通與支付指南</label>
-                        <textarea id="detail-notice-traffic" rows="2" placeholder="西瓜卡綁定、信用卡普及度說明" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs"></textarea>
+                        <textarea id="detail-notice-traffic" rows="2" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs"></textarea>
                     </div>
                     <div class="p-4 space-y-1.5">
                         <label class="text-sm font-bold text-slate-800 block">退稅與其他注意事項</label>
-                        <textarea id="detail-notice-tax" rows="2" placeholder="免稅門檻、購物攜帶限制等" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs"></textarea>
+                        <textarea id="detail-notice-tax" rows="2" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs"></textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- 分組 3：急難救助專線 (Group 3) -->
+            <!-- 分組 3：急難救助專線 -->
             <div class="space-y-2">
                 <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">急難救助資訊</div>
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
                     <div class="p-3.5 px-4 flex items-center justify-between">
                         <span class="text-sm font-bold text-slate-800">當地報警電話</span>
-                        <input type="tel" id="detail-emg-police" placeholder="110" class="text-right font-mono font-bold text-slate-700 bg-transparent border-none w-28 p-0">
+                        <input type="tel" id="detail-emg-police" class="text-right font-mono font-bold text-slate-700 bg-transparent border-none w-32 p-0">
                     </div>
                     <div class="p-3.5 px-4 flex items-center justify-between">
                         <span class="text-sm font-bold text-slate-800">當地救護車專線</span>
-                        <input type="tel" id="detail-emg-ambulance" placeholder="119" class="text-right font-mono font-bold text-slate-700 bg-transparent border-none w-28 p-0">
+                        <input type="tel" id="detail-emg-ambulance" class="text-right font-mono font-bold text-slate-700 bg-transparent border-none w-32 p-0">
                     </div>
                     <div class="p-4 space-y-1.5">
                         <label class="text-sm font-bold text-slate-800 block">台灣駐外館處 / 急難救助電話</label>
-                        <input type="text" id="detail-emg-embassy" placeholder="例如：+81-3-3280-7811 (台北駐日經濟文化代表處)" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs font-medium">
+                        <input type="text" id="detail-emg-embassy" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs font-medium">
                     </div>
                     <div class="p-4 space-y-1.5">
                         <label class="text-sm font-bold text-slate-800 block">求助專線備註說明</label>
-                        <textarea id="detail-emg-memo" rows="2" placeholder="外籍旅客專線、中文翻譯支援說明" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs"></textarea>
+                        <textarea id="detail-emg-memo" rows="2" class="w-full p-2.5 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs"></textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- 分組 4：公版優惠券 (Group 4) -->
+            <!-- 分組 4：公版優惠券 -->
             <div class="space-y-2">
                 <div class="flex items-center justify-between px-3">
                     <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">公版優惠券 (<span id="coupon-count">0</span>)</div>
-                    <button onclick="openAddCouponModal()" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                    <button onclick="openAddCouponModal()" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 cursor-pointer">
                         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                         <span>新增優惠券</span>
                     </button>
@@ -270,7 +272,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">航空公司行李規範庫</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">主揪設定航班時可一鍵套用[span_3](start_span)[span_3](end_span)。</p>
+                    <p class="text-xs text-slate-400 mt-0.5">主揪設定航班時可一鍵套用[span_0](start_span)[span_0](end_span)。</p>
                 </div>
                 <button id="btn-add-airline" class="h-11 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 active:scale-95 rounded-2xl transition-all shadow-xs cursor-pointer">
                     <i data-lucide="plus" class="w-4 h-4"></i>
@@ -523,7 +525,7 @@
             });
         }
 
-        // ==================== 國家詳情整合設定 (iOS Grouped List 回填) ====================
+        // ==================== 國家詳情整合設定 ====================
         window.openCountryDetail = async function(countryId) {
             activeCountryId = countryId;
             const docRef = doc(db, "templates", "countries", "items", countryId);
@@ -533,7 +535,7 @@
 
             document.getElementById('detail-country-name').innerText = countryId;
 
-            // 回填基本資料
+            // 回填基本資料 (無範例)
             document.getElementById('detail-base-currency').value = activeCountryData.currency || '';
             document.getElementById('detail-base-timezone').value = activeCountryData.timezone || '';
             document.getElementById('detail-base-covers').value = (activeCountryData.coverImages || []).join('\n');
@@ -694,8 +696,8 @@
             const name = document.getElementById('create-country-name').value.trim();
 
             const initData = {
-                currency: "USD",
-                timezone: "+8",
+                currency: "",
+                timezone: "",
                 regions: [],
                 coverImages: []
             };
