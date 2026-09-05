@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>揪行 JooGO - 系統公版初始化</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-8 flex flex-col items-center justify-center min-h-screen">
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 max-w-md w-full shadow-sm space-y-4">
+        <h2 class="text-base font-bold text-slate-900">初始化系統公版資料庫</h2>
+        <p class="text-xs text-slate-500">將中華航空、長榮航空、星宇航空之行李規範，以及日本、韓國、泰國之緊急電話寫入 Firestore。</p>
+        <button id="init-btn" class="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold text-xs transition-all">
+            寫入初始公版資料
+        </button>
+        <div id="status" class="text-xs text-slate-600 font-mono"></div>
+    </div>
+
+    <script type="module">
+        import { saveAirlineTemplate, saveCountryTemplate } from "./js/api/templateApi.js";
+
+        document.getElementById('init-btn').addEventListener('click', async () => {
+            const statusEl = document.getElementById('status');
+            statusEl.innerText = "寫入中...";
+
+            try {
+                // 1. 寫入航空公司行李模板
+                await saveAirlineTemplate("CI", {
+                    name: "中華航空 (CI)",
+                    mode: "piece",
+                    checkedQuota: "2 件 (每件 23 kg)",
+                    checkedDim: "三邊總和 ≤ 158 cm",
+                    carryQuota: "1 件 (7 kg)",
+                    carryDim: "55 x 40 x 23 cm",
+                    personalQuota: "1 件 (隨身包/筆電包)",
+                    personalDim: "40 x 30 x 10 cm"
+                });
+
+                await saveAirlineTemplate("BR", {
+                    name: "長榮航空 (BR)",
+                    mode: "piece",
+                    checkedQuota: "2 件 (每件 23 kg)",
+                    checkedDim: "三邊總和 ≤ 158 cm",
+                    carryQuota: "1 件 (7 kg)",
+                    carryDim: "58 x 38 x 23 cm",
+                    personalQuota: "1 件 (隨身手提包)",
+                    personalDim: "40 x 30 x 10 cm"
+                });
+
+                await saveAirlineTemplate("JX", {
+                    name: "星宇航空 (JX)",
+                    mode: "piece",
+                    checkedQuota: "2 件 (每件 23 kg)",
+                    checkedDim: "三邊總和 ≤ 158 cm",
+                    carryQuota: "1 件 (7 kg)",
+                    carryDim: "56 x 36 x 23 cm",
+                    personalQuota: "1 件 (小型隨身包)",
+                    personalDim: "40 x 30 x 10 cm"
+                });
+
+                // 2. 寫入各國緊急求助電話
+                await saveCountryTemplate("日本", {
+                    police: "110",
+                    ambulance: "119",
+                    foreignEmergency: "+81-3-3280-7811 (台北駐日經濟文化代表處)",
+                    memo: "撥打緊急電話如需中文翻譯，可告知「Chinese, please」。"
+                });
+
+                await saveCountryTemplate("韓國", {
+                    police: "112",
+                    ambulance: "119",
+                    foreignEmergency: "+82-2-399-2767 (駐台北韓國代表部/急難救助)",
+                    memo: "外國人觀光諮詢求助專線可撥打 1330 (支援中文)。"
+                });
+
+                statusEl.innerText = "寫入完成！公版資料庫已就緒。";
+            } catch (err) {
+                statusEl.innerText = "寫入失敗: " + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
