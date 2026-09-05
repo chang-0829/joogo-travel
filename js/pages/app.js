@@ -1,6 +1,7 @@
 // js/pages/app.js
 import { db } from "../config/firebase.js";
 import { doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { subscribeAuthState } from "../api/authApi.js";
 import { getTripFlight, saveTripFlight, defaultFlightData } from "../api/flightApi.js";
 import { getTripHotels, saveTripHotels, defaultHotelsData } from "../api/hotelApi.js";
 import { getAirlineTemplates } from "../api/templateApi.js";
@@ -13,10 +14,11 @@ import {
   calculateSettlement 
 } from "../api/expenseApi.js";
 
-const currentUser = {
-  uid: "user_alex_default",
-  name: "Alex",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+// 動態真實登入使用者
+let currentUser = {
+  uid: null,
+  name: "",
+  avatar: ""
 };
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -28,10 +30,10 @@ let currentHotelsList = defaultHotelsData;
 let currentExpenses = [];
 let currentPayments = [];
 let airlineTemplates = [];
-let activeUserId = currentUser.uid;
+let activeUserId = null;
 
 // 記帳狀態
-let currentBkSubTab = 'expenses'; // 'expenses', 'payments', 'settlement'
+let currentBkSubTab = 'expenses';
 let currentExpFilter = 'all';
 
 // 住宿狀態
@@ -86,6 +88,7 @@ function calculateDuration(dep, arr) {
   return `${h}h ${m < 10 ? '0' : ''}${m}m`;
 }
 
+// 初始化房間：整合真實身份與成員身分驗證
 async function initRoom() {
   if (!currentTripId) {
     alert("無效的行程房間 ID！");
@@ -95,16 +98,10 @@ async function initRoom() {
 
   try {
     airlineTemplates = await getAirlineTemplates();
-    currentFlightData = await getTripFlight(currentTripId);
-    renderFlightDisplay();
-
-    currentHotelsList = await getTripHotels(currentTripId);
-    renderHotelOverviewList();
   } catch (err) {
-    console.warn("載入細節失敗：", err);
+    console.warn("載入航司公版失敗：", err);
   }
 
-  // 監聽房間主檔
   const tripDocRef = doc(db, "trips", currentTripId);
   onSnapshot(tripDocRef, async (docSnap) => {
     if (!docSnap.exists()) {
@@ -112,11 +109,31 @@ async function initRoom() {
       window.location.href = "index.html";
       return;
     }
-    currentTripData = { id: docSnap.id, ...docSnap.data() };
+
+    const data = docSnap.data();
+
+    // 防護關鍵：檢查當前登入者是否在該房間的成員清單中
+    if (!data.memberUids || !data.memberUids.includes(currentUser.uid)) {
+      alert("您並非此行程成員，無法進入！請向主揪索取 6 碼邀請碼加入。");
+      window.location.href = "index.html";
+      return;
+    }
+
+    currentTripData = { id: docSnap.id, ...data };
     renderRoomOverview();
     renderSeatsDisplay();
-    renderHotelOverviewList();
-    await loadBookkeepingData();
+
+    try {
+      currentFlightData = await getTripFlight(currentTripId);
+      renderFlightDisplay();
+
+      currentHotelsList = await getTripHotels(currentTripId);
+      renderHotelOverviewList();
+
+      await loadBookkeepingData();
+    } catch (e) {
+      console.warn("載入子細節失敗：", e);
+    }
   }, (err) => {
     showToast("監聽房間失敗: " + err.message);
   });
@@ -162,6 +179,292 @@ function renderRoomOverview() {
   if (window.lucide) lucide.createIcons();
 }
 
+async function handleSaveTripSettings(e) {
+  e.preventDefault();
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.innerText = "更新中...";
+
+  try {
+    const updatedData = {
+      title: document.getElementById('admin-trip-title').value,
+      country: document.getElementById('admin-trip-country').value,
+      startDate: document.getElementById('admin-trip-startdate').value,
+      endDate: document.getElementById('admin-trip-enddate').value,
+      coverImage: document.getElementById('admin-trip-cover').value
+    };
+
+    const tripDocRef = doc(db, "trips", currentTripId);
+    await updateDoc(tripDocRef, updatedData);
+
+    document.getElementById('admin-trip-modal').classList.add('hidden');
+    showToast("行程設定已更新！");
+  } catch (err) {
+    showToast("更新失敗：" + err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerText = "更新行程";
+  }
+}
+
+// ==================== 航班模組 ====================
+
+function renderFlightDisplay() {
+  const { outbound, inbound } = currentFlightData;
+
+  document.getElementById('display-flight-out-airline').innerText = outbound.airline;
+  document.getElementById('display-flight-out-no').innerText = outbound.flightNo;
+  document.getElementById('display-flight-out-pnr').innerText = outbound.pnr || '------';
+  document.getElementById('display-flight-out-deptime').innerText = outbound.depTime || '08:50';
+  document.getElementById('display-flight-out-arrtime').innerText = outbound.arrTime || '13:15';
+  document.getElementById('display-flight-out-depairport').innerText = outbound.depAirport || '桃園 (TPE)';
+  document.getElementById('display-flight-out-arrairport').innerText = outbound.arrAirport || '成田 (NRT)';
+  document.getElementById('display-flight-out-duration').innerText = outbound.duration || calculateDuration(outbound.depTime, outbound.arrTime);
+  document.getElementById('display-flight-out-terminal').innerText = outbound.terminal || '第 2 航廈';
+  document.getElementById('display-flight-out-counter').innerText = outbound.counter || '12 號櫃檯';
+  document.getElementById('display-flight-out-checkintime').innerText = outbound.checkinTime || '06:50';
+  document.getElementById('display-flight-out-gate').innerText = outbound.gate || 'A7';
+  document.getElementById('display-flight-out-boarding').innerText = outbound.boardingTime || '08:10';
+
+  document.getElementById('display-bag-out-checked-quota').innerText = outbound.baggage?.checkedQuota || '2 件 (每件 23 kg)';
+  document.getElementById('display-bag-out-checked-dim').innerText = `尺寸限制：${outbound.baggage?.checkedDim || '三邊總和 ≤ 158 cm'}`;
+  document.getElementById('display-bag-out-carry-quota').innerText = outbound.baggage?.carryQuota || '1 件 (7 kg)';
+  document.getElementById('display-bag-out-carry-dim').innerText = `尺寸限制：${outbound.baggage?.carryDim || '55 x 40 x 23 cm'}`;
+  document.getElementById('display-bag-out-personal-quota').innerText = outbound.baggage?.personalQuota || '1 件 (隨身包)';
+  document.getElementById('display-bag-out-personal-dim').innerText = `尺寸限制：${outbound.baggage?.personalDim || '40 x 30 x 10 cm'}`;
+
+  document.getElementById('display-flight-in-airline').innerText = inbound.airline;
+  document.getElementById('display-flight-in-no').innerText = inbound.flightNo;
+  document.getElementById('display-flight-in-pnr').innerText = inbound.pnr || '------';
+  document.getElementById('display-flight-in-deptime').innerText = inbound.depTime || '14:30';
+  document.getElementById('display-flight-in-arrtime').innerText = inbound.arrTime || '17:15';
+  document.getElementById('display-flight-in-depairport').innerText = inbound.depAirport || '成田 (NRT)';
+  document.getElementById('display-flight-in-arrairport').innerText = inbound.arrAirport || '桃園 (TPE)';
+  document.getElementById('display-flight-in-duration').innerText = inbound.duration || calculateDuration(inbound.depTime, inbound.arrTime);
+  document.getElementById('display-flight-in-terminal').innerText = inbound.terminal || '第 2 航廈';
+  document.getElementById('display-flight-in-counter').innerText = inbound.counter || 'K 櫃檯';
+  document.getElementById('display-flight-in-checkintime').innerText = inbound.checkinTime || '12:30';
+  document.getElementById('display-flight-in-gate').innerText = inbound.gate || '71';
+  document.getElementById('display-flight-in-boarding').innerText = inbound.boardingTime || '13:50';
+
+  document.getElementById('display-bag-in-checked-quota').innerText = inbound.baggage?.checkedQuota || '2 件 (每件 23 kg)';
+  document.getElementById('display-bag-in-checked-dim').innerText = `尺寸限制：${inbound.baggage?.checkedDim || '三邊總和 ≤ 158 cm'}`;
+  document.getElementById('display-bag-in-carry-quota').innerText = inbound.baggage?.carryQuota || '1 件 (7 kg)';
+  document.getElementById('display-bag-in-carry-dim').innerText = `尺寸限制：${inbound.baggage?.carryDim || '55 x 40 x 23 cm'}`;
+  document.getElementById('display-bag-in-personal-quota').innerText = inbound.baggage?.personalQuota || '1 件 (隨身包)';
+  document.getElementById('display-bag-in-personal-dim').innerText = `尺寸限制：${inbound.baggage?.personalDim || '40 x 30 x 10 cm'}`;
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function renderSeatsDisplay() {
+  if (!currentTripData || !currentTripData.members) return;
+  const mySelf = currentTripData.members[currentUser.uid];
+  document.getElementById('display-my-out-seat').innerText = mySelf?.seatOut || '未指定';
+  document.getElementById('display-my-in-seat').innerText = mySelf?.seatIn || '未指定';
+}
+
+function openSeatEggModal(type) {
+  const container = document.getElementById('seat-egg-list-container');
+  const title = document.getElementById('seat-egg-title');
+  title.innerText = type === 'out' ? '去程同行夥伴座位分配' : '回程同行夥伴座位分配';
+
+  const partnerList = currentTripData?.members ? Object.values(currentTripData.members) : [];
+  container.innerHTML = partnerList.map(p => `
+    <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+      <div class="flex items-center gap-2">
+        <img src="${p.avatar}" class="w-7 h-7 rounded-full object-cover">
+        <span class="text-xs font-bold text-slate-800">${p.name} ${p.id === currentUser.uid ? '(我)' : ''}</span>
+      </div>
+      <span class="text-xs font-mono font-bold text-slate-800">${(type === 'out' ? p.seatOut : p.seatIn) || '未指定'}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('seat-egg-modal').classList.remove('hidden');
+  if (window.lucide) lucide.createIcons();
+}
+
+function openAdminFlightModal() {
+  const { outbound, inbound } = currentFlightData;
+
+  document.getElementById('input-out-airline').value = outbound.airline;
+  document.getElementById('input-out-flightno').value = outbound.flightNo;
+  document.getElementById('input-out-pnr').value = outbound.pnr || '';
+  document.getElementById('input-out-depairport').value = outbound.depAirport || '桃園 (TPE)';
+  document.getElementById('input-out-arrairport').value = outbound.arrAirport || '成田 (NRT)';
+  document.getElementById('input-out-deptime').value = outbound.depTime || '08:50';
+  document.getElementById('input-out-arrtime').value = outbound.arrTime || '13:15';
+  document.getElementById('input-out-terminal').value = outbound.terminal || '第 2 航廈';
+  document.getElementById('input-out-counter').value = outbound.counter || '12 號櫃檯';
+  document.getElementById('input-out-checkintime').value = outbound.checkinTime || '06:50';
+  document.getElementById('input-out-boarding').value = outbound.boardingTime || '08:10';
+  document.getElementById('input-out-gate').value = outbound.gate || 'A7';
+
+  document.getElementById('input-bag-out-checked-quota').value = outbound.baggage?.checkedQuota || '';
+  document.getElementById('input-bag-out-checked-dim').value = outbound.baggage?.checkedDim || '';
+  document.getElementById('input-bag-out-carry-quota').value = outbound.baggage?.carryQuota || '';
+  document.getElementById('input-bag-out-carry-dim').value = outbound.baggage?.carryDim || '';
+  document.getElementById('input-bag-out-personal-quota').value = outbound.baggage?.personalQuota || '';
+  document.getElementById('input-bag-out-personal-dim').value = outbound.baggage?.personalDim || '';
+
+  document.getElementById('input-in-airline').value = inbound.airline;
+  document.getElementById('input-in-flightno').value = inbound.flightNo;
+  document.getElementById('input-in-pnr').value = inbound.pnr || '';
+  document.getElementById('input-in-depairport').value = inbound.depAirport || '成田 (NRT)';
+  document.getElementById('input-in-arrairport').value = inbound.arrAirport || '桃園 (TPE)';
+  document.getElementById('input-in-deptime').value = inbound.depTime || '14:30';
+  document.getElementById('input-in-arrtime').value = inbound.arrTime || '17:15';
+  document.getElementById('input-in-terminal').value = inbound.terminal || '第 2 航廈';
+  document.getElementById('input-in-counter').value = inbound.counter || 'K 櫃檯';
+  document.getElementById('input-in-checkintime').value = inbound.checkinTime || '12:30';
+  document.getElementById('input-in-boarding').value = inbound.boardingTime || '13:50';
+  document.getElementById('input-in-gate').value = inbound.gate || '71';
+
+  document.getElementById('input-bag-in-checked-quota').value = inbound.baggage?.checkedQuota || '';
+  document.getElementById('input-bag-in-checked-dim').value = inbound.baggage?.checkedDim || '';
+  document.getElementById('input-bag-in-carry-quota').value = inbound.baggage?.carryQuota || '';
+  document.getElementById('input-bag-in-carry-dim').value = inbound.baggage?.carryDim || '';
+  document.getElementById('input-bag-in-personal-quota').value = inbound.baggage?.personalQuota || '';
+  document.getElementById('input-bag-in-personal-dim').value = inbound.baggage?.personalDim || '';
+
+  const partnerList = currentTripData?.members ? Object.values(currentTripData.members) : [];
+  document.getElementById('admin-seats-inputs-container').innerHTML = partnerList.map(p => `
+    <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2">
+      <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+        <img src="${p.avatar}" class="w-5 h-5 rounded-full object-cover">
+        <span>${p.name}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="text" id="seat-out-${p.id}" value="${p.seatOut || ''}" placeholder="去程座位 (如 12A)" class="h-[36px] px-2.5 border border-slate-200 rounded-lg text-xs font-bold uppercase">
+        <input type="text" id="seat-in-${p.id}" value="${p.seatIn || ''}" placeholder="回程座位 (如 12A)" class="h-[36px] px-2.5 border border-slate-200 rounded-lg text-xs font-bold uppercase">
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('admin-flight-modal').classList.remove('hidden');
+  if (window.lucide) lucide.createIcons();
+}
+
+function applyAirlineTemplate(dir, code) {
+  const t = airlineTemplates.find(item => item.id === code);
+  if (!t) return;
+
+  if (dir === 'out') {
+    document.getElementById('input-out-airline').value = t.name.split(' ')[0];
+    document.getElementById('input-bag-out-checked-quota').value = t.checkedQuota;
+    document.getElementById('input-bag-out-checked-dim').value = t.checkedDim;
+    document.getElementById('input-bag-out-carry-quota').value = t.carryQuota;
+    document.getElementById('input-bag-out-carry-dim').value = t.carryDim;
+    document.getElementById('input-bag-out-personal-quota').value = t.personalQuota;
+    document.getElementById('input-bag-out-personal-dim').value = t.personalDim;
+  } else {
+    document.getElementById('input-in-airline').value = t.name.split(' ')[0];
+    document.getElementById('input-bag-in-checked-quota').value = t.checkedQuota;
+    document.getElementById('input-bag-in-checked-dim').value = t.checkedDim;
+    document.getElementById('input-bag-in-carry-quota').value = t.carryQuota;
+    document.getElementById('input-bag-in-carry-dim').value = t.carryDim;
+    document.getElementById('input-bag-in-personal-quota').value = t.personalQuota;
+    document.getElementById('input-bag-in-personal-dim').value = t.personalDim;
+  }
+  showToast(`已自動套入 ${t.name} 之行李規範！`);
+}
+
+async function handleSaveFlightSettings(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-submit-admin-flight');
+  btn.disabled = true;
+  btn.innerText = "儲存中...";
+
+  try {
+    const updatedFlight = {
+      outbound: {
+        airline: document.getElementById('input-out-airline').value,
+        flightNo: document.getElementById('input-out-flightno').value,
+        pnr: document.getElementById('input-out-pnr').value,
+        depAirport: document.getElementById('input-out-depairport').value,
+        arrAirport: document.getElementById('input-out-arrairport').value,
+        depTime: document.getElementById('input-out-deptime').value,
+        arrTime: document.getElementById('input-out-arrtime').value,
+        duration: calculateDuration(document.getElementById('input-out-deptime').value, document.getElementById('input-out-arrtime').value),
+        terminal: document.getElementById('input-out-terminal').value,
+        counter: document.getElementById('input-out-counter').value,
+        checkinTime: document.getElementById('input-out-checkintime').value,
+        boardingTime: document.getElementById('input-out-boarding').value,
+        gate: document.getElementById('input-out-gate').value,
+        baggage: {
+          checkedQuota: document.getElementById('input-bag-out-checked-quota').value,
+          checkedDim: document.getElementById('input-bag-out-checked-dim').value,
+          carryQuota: document.getElementById('input-bag-out-carry-quota').value,
+          carryDim: document.getElementById('input-bag-out-carry-dim').value,
+          personalQuota: document.getElementById('input-bag-out-personal-quota').value,
+          personalDim: document.getElementById('input-bag-out-personal-dim').value
+        }
+      },
+      inbound: {
+        airline: document.getElementById('input-in-airline').value,
+        flightNo: document.getElementById('input-in-flightno').value,
+        pnr: document.getElementById('input-in-pnr').value,
+        depAirport: document.getElementById('input-in-depairport').value,
+        arrAirport: document.getElementById('input-in-arrairport').value,
+        depTime: document.getElementById('input-in-deptime').value,
+        arrTime: document.getElementById('input-in-arrtime').value,
+        duration: calculateDuration(document.getElementById('input-in-deptime').value, document.getElementById('input-in-arrtime').value),
+        terminal: document.getElementById('input-in-terminal').value,
+        counter: document.getElementById('input-in-counter').value,
+        checkinTime: document.getElementById('input-in-checkintime').value,
+        boardingTime: document.getElementById('input-in-boarding').value,
+        gate: document.getElementById('input-in-gate').value,
+        baggage: {
+          checkedQuota: document.getElementById('input-bag-in-checked-quota').value,
+          checkedDim: document.getElementById('input-bag-in-checked-dim').value,
+          carryQuota: document.getElementById('input-bag-in-carry-quota').value,
+          carryDim: document.getElementById('input-bag-in-carry-dim').value,
+          personalQuota: document.getElementById('input-bag-in-personal-quota').value,
+          personalDim: document.getElementById('input-bag-in-personal-dim').value
+        }
+      }
+    };
+
+    await saveTripFlight(currentTripId, updatedFlight);
+    currentFlightData = updatedFlight;
+    renderFlightDisplay();
+
+    if (currentTripData?.members) {
+      const updatedMembers = { ...currentTripData.members };
+      Object.keys(updatedMembers).forEach(uid => {
+        const outInput = document.getElementById(`seat-out-${uid}`);
+        const inInput = document.getElementById(`seat-in-${uid}`);
+        if (outInput) updatedMembers[uid].seatOut = outInput.value;
+        if (inInput) updatedMembers[uid].seatIn = inInput.value;
+      });
+      await updateDoc(doc(db, "trips", currentTripId), { members: updatedMembers });
+    }
+
+    document.getElementById('admin-flight-modal').classList.add('hidden');
+    showToast("航班與座位設定已儲存！");
+  } catch (err) {
+    showToast("儲存失敗：" + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "更新設定";
+  }
+}
+
+function switchFlightSubTab(tab) {
+  const tabs = ['out', 'in', 'seats'];
+  tabs.forEach(t => {
+    const btn = document.getElementById(`subtab-admin-${t}`);
+    const sec = document.getElementById(`section-admin-${t}`);
+    if (t === tab) {
+      btn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all";
+      sec.classList.remove('hidden');
+    } else {
+      btn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all";
+      sec.classList.add('hidden');
+    }
+  });
+}
+
 // ==================== 記帳與清算模組 ====================
 
 async function loadBookkeepingData() {
@@ -178,13 +481,11 @@ async function loadBookkeepingData() {
 function renderBookkeepingUI() {
   const settlement = calculateSettlement(currentTripData?.members, currentExpenses, currentPayments);
 
-  // 頂部公費池概況
   document.getElementById('bk-kitty-remaining').innerText = `NT$ ${settlement.kittyRemaining.toLocaleString()}`;
   document.getElementById('bk-total-kitty').innerText = `NT$ ${settlement.totalKittyPaid.toLocaleString()}`;
   document.getElementById('bk-kitty-spent').innerText = `NT$ ${settlement.kittySpent.toLocaleString()}`;
   document.getElementById('bk-total-advance').innerText = `NT$ ${settlement.totalAdvance.toLocaleString()}`;
 
-  // 個人已繳公費額
   let myPaid = 0;
   currentPayments.forEach(p => {
     if (p.uid === currentUser.uid && p.status === 'approved') myPaid += p.amount;
@@ -468,7 +769,224 @@ window.toggleHotelRoomsCollapse = (id) => { expandedHotelRooms[id] = !expandedHo
 window.togglePinVisibility = (id) => { visiblePinRooms[id] = !visiblePinRooms[id]; renderHotelOverviewList(); };
 window.showToast = showToast;
 
-// 彈出記帳 Modal 輔助填入付款人與分攤選單
+function openAdminHotelModal() {
+  activeHotelSubTab = 'info';
+  renderAdminHotelDropdown();
+  renderAdminSingleHotelForm();
+  document.getElementById('admin-hotel-modal').classList.remove('hidden');
+  if (window.lucide) lucide.createIcons();
+}
+
+function renderAdminHotelDropdown() {
+  const selectEl = document.getElementById('admin-hotel-select');
+  if (!selectEl) return;
+  selectEl.innerHTML = currentHotelsList.map((h, idx) => `
+    <option value="${idx}" ${idx === activeHotelIdx ? 'selected' : ''}>${h.nameZh}</option>
+  `).join('');
+}
+
+function renderAdminSingleHotelForm() {
+  const container = document.getElementById('admin-hotel-single-editor-container');
+  if (!container) return;
+
+  const h = currentHotelsList[activeHotelIdx];
+  if (!h) return;
+
+  const occupiedPartnerMap = {};
+  (h.rooms || []).forEach(r => {
+    (r.assignedPartnerIds || []).forEach(pId => {
+      occupiedPartnerMap[pId] = r.roomNo;
+    });
+  });
+
+  const partnerList = currentTripData?.members ? Object.values(currentTripData.members) : [];
+
+  if (activeHotelSubTab === 'info') {
+    container.innerHTML = `
+      <div class="space-y-3 pt-1">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-800">基本住宿資訊</span>
+          ${currentHotelsList.length > 1 ? `
+            <button type="button" id="btn-ask-remove-hotel" class="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 刪除此住宿
+            </button>
+          ` : ''}
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">飯店中文名稱</label>
+          <input type="text" id="admin-h-nameZh" value="${h.nameZh}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">外語名稱 (英文/日文)</label>
+          <input type="text" id="admin-h-nameForeign" value="${h.nameForeign || ''}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">中文地址</label>
+          <input type="text" id="admin-h-addressZh" value="${h.addressZh}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">外語地址 (計程車/導航用)</label>
+          <input type="text" id="admin-h-addressForeign" value="${h.addressForeign || ''}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">連絡電話</label>
+            <input type="text" id="admin-h-phone" value="${h.phone || ''}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">訂房編號</label>
+            <input type="text" id="admin-h-refNo" value="${h.refNo}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Check-in 日期/時間</label>
+            <div class="grid grid-cols-2 gap-1">
+              <input type="date" id="admin-h-checkinDate" value="${h.checkInDate}" class="h-[40px] px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+              <input type="time" id="admin-h-checkinTime" value="${h.checkInTime}" class="h-[40px] px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Check-out 日期/時間</label>
+            <div class="grid grid-cols-2 gap-1">
+              <input type="date" id="admin-h-checkoutDate" value="${h.checkOutDate}" class="h-[40px] px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+              <input type="time" id="admin-h-checkoutTime" value="${h.checkOutTime}" class="h-[40px] px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">大樓門禁</label>
+            <select id="admin-h-gateType" class="w-full h-[40px] px-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold">
+              <option value="code" ${h.gateType === 'code' ? 'selected' : ''}>需大門密碼</option>
+              <option value="none" ${h.gateType === 'none' ? 'selected' : ''}>自由進出/無門禁</option>
+            </select>
+          </div>
+          <div id="admin-h-gateCode-box" class="${h.gateType === 'none' ? 'hidden' : ''}">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">大門密碼</label>
+            <input type="text" id="admin-h-gateCode" value="${h.gateCode || ''}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold font-mono">
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('admin-h-gateType').onchange = (e) => {
+      document.getElementById('admin-h-gateCode-box').classList.toggle('hidden', e.target.value === 'none');
+    };
+
+    if (document.getElementById('btn-ask-remove-hotel')) {
+      document.getElementById('btn-ask-remove-hotel').onclick = () => {
+        document.getElementById('confirm-remove-hotel-name').innerText = h.nameZh;
+        document.getElementById('confirm-remove-hotel-modal').classList.remove('hidden');
+      };
+    }
+  } else {
+    container.innerHTML = `
+      <div class="space-y-3 pt-1">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-800">房間清單 (${h.rooms?.length || 0} 間)</span>
+          <button type="button" id="btn-add-room" class="px-2.5 py-1.5 text-xs font-bold text-stone-800 bg-stone-100 hover:bg-stone-200 rounded-xl flex items-center gap-1">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增房間
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          ${(h.rooms || []).map((r, rIdx) => `
+            <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5 relative">
+              ${(h.rooms.length > 1) ? `
+                <button type="button" onclick="window.askRemoveRoom(${rIdx})" class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center absolute -top-2 -right-2 shadow-xs">
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                </button>
+              ` : ''}
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 mb-0.5">房號</label>
+                  <input type="text" id="admin-r-no-${rIdx}" value="${r.roomNo}" class="w-full h-[36px] px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold font-mono">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 mb-0.5">房型名稱</label>
+                  <input type="text" id="admin-r-type-${rIdx}" value="${r.roomType || ''}" class="w-full h-[36px] px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 mb-0.5">開鎖方式</label>
+                  <select id="admin-r-entry-${rIdx}" class="w-full h-[36px] px-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold">
+                    <option value="code" ${r.entryType === 'code' ? 'selected' : ''}>密碼鎖</option>
+                    <option value="card" ${r.entryType === 'card' ? 'selected' : ''}>感應房卡</option>
+                    <option value="key" ${r.entryType === 'key' ? 'selected' : ''}>實體鑰匙</option>
+                  </select>
+                </div>
+                <div id="admin-r-code-box-${rIdx}" class="${r.entryType !== 'code' ? 'hidden' : ''}">
+                  <label class="block text-[10px] font-bold text-slate-500 mb-0.5">房間通行密碼</label>
+                  <input type="text" id="admin-r-code-${rIdx}" value="${r.roomCode || ''}" class="w-full h-[36px] px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold font-mono">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">指派住客 (Ctrl/Cmd 可複選)</label>
+                <select id="admin-r-partners-${rIdx}" multiple class="w-full text-xs font-medium border border-slate-200 rounded-xl p-2 bg-white text-slate-800 min-h-[80px]">
+                  ${partnerList.map(p => {
+                    const isAssignedHere = (r.assignedPartnerIds || []).includes(p.id);
+                    const occupiedOtherRoom = occupiedPartnerMap[p.id];
+                    const isOccupiedElseWhere = occupiedOtherRoom && occupiedOtherRoom !== r.roomNo && !isAssignedHere;
+
+                    return `
+                      <option value="${p.id}" ${isAssignedHere ? 'selected' : ''} ${isOccupiedElseWhere ? 'disabled' : ''} class="${isOccupiedElseWhere ? 'text-slate-300 italic' : 'text-slate-800 font-bold'}">
+                        ${p.name} ${isOccupiedElseWhere ? `(已在房號 ${occupiedOtherRoom})` : (p.id === currentUser.uid ? '(我)' : '')}
+                      </option>
+                    `;
+                  }).join('')}
+                </select>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btn-add-room').onclick = () => {
+      h.rooms.push({
+        id: `r_${Date.now()}`,
+        roomNo: `${(h.rooms.length + 1) * 101}`,
+        roomType: "標準雙人房",
+        entryType: "code",
+        roomCode: "1234",
+        assignedPartnerIds: []
+      });
+      renderAdminSingleHotelForm();
+    };
+
+    (h.rooms || []).forEach((r, idx) => {
+      const selectEntry = document.getElementById(`admin-r-entry-${idx}`);
+      const codeBox = document.getElementById(`admin-r-code-box-${idx}`);
+      if (selectEntry && codeBox) {
+        selectEntry.onchange = (e) => codeBox.classList.toggle('hidden', e.target.value !== 'code');
+      }
+    });
+  }
+
+  if (window.lucide) lucide.createIcons();
+}
+
+window.askRemoveRoom = (rIdx) => {
+  const h = currentHotelsList[activeHotelIdx];
+  if (h?.rooms[rIdx]) {
+    roomIdxPendingRemove = rIdx;
+    document.getElementById('confirm-remove-room-no').innerText = `房號 ${h.rooms[rIdx].roomNo}`;
+    document.getElementById('confirm-remove-room-modal').classList.remove('hidden');
+  }
+};
+
 function openAddExpenseModal() {
   const payerSelect = document.getElementById('exp-payer');
   const taxiContainer = document.getElementById('taxi-members-checkboxes');
@@ -488,26 +1006,217 @@ function openAddExpenseModal() {
   document.getElementById('add-expense-modal').classList.remove('hidden');
 }
 
-// ==================== 頁面生命週期與事件綁定 ====================
+// ==================== 頁面事件監聽與身份驗證 ====================
 
 window.addEventListener('DOMContentLoaded', () => {
-  initRoom();
+  // 核心登入狀態監聽
+  subscribeAuthState((user) => {
+    if (!user) {
+      window.location.href = "login.html";
+    } else {
+      currentUser.uid = user.uid;
+      currentUser.name = user.displayName || user.email.split('@')[0];
+      currentUser.avatar = user.photoURL || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120";
+      activeUserId = currentUser.uid;
 
-  // 1. 三大主 Tab 切換
+      initRoom();
+    }
+  });
+
+  // 主分頁切換
   document.getElementById('tab-btn-overview').onclick = () => switchTab('overview');
   document.getElementById('tab-btn-itinerary').onclick = () => switchTab('itinerary');
   document.getElementById('tab-btn-bookkeeping').onclick = () => switchTab('bookkeeping');
 
-  // 2. 身分預視
+  // 身分預視切換
   document.getElementById('preview-user-p1').onclick = () => switchUserPreview('admin');
   document.getElementById('preview-user-p2').onclick = () => switchUserPreview('member');
 
-  // 3. 記帳次頁籤切換
+  // 行程設定 Modal
+  document.getElementById('btn-open-trip-settings').onclick = () => document.getElementById('admin-trip-modal').classList.remove('hidden');
+  document.getElementById('btn-close-trip-settings').onclick = () => document.getElementById('admin-trip-modal').classList.add('hidden');
+  document.getElementById('btn-cancel-trip-settings').onclick = () => document.getElementById('admin-trip-modal').classList.add('hidden');
+  document.getElementById('form-trip-settings').onsubmit = handleSaveTripSettings;
+
+  document.getElementById('btn-copy-invite-code').onclick = () => {
+    if (currentTripData?.inviteCode) {
+      navigator.clipboard.writeText(currentTripData.inviteCode);
+      showToast(`已複製邀請碼：${currentTripData.inviteCode}`);
+    }
+  };
+
+  // 航班 Modal (全員)
+  document.querySelector('button:has(i[data-lucide="plane"])').onclick = () => {
+    document.getElementById('public-flight-modal').classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+  };
+  document.getElementById('btn-close-public-flight').onclick = () => document.getElementById('public-flight-modal').classList.add('hidden');
+  document.getElementById('btn-close-public-flight-footer').onclick = () => document.getElementById('public-flight-modal').classList.add('hidden');
+
+  document.getElementById('flight-tab-out').onclick = () => {
+    document.getElementById('flight-tab-out').className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 transition-all";
+    document.getElementById('flight-tab-in').className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 flex items-center justify-center gap-1.5 transition-all";
+    document.getElementById('flight-card-out').classList.remove('hidden');
+    document.getElementById('flight-card-in').classList.add('hidden');
+  };
+  document.getElementById('flight-tab-in').onclick = () => {
+    document.getElementById('flight-tab-in').className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 transition-all";
+    document.getElementById('flight-tab-out').className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 flex items-center justify-center gap-1.5 transition-all";
+    document.getElementById('flight-card-in').classList.remove('hidden');
+    document.getElementById('flight-card-out').classList.add('hidden');
+  };
+
+  document.getElementById('btn-egg-out-seat').onclick = () => openSeatEggModal('out');
+  document.getElementById('btn-egg-in-seat').onclick = () => openSeatEggModal('in');
+  document.getElementById('btn-close-seat-egg').onclick = () => document.getElementById('seat-egg-modal').classList.add('hidden');
+  document.getElementById('btn-close-seat-egg-footer').onclick = () => document.getElementById('seat-egg-modal').classList.add('hidden');
+
+  // 航班設定 (管理員)
+  document.querySelector('button:has(i[data-lucide="plane-takeoff"])').onclick = openAdminFlightModal;
+  document.getElementById('btn-close-admin-flight').onclick = () => document.getElementById('admin-flight-modal').classList.add('hidden');
+  document.getElementById('btn-cancel-admin-flight').onclick = () => document.getElementById('admin-flight-modal').classList.add('hidden');
+  document.getElementById('form-admin-flight').onsubmit = handleSaveFlightSettings;
+
+  document.getElementById('subtab-admin-out').onclick = () => switchFlightSubTab('out');
+  document.getElementById('subtab-admin-in').onclick = () => switchFlightSubTab('in');
+  document.getElementById('subtab-admin-seats').onclick = () => switchFlightSubTab('seats');
+
+  document.getElementById('template-select-out').onchange = (e) => applyAirlineTemplate('out', e.target.value);
+  document.getElementById('template-select-in').onchange = (e) => applyAirlineTemplate('in', e.target.value);
+
+  // 住宿 Modal (全員)
+  document.querySelector('button:has(i[data-lucide="building-2"])').onclick = () => {
+    document.getElementById('public-hotel-modal').classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+  };
+  document.getElementById('btn-close-public-hotel').onclick = () => document.getElementById('public-hotel-modal').classList.add('hidden');
+  document.getElementById('btn-close-public-hotel-footer').onclick = () => document.getElementById('public-hotel-modal').classList.add('hidden');
+
+  // 住宿設定 (管理員)
+  const adminHotelBtn = document.querySelectorAll('#admin-control-section button')[3];
+  if (adminHotelBtn) adminHotelBtn.onclick = openAdminHotelModal;
+  document.getElementById('btn-close-admin-hotel').onclick = () => document.getElementById('admin-hotel-modal').classList.add('hidden');
+  document.getElementById('btn-cancel-admin-hotel').onclick = () => document.getElementById('admin-hotel-modal').classList.add('hidden');
+
+  document.getElementById('admin-hotel-select').onchange = (e) => {
+    activeHotelIdx = parseInt(e.target.value, 10);
+    renderAdminSingleHotelForm();
+  };
+  document.getElementById('hotel-subtab-info').onclick = () => {
+    activeHotelSubTab = 'info';
+    document.getElementById('hotel-subtab-info').className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all flex items-center justify-center gap-1.5";
+    document.getElementById('hotel-subtab-rooms').className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all flex items-center justify-center gap-1.5";
+    renderAdminSingleHotelForm();
+  };
+  document.getElementById('hotel-subtab-rooms').onclick = () => {
+    activeHotelSubTab = 'rooms';
+    document.getElementById('hotel-subtab-rooms').className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all flex items-center justify-center gap-1.5";
+    document.getElementById('hotel-subtab-info').className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all flex items-center justify-center gap-1.5";
+    renderAdminSingleHotelForm();
+  };
+
+  document.getElementById('btn-add-new-hotel').onclick = () => {
+    currentHotelsList.push({
+      id: `h_${Date.now()}`,
+      nameZh: "新住宿飯店",
+      nameForeign: "",
+      addressZh: "",
+      addressForeign: "",
+      phone: "",
+      refNo: "REF-001",
+      gateType: "none",
+      gateCode: "",
+      checkInDate: currentTripData?.startDate || "2026-04-01",
+      checkInTime: "15:00",
+      checkOutDate: currentTripData?.endDate || "2026-04-05",
+      checkOutTime: "11:00",
+      rooms: [
+        { id: `r_${Date.now()}`, roomNo: "101", roomType: "標準雙人房", entryType: "code", roomCode: "1234", assignedPartnerIds: [] }
+      ]
+    });
+    activeHotelIdx = currentHotelsList.length - 1;
+    renderAdminHotelDropdown();
+    renderAdminSingleHotelForm();
+    showToast("已新增住宿，請填寫基本資料與房間！");
+  };
+
+  document.getElementById('btn-save-all-hotels').onclick = async () => {
+    const btn = document.getElementById('btn-save-all-hotels');
+    btn.disabled = true;
+    btn.innerText = "儲存中...";
+
+    try {
+      const h = currentHotelsList[activeHotelIdx];
+      if (h && document.getElementById('admin-h-nameZh')) {
+        h.nameZh = document.getElementById('admin-h-nameZh').value;
+        h.nameForeign = document.getElementById('admin-h-nameForeign').value;
+        h.addressZh = document.getElementById('admin-h-addressZh').value;
+        h.addressForeign = document.getElementById('admin-h-addressForeign').value;
+        h.phone = document.getElementById('admin-h-phone').value;
+        h.refNo = document.getElementById('admin-h-refNo').value;
+        h.gateType = document.getElementById('admin-h-gateType').value;
+        h.gateCode = h.gateType === 'none' ? '' : document.getElementById('admin-h-gateCode').value;
+        h.checkInDate = document.getElementById('admin-h-checkinDate').value;
+        h.checkInTime = document.getElementById('admin-h-checkinTime').value;
+        h.checkOutDate = document.getElementById('admin-h-checkoutDate').value;
+        h.checkOutTime = document.getElementById('admin-h-checkoutTime').value;
+      }
+
+      if (h && activeHotelSubTab === 'rooms') {
+        (h.rooms || []).forEach((r, idx) => {
+          const noInput = document.getElementById(`admin-r-no-${idx}`);
+          if (noInput) {
+            r.roomNo = noInput.value;
+            r.roomType = document.getElementById(`admin-r-type-${idx}`).value;
+            r.entryType = document.getElementById(`admin-r-entry-${idx}`).value;
+            r.roomCode = r.entryType === 'code' ? document.getElementById(`admin-r-code-${idx}`).value : '';
+            const partnerSelect = document.getElementById(`admin-r-partners-${idx}`);
+            if (partnerSelect) {
+              r.assignedPartnerIds = Array.from(partnerSelect.selectedOptions).map(opt => opt.value);
+            }
+          }
+        });
+      }
+
+      await saveTripHotels(currentTripId, currentHotelsList);
+      renderHotelOverviewList();
+      document.getElementById('admin-hotel-modal').classList.add('hidden');
+      showToast("住宿與房間設定已儲存！");
+    } catch (err) {
+      showToast("儲存失敗：" + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "儲存住宿設定";
+    }
+  };
+
+  document.getElementById('btn-cancel-remove-hotel').onclick = () => document.getElementById('confirm-remove-hotel-modal').classList.add('hidden');
+  document.getElementById('btn-confirm-remove-hotel-ok').onclick = () => {
+    currentHotelsList.splice(activeHotelIdx, 1);
+    activeHotelIdx = Math.max(0, currentHotelsList.length - 1);
+    document.getElementById('confirm-remove-hotel-modal').classList.add('hidden');
+    renderAdminHotelDropdown();
+    renderAdminSingleHotelForm();
+    showToast("已刪除該住宿");
+  };
+
+  document.getElementById('btn-cancel-remove-room').onclick = () => document.getElementById('confirm-remove-room-modal').classList.add('hidden');
+  document.getElementById('btn-confirm-remove-room-ok').onclick = () => {
+    const h = currentHotelsList[activeHotelIdx];
+    if (h && roomIdxPendingRemove !== null) {
+      h.rooms.splice(roomIdxPendingRemove, 1);
+      roomIdxPendingRemove = null;
+      document.getElementById('confirm-remove-room-modal').classList.add('hidden');
+      renderAdminSingleHotelForm();
+      showToast("已刪除該房間");
+    }
+  };
+
+  // 記帳次頁籤切換
   document.getElementById('bk-sub-expenses').onclick = () => switchBookkeepingSub('expenses');
   document.getElementById('bk-sub-payments').onclick = () => switchBookkeepingSub('payments');
   document.getElementById('bk-sub-settlement').onclick = () => switchBookkeepingSub('settlement');
 
-  // 記帳篩選按鈕
   ['all', 'kitty', 'advance', 'taxi'].forEach(type => {
     const btn = document.getElementById(`exp-filter-${type}`);
     if (btn) {
@@ -524,7 +1233,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 新增支出 Modal 開關與欄位連動
   document.getElementById('btn-open-add-expense').onclick = openAddExpenseModal;
   document.getElementById('btn-close-expense-modal').onclick = () => document.getElementById('add-expense-modal').classList.add('hidden');
   document.getElementById('btn-cancel-expense-modal').onclick = () => document.getElementById('add-expense-modal').classList.add('hidden');
@@ -535,7 +1243,6 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('box-taxi-members').classList.toggle('hidden', val !== 'taxi');
   };
 
-  // 提交新增支出
   document.getElementById('form-add-expense').onsubmit = async (e) => {
     e.preventDefault();
     const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -578,10 +1285,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // 提交公費匯款憑證 Modal
-  document.getElementById('btn-open-submit-payment').onclick = () => {
-    document.getElementById('submit-payment-modal').classList.remove('hidden');
-  };
+  document.getElementById('btn-open-submit-payment').onclick = () => document.getElementById('submit-payment-modal').classList.remove('hidden');
   document.getElementById('btn-close-payment-modal').onclick = () => document.getElementById('submit-payment-modal').classList.add('hidden');
   document.getElementById('btn-cancel-payment-modal').onclick = () => document.getElementById('submit-payment-modal').classList.add('hidden');
 
@@ -638,12 +1342,14 @@ function switchTab(tabName) {
   tabs.forEach(t => {
     const btn = document.getElementById(`tab-btn-${t}`);
     const content = document.getElementById(`tab-content-${t}`);
-    if (t === tabName) {
-      btn.className = "flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 whitespace-nowrap";
-      content.classList.remove('hidden');
-    } else {
-      btn.className = "flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all text-slate-600 flex items-center justify-center gap-1.5 whitespace-nowrap";
-      content.classList.add('hidden');
+    if (btn && content) {
+      if (t === tabName) {
+        btn.className = "flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 whitespace-nowrap";
+        content.classList.remove('hidden');
+      } else {
+        btn.className = "flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all text-slate-600 flex items-center justify-center gap-1.5 whitespace-nowrap";
+        content.classList.add('hidden');
+      }
     }
   });
 }
