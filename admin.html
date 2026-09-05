@@ -43,15 +43,15 @@
                     <span class="px-2 py-0.5 text-[10px] font-mono font-bold bg-slate-800 text-white rounded-md">系統公版後台</span>
                 </h1>
             </div>
-            <a href="index.html" class="text-xs font-semibold text-brand-600 hover:text-brand-700">
-                返回前台 ➔
-            </a>
+            <div class="flex items-center gap-3">
+                <span id="admin-user-tag" class="text-xs font-semibold text-slate-500">驗證身份中...</span>
+                <a href="index.html" class="text-xs font-semibold text-brand-600 hover:text-brand-700">返回前台 ➔</a>
+            </div>
         </div>
     </header>
 
     <!-- 主區塊 -->
     <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 space-y-6 overflow-y-auto">
-        <!-- 分頁 Tab -->
         <div class="flex items-center bg-slate-200/80 p-1 rounded-2xl w-full sm:w-fit">
             <button id="tab-btn-airlines" class="px-5 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5">
                 <i data-lucide="plane" class="w-4 h-4 text-sky-600"></i>
@@ -63,7 +63,7 @@
             </button>
         </div>
 
-        <!-- ==================== 1. 航空公司管理 ==================== -->
+        <!-- 1. 航空公司管理 -->
         <section id="section-airlines" class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
@@ -79,7 +79,7 @@
             <div id="airlines-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
-        <!-- ==================== 2. 國家急難救助管理 ==================== -->
+        <!-- 2. 國家急難救助管理 -->
         <section id="section-countries" class="hidden space-y-4">
             <div class="flex items-center justify-between">
                 <div>
@@ -123,20 +123,20 @@
 
                 <div class="space-y-1 pt-1 border-t border-slate-100">
                     <label class="block text-[11px] font-bold text-slate-700">托運行李規範</label>
-                    <input type="text" id="airline-checked-quota" required placeholder="件數與重量，如：2 件 (每件 23 kg)" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs font-bold">
-                    <input type="text" id="airline-checked-dim" required placeholder="尺寸規範，如：三邊總和 ≤ 158 cm" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs">
+                    <input type="text" id="airline-checked-quota" required placeholder="如：2 件 (每件 23 kg)" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs font-bold">
+                    <input type="text" id="airline-checked-dim" required placeholder="如：三邊總和 ≤ 158 cm" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs">
                 </div>
 
                 <div class="space-y-1 pt-1 border-t border-slate-100">
                     <label class="block text-[11px] font-bold text-slate-700">手提行李規範</label>
-                    <input type="text" id="airline-carry-quota" required placeholder="件數與重量，如：1 件 (7 kg)" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs font-bold">
-                    <input type="text" id="airline-carry-dim" required placeholder="長寬高尺寸，如：55 x 40 x 23 cm" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs">
+                    <input type="text" id="airline-carry-quota" required placeholder="如：1 件 (7 kg)" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs font-bold">
+                    <input type="text" id="airline-carry-dim" required placeholder="如：55 x 40 x 23 cm" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs">
                 </div>
 
                 <div class="space-y-1 pt-1 border-t border-slate-100">
                     <label class="block text-[11px] font-bold text-slate-700">隨身物品規範</label>
-                    <input type="text" id="airline-personal-quota" required placeholder="件數與型態，如：1 件 (隨身包/筆電包)" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs font-bold">
-                    <input type="text" id="airline-personal-dim" required placeholder="長寬高尺寸，如：40 x 30 x 10 cm" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs">
+                    <input type="text" id="airline-personal-quota" required placeholder="如：1 件 (隨身包/筆電包)" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs font-bold">
+                    <input type="text" id="airline-personal-dim" required placeholder="如：40 x 30 x 10 cm" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs">
                 </div>
 
                 <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
@@ -171,11 +171,11 @@
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">駐外館處 / 急難救助電話</label>
-                    <input type="text" id="country-emergency" required placeholder="如：+81-3-3280-7811 (台北駐日代表處)" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs font-medium">
+                    <input type="text" id="country-emergency" required placeholder="如：+81-3-3280-7811" class="w-full h-[38px] px-3 border border-slate-200 rounded-xl text-xs font-medium">
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">旅遊須知備忘</label>
-                    <textarea id="country-memo" rows="2" placeholder="求助語言備註、外籍旅客諮詢專線等" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs"></textarea>
+                    <textarea id="country-memo" rows="2" placeholder="求助語言備註、諮詢專線等" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs"></textarea>
                 </div>
                 <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
                     <button type="button" id="btn-cancel-country" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
@@ -185,8 +185,11 @@
         </div>
     </div>
 
-    <!-- 後台主邏輯 -->
+    <!-- 後台邏輯與開發者身分驗證 -->
     <script type="module">
+        import { db } from "./js/config/firebase.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { subscribeAuthState } from "./js/api/authApi.js";
         import { 
             getAirlineTemplates, 
             saveAirlineTemplate, 
@@ -312,12 +315,32 @@
             }
         };
 
-        // 頁面監聽
+        // 開發者身分檢查與頁面生命週期
         window.addEventListener('DOMContentLoaded', () => {
-            loadAirlines();
-            loadCountries();
+            subscribeAuthState(async (user) => {
+                if (!user) {
+                    alert("請先登入！");
+                    window.location.href = "login.html";
+                    return;
+                }
 
-            // Tab 切換
+                try {
+                    const adminSnap = await getDoc(doc(db, "system_admins", user.uid));
+                    if (!adminSnap.exists()) {
+                        alert("權限不足：您並非平台開發者管理員，無法進入公版後台！");
+                        window.location.href = "index.html";
+                        return;
+                    }
+
+                    document.getElementById('admin-user-tag').innerText = `開發者: ${user.displayName || user.email}`;
+                    loadAirlines();
+                    loadCountries();
+                } catch (err) {
+                    alert("驗證開發者權限失敗: " + err.message);
+                    window.location.href = "index.html";
+                }
+            });
+
             document.getElementById('tab-btn-airlines').onclick = () => {
                 document.getElementById('tab-btn-airlines').className = "px-5 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5";
                 document.getElementById('tab-btn-countries').className = "px-5 py-2 text-xs font-bold rounded-xl transition-all text-slate-600 flex items-center gap-1.5";
@@ -331,7 +354,6 @@
                 document.getElementById('section-airlines').classList.add('hidden');
             };
 
-            // 航司 Modal 控制
             document.getElementById('btn-add-airline').onclick = () => {
                 document.getElementById('modal-airline-title').innerText = "新增航空公司規範";
                 document.getElementById('form-airline').reset();
@@ -360,7 +382,6 @@
                 loadAirlines();
             };
 
-            // 國家 Modal 控制
             document.getElementById('btn-add-country').onclick = () => {
                 document.getElementById('modal-country-title').innerText = "新增國家求助資訊";
                 document.getElementById('form-country').reset();
