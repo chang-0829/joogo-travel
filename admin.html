@@ -42,8 +42,8 @@
 </head>
 <body class="h-full flex flex-col font-sans text-slate-800 antialiased bg-[#f8fafc]">
 
-    <!-- ==================== 頂部導覽列 (融入背景、無突兀白底框) ==================== -->
-    <header class="sticky top-0 z-30 bg-[#f8fafc]/90 backdrop-blur-md border-b border-slate-200/50 pt-[env(safe-area-inset-top)]">
+    <!-- ==================== 頂部導覽列 (完全融入背景、移除分隔線) ==================== -->
+    <header class="sticky top-0 z-30 bg-[#f8fafc]/90 backdrop-blur-md pt-[env(safe-area-inset-top)]">
         <div class="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
             
             <div class="flex items-center gap-2.5">
@@ -130,16 +130,25 @@
 
         <!-- ==================== VIEW 1: 國家列表視圖 ==================== -->
         <section id="view-country-list" class="space-y-5">
-            <!-- 頂部乾淨標題 + 右側新增按鈕 -->
-            <div class="flex items-center justify-between">
+            <!-- 標題與操作區 -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h2 class="text-xl font-bold text-slate-900 tracking-tight">管理國家/地區</h2>
-                <button id="btn-add-country-modal" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>新增國家/地區</span>
-                </button>
+                
+                <div class="flex items-center gap-3">
+                    <!-- 搜尋框 -->
+                    <div class="relative w-full sm:w-64">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        <input type="text" id="country-search-input" placeholder="搜尋國家或地區..." class="w-full h-10 pl-9 pr-3.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:border-brand-500 transition-all shadow-xs">
+                    </div>
+
+                    <button id="btn-add-country-modal" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer shrink-0">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>新增國家/地區</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- 國家卡片 Grid (移除二線城市標籤，俐落精巧) -->
+            <!-- 國家卡片 Grid (移除幣別、時差、封面張數，清爽純粹) -->
             <div id="countries-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </section>
 
@@ -213,7 +222,7 @@
             <div id="detail-panel-emergency" class="hidden bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
                 <div class="pb-1">
                     <h3 class="text-sm font-bold text-slate-900">各國急難救助專線</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">提供當地警消、駐外辦事處直撥號碼，旅伴可一鍵直撥[span_3](start_span)[span_3](end_span)。</p>
+                    <p class="text-xs text-slate-400 mt-0.5">提供當地警消、駐外辦事處直撥號碼，旅伴可一鍵直撥[span_0](start_span)[span_0](end_span)。</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -256,7 +265,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">航空公司行李規範庫</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">主揪設定航班時可一鍵套用[span_4](start_span)[span_4](end_span)。</p>
+                    <p class="text-xs text-slate-400 mt-0.5">主揪設定航班時可一鍵套用[span_1](start_span)[span_1](end_span)。</p>
                 </div>
                 <button id="btn-add-airline" class="h-10 px-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer">
                     <i data-lucide="plus" class="w-4 h-4"></i>
@@ -293,16 +302,35 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">時區</label>
+                        <!-- 完整時區 (單選，不含台灣時差文字) -->
                         <select id="country-timezone" class="w-full h-11 px-3 border border-slate-200 rounded-xl font-bold text-slate-900 bg-white">
-                            <option value="-8">UTC-8 (慢 8 小時)</option>
-                            <option value="-7">UTC-7 (慢 7 小時)</option>
-                            <option value="-6">UTC-6 (慢 6 小時)</option>
-                            <option value="-1">UTC-1 (慢 1 小時)</option>
-                            <option value="0" selected>UTC+0 (與台灣無時差)</option>
-                            <option value="+1">UTC+1 (快 1 小時)</option>
-                            <option value="+2">UTC+2 (快 2 小時)</option>
-                            <option value="-13">UTC-13 (慢 13 小時)</option>
-                            <option value="-16">UTC-16 (慢 16 小時)</option>
+                            <option value="-12">UTC-12:00</option>
+                            <option value="-11">UTC-11:00</option>
+                            <option value="-10">UTC-10:00</option>
+                            <option value="-9">UTC-09:00</option>
+                            <option value="-8">UTC-08:00</option>
+                            <option value="-7">UTC-07:00</option>
+                            <option value="-6">UTC-06:00</option>
+                            <option value="-5">UTC-05:00</option>
+                            <option value="-4">UTC-04:00</option>
+                            <option value="-3">UTC-03:00</option>
+                            <option value="-2">UTC-02:00</option>
+                            <option value="-1">UTC-01:00</option>
+                            <option value="0">UTC±00:00</option>
+                            <option value="1">UTC+01:00</option>
+                            <option value="2">UTC+02:00</option>
+                            <option value="3">UTC+03:00</option>
+                            <option value="4">UTC+04:00</option>
+                            <option value="5">UTC+05:00</option>
+                            <option value="6">UTC+06:00</option>
+                            <option value="7">UTC+07:00</option>
+                            <option value="8" selected>UTC+08:00</option>
+                            <option value="9">UTC+09:00</option>
+                            <option value="10">UTC+10:00</option>
+                            <option value="11">UTC+11:00</option>
+                            <option value="12">UTC+12:00</option>
+                            <option value="13">UTC+13:00</option>
+                            <option value="14">UTC+14:00</option>
                         </select>
                     </div>
                 </div>
@@ -393,6 +421,7 @@
         let activeCountryId = null;
         let activeCountryData = null;
         let currentRegionTags = [];
+        let searchQuery = "";
 
         function showToast(msg) {
             const toast = document.getElementById('toast-message');
@@ -426,7 +455,7 @@
         document.getElementById('btn-close-drawer').addEventListener('click', window.closeDrawer);
         backdrop.addEventListener('click', window.closeDrawer);
 
-        // ==================== 標籤 Badge 交互邏輯 (Enter 新增 / 叉叉刪除) ====================
+        // ==================== 地區標籤交互 (Enter 新增 / 叉叉刪除) ====================
         const regionInput = document.getElementById('region-tag-input');
         const badgeList = document.getElementById('tag-badge-list');
 
@@ -459,7 +488,7 @@
             }
         });
 
-        // ==================== 頂層頁面視圖切換 ====================
+        // ==================== 頁面視圖切換 ====================
         window.switchView = function(viewName) {
             const isCountryList = viewName === 'country-list';
             const isCountryDetail = viewName === 'country-detail';
@@ -480,21 +509,31 @@
             }
         };
 
-        // ==================== 載入國家列表 (卡片不顯示二線城市，俐落乾淨) ====================
-        async function loadCountries() {
-            const querySnapshot = await getDocs(collection(db, "templates", "countries", "items"));
-            currentCountries = [];
-            querySnapshot.forEach(docSnap => {
-                currentCountries.push({ id: docSnap.id, ...docSnap.data() });
+        // ==================== 搜尋框監聽 ====================
+        const searchInput = document.getElementById('country-search-input');
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim().toLowerCase();
+            renderCountries();
+        });
+
+        // ==================== 渲染國家卡片列表 (純淨無雜訊) ====================
+        function renderCountries() {
+            const grid = document.getElementById('countries-grid');
+            
+            // 模糊搜尋過濾（支援國名與所屬地區）
+            const filtered = currentCountries.filter(c => {
+                if (!searchQuery) return true;
+                const matchName = c.id.toLowerCase().includes(searchQuery);
+                const matchRegions = (c.regions || []).some(r => r.toLowerCase().includes(searchQuery));
+                return matchName || matchRegions;
             });
 
-            const grid = document.getElementById('countries-grid');
-            if (currentCountries.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center text-xs text-slate-400">目前尚無國家資料，請點擊右上角新增。</div>`;
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-16 text-center text-xs text-slate-400">找不到符合條件的國家或地區</div>`;
                 return;
             }
 
-            grid.innerHTML = currentCountries.map(c => {
+            grid.innerHTML = filtered.map(c => {
                 const cover = (c.coverImages && c.coverImages.length > 0) ? c.coverImages[0] : 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=600';
                 return `
                 <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between">
@@ -502,22 +541,15 @@
                         <div class="relative h-36 w-full bg-slate-100 overflow-hidden">
                             <img src="${cover}" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent"></div>
-                            <div class="absolute top-3 right-3 flex items-center gap-1.5">
-                                <span class="px-2.5 py-1 text-[11px] font-mono font-bold bg-white/90 backdrop-blur-md rounded-lg text-slate-800 shadow-xs">
-                                    ${c.currency || 'USD'}
-                                </span>
-                                <span class="px-2.5 py-1 text-[11px] font-bold bg-slate-900/80 backdrop-blur-md rounded-lg text-white">
-                                    ${c.timezone >= 0 ? '+' + c.timezone : c.timezone}h
-                                </span>
-                            </div>
+                            
+                            <!-- 僅保留國名，去除幣別、時差、封面數量 -->
                             <div class="absolute bottom-3 left-3 text-white">
                                 <h3 class="font-extrabold text-base leading-tight drop-shadow-xs">${c.id}</h3>
-                                <p class="text-[10px] text-slate-200 mt-0.5">${c.coverImages ? c.coverImages.length : 0} 張備用封面圖</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 操作列：移除醜陋分割線，乾淨自然 -->
+                    <!-- 操作區 -->
                     <div class="p-4 flex items-center justify-between">
                         <button onclick="window.openCountryDetail('${c.id}')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 py-1">
                             <span>管理公版須知與優惠券</span>
@@ -535,6 +567,15 @@
             if (window.lucide) lucide.createIcons();
         }
 
+        async function loadCountries() {
+            const querySnapshot = await getDocs(collection(db, "templates", "countries", "items"));
+            currentCountries = [];
+            querySnapshot.forEach(docSnap => {
+                currentCountries.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            renderCountries();
+        }
+
         // ==================== 國家詳情細部設定 ====================
         window.openCountryDetail = async function(countryId) {
             activeCountryId = countryId;
@@ -544,7 +585,9 @@
             activeCountryData = docSnap.data();
 
             document.getElementById('detail-country-name').innerText = countryId;
-            document.getElementById('detail-country-badge').innerText = `${activeCountryData.currency || 'USD'} / 時區 ${activeCountryData.timezone >= 0 ? '+' + activeCountryData.timezone : activeCountryData.timezone}h`;
+            const tz = activeCountryData.timezone !== undefined ? activeCountryData.timezone : "8";
+            const tzStr = Number(tz) >= 0 ? `+${String(tz).padStart(2, '0')}:00` : `-${String(Math.abs(tz)).padStart(2, '0')}:00`;
+            document.getElementById('detail-country-badge').innerText = `${activeCountryData.currency || 'USD'} / UTC${tzStr}`;
 
             // 回填行前須知
             const n = activeCountryData.notice || {};
@@ -673,6 +716,7 @@
             document.getElementById('modal-country-title').innerText = "新增國家/地區";
             document.getElementById('form-country-base').reset();
             document.getElementById('country-name').readOnly = false;
+            document.getElementById('country-timezone').value = "8"; // 預設 UTC+8
             currentRegionTags = [];
             renderRegionTags();
             document.getElementById('modal-country').classList.remove('hidden');
@@ -685,7 +729,7 @@
             document.getElementById('country-name').value = item.id;
             document.getElementById('country-name').readOnly = true;
             document.getElementById('country-currency').value = item.currency || 'USD';
-            document.getElementById('country-timezone').value = item.timezone !== undefined ? item.timezone : "0";
+            document.getElementById('country-timezone').value = item.timezone !== undefined ? String(item.timezone) : "8";
             
             currentRegionTags = [...(item.regions || [])];
             renderRegionTags();
@@ -711,7 +755,6 @@
             const currency = document.getElementById('country-currency').value.trim().toUpperCase();
             const timezone = parseInt(document.getElementById('country-timezone').value, 10);
             
-            // 若輸入框還有沒按 Enter 的文字，自動加入標籤
             const leftover = regionInput.value.trim();
             if (leftover && !currentRegionTags.includes(leftover)) {
                 currentRegionTags.push(leftover);
