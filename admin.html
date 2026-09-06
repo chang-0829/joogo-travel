@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="h-full bg-[#f8fafc] overscroll-none">
+<html lang="zh-TW" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>揪行 JooGO 後台管理</title>
-    
-    <!-- Tailwind CSS & Lucide Icons -->
+    <title>揪行 JooGO - 系統公版與國家管理後台</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -21,255 +22,181 @@
                             600: '#0369a1',
                             700: '#075985',
                         }
+                    },
+                    boxShadow: {
+                        '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+                        'xs': '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
                     }
                 }
             }
         }
     </script>
+
     <style>
-        * { -webkit-tap-highlight-color: transparent; }
+        * {
+            -webkit-tap-highlight-color: transparent;
+            outline-color: #0284c7;
+        }
         body {
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
         }
-        /* 防止 iOS Safari 聚焦放大 */
-        input, select, textarea {
-            font-size: 16px !important;
-            outline: none !important;
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        input:focus, select:focus, textarea:focus {
-            border-color: #0284c7 !important;
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="h-full flex flex-col lg:flex-row font-sans text-slate-800 antialiased bg-[#f8fafc] overflow-hidden">
+<body class="h-full bg-slate-50 text-slate-800 antialiased flex flex-col lg:flex-row overflow-hidden">
 
-    <!-- ==================== 電腦版專用：專業 SaaS 左側固定側邊欄 ==================== -->
-    <aside id="desktop-sidebar" class="hidden lg:flex lg:flex-col lg:w-64 bg-white border-r border-slate-200/80 h-full shrink-0 z-20 select-none justify-between">
-        <div class="p-5 space-y-6 overflow-y-auto no-scrollbar">
-            <!-- 品牌識別 -->
-            <div class="flex items-center gap-3 pb-2 border-b border-slate-100">
-                <div class="w-10 h-10 rounded-2xl bg-brand-50 border border-brand-100 text-brand-600 flex items-center justify-center font-black text-sm shrink-0">
-                    J
-                </div>
-                <div class="min-w-0">
-                    <div class="flex items-center gap-1.5">
-                        <span class="font-extrabold text-base text-slate-900 tracking-tight font-mono">揪行 JooGO</span>
+    <!-- Toast 提示訊息 -->
+    <div id="toast-message" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-lg transition-all duration-200 hidden flex items-center gap-2">
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toast-text">已更新</span>
+    </div>
+
+    <!-- ==================== 手機端頂部導覽列 (lg:hidden) ==================== -->
+    <header class="lg:hidden h-14 bg-white border-b border-slate-200/80 px-4 flex items-center justify-between shrink-0 z-30">
+        <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
+                <i data-lucide="compass" class="w-4 h-4"></i>
+            </div>
+            <span class="font-extrabold text-base text-slate-900 tracking-tight">揪行後台</span>
+        </div>
+        <button id="btn-hamburger" type="button" class="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-50 active:scale-95 transition-all">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+    </header>
+
+    <!-- 手機端抽屜式選單 Backdrop & Drawer -->
+    <div id="drawer-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 hidden opacity-0 transition-opacity duration-300 lg:hidden"></div>
+    <div id="drawer-menu" class="fixed top-0 right-0 bottom-0 w-72 bg-white z-50 shadow-2xl p-5 flex flex-col justify-between transform translate-x-full transition-transform duration-300 lg:hidden">
+        <div class="space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <span class="text-sm font-extrabold text-slate-900">功能導覽</span>
+                <button id="btn-close-drawer" type="button" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <nav class="space-y-1">
+                <button id="drawer-btn-countries" type="button" onclick="switchView('country-list'); closeDrawer();" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold bg-brand-50 text-brand-600 transition-all">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="globe" class="w-4 h-4"></i>
+                        <span>管理國家/地區</span>
                     </div>
-                    <p class="text-[11px] text-slate-400 truncate">公版資料庫管理中心</p>
+                </button>
+                <button id="drawer-btn-schema-notice" type="button" onclick="switchView('schema-notice'); closeDrawer();" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                        <span>行前須知題目設定</span>
+                    </div>
+                </button>
+                <button id="drawer-btn-schema-emergency" type="button" onclick="switchView('schema-emergency'); closeDrawer();" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                        <span>急難救助題目設定</span>
+                    </div>
+                </button>
+                <button id="drawer-btn-airlines" type="button" onclick="switchView('airlines'); closeDrawer();" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="plane" class="w-4 h-4"></i>
+                        <span>航空公司行李庫</span>
+                    </div>
+                </button>
+            </nav>
+        </div>
+        <a href="index.html" class="w-full h-11 border border-slate-200 rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>回到前台首頁</span>
+        </a>
+    </div>
+
+    <!-- ==================== 電腦版側邊導覽列 (hidden lg:flex) ==================== -->
+    <aside class="hidden lg:flex w-64 h-full bg-white border-r border-slate-200/80 flex-col justify-between p-5 shrink-0 z-20">
+        <div class="space-y-6">
+            <div class="flex items-center gap-3 px-1">
+                <div class="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 shadow-2xs">
+                    <i data-lucide="compass" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base text-slate-900 leading-tight">揪行後台</h1>
+                    <span class="text-[10px] text-slate-400 font-mono tracking-wider uppercase">Master Console</span>
                 </div>
             </div>
 
-            <!-- 分組 1：公版資料庫管理 (獨立行前資訊設定與急難救助設定) -->
-            <div class="space-y-1">
-                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">公版資料庫管理</div>
-                
-                <button type="button" onclick="switchView('country-list')" id="sidebar-btn-countries" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold bg-brand-50 text-brand-600 transition-all cursor-pointer">
-                    <i data-lucide="globe" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">管理國家/地區</span>
+            <nav class="space-y-1">
+                <button id="sidebar-btn-countries" type="button" onclick="switchView('country-list')" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold bg-brand-50 text-brand-600 transition-all cursor-pointer">
+                    <i data-lucide="globe" class="w-4 h-4"></i>
+                    <span>管理國家/地區</span>
                 </button>
-
-                <button type="button" onclick="switchView('schema-notice')" id="sidebar-btn-schema-notice" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
-                    <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">行前資訊設定</span>
+                <button id="sidebar-btn-schema-notice" type="button" onclick="switchView('schema-notice')" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
+                    <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                    <span>行前須知題目</span>
                 </button>
-
-                <button type="button" onclick="switchView('schema-emergency')" id="sidebar-btn-schema-emergency" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
-                    <i data-lucide="phone-call" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">急難救助設定</span>
+                <button id="sidebar-btn-schema-emergency" type="button" onclick="switchView('schema-emergency')" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                    <span>急難救助題目</span>
                 </button>
-
-                <button type="button" onclick="switchView('airlines')" id="sidebar-btn-airlines" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
-                    <i data-lucide="plane" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">航空公司行李庫</span>
+                <button id="sidebar-btn-airlines" type="button" onclick="switchView('airlines')" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
+                    <i data-lucide="plane" class="w-4 h-4"></i>
+                    <span>航空公司行李庫</span>
                 </button>
-            </div>
-
-            <!-- 分組 2：前台服務捷徑 -->
-            <div class="space-y-1 pt-2">
-                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">前台服務</div>
-                <a href="index.html" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
-                    <i data-lucide="external-link" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">前往前台首頁</span>
-                </a>
-            </div>
+            </nav>
         </div>
 
-        <div class="p-5 border-t border-slate-100/80 text-center space-y-0.5">
-            <p class="text-[11px] text-slate-400 font-mono">Copyright © 2026</p>
-            <p class="text-[11px] text-slate-400">揪行 JooGO All Rights Reserved.</p>
+        <div class="space-y-3 pt-4 border-t border-slate-100">
+            <a href="index.html" class="w-full h-11 border border-slate-200 rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>回到前台首頁</span>
+            </a>
+            <div class="text-[11px] text-slate-400 font-mono text-center">&copy; JooGO System</div>
         </div>
     </aside>
 
-    <!-- ==================== 右側主舞台容器 ==================== -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden">
+    <!-- ==================== 主內容展示區域 (Main Viewport) ==================== -->
+    <main class="flex-1 h-full overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <div class="max-w-5xl mx-auto">
 
-        <!-- 手機端專用頁首 -->
-        <header class="lg:hidden sticky top-0 z-30 bg-[#f8fafc]/95 backdrop-blur-md pt-[env(safe-area-inset-top)] border-b border-slate-200/50 shrink-0">
-            <div class="max-w-4xl mx-auto px-5 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <span class="font-extrabold text-lg tracking-tight text-slate-900 flex items-center gap-1.5">
-                        <span>揪行</span>
-                        <span class="font-mono text-brand-600">JooGO</span>
-                    </span>
-                    <span class="px-2.5 py-0.5 text-xs font-bold bg-sky-50 text-sky-600 border border-sky-200/70 rounded-lg">
-                        後台管理
-                    </span>
-                </div>
-
-                <button id="btn-hamburger" type="button" aria-label="選單" class="w-11 h-11 flex items-center justify-center text-slate-600 hover:text-slate-900 active:scale-95 rounded-xl border border-slate-200/80 bg-white/60 transition-all">
-                    <i data-lucide="menu" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- 手機端抽屜選單 -->
-        <div id="drawer-backdrop" class="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-xs hidden opacity-0 transition-opacity duration-300"></div>
-        <aside id="drawer-menu" class="fixed top-0 right-0 bottom-0 z-50 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
-            <div class="p-6 space-y-6">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <div class="flex items-center gap-2">
-                        <span class="font-bold text-base text-slate-900">揪行 JooGO</span>
-                        <span class="px-2 py-0.5 text-[11px] font-bold bg-sky-50 text-sky-600 rounded-md">管理</span>
-                    </div>
-                    <button id="btn-close-drawer" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-700 active:scale-90 rounded-xl hover:bg-slate-100">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                </div>
-
-                <div class="space-y-1.5">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">資料庫選單</p>
-                    <button onclick="switchView('country-list'); closeDrawer();" id="drawer-btn-countries" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold bg-brand-50 text-brand-600 transition-all">
-                        <div class="flex items-center gap-2.5">
-                            <i data-lucide="globe" class="w-4 h-4"></i>
-                            <span>管理國家/地區</span>
-                        </div>
-                        <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
-                    </button>
-
-                    <button onclick="switchView('schema-notice'); closeDrawer();" id="drawer-btn-schema-notice" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
-                        <div class="flex items-center gap-2.5">
-                            <i data-lucide="info" class="w-4 h-4 text-sky-600"></i>
-                            <span>行前資訊設定</span>
-                        </div>
-                        <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
-                    </button>
-
-                    <button onclick="switchView('schema-emergency'); closeDrawer();" id="drawer-btn-schema-emergency" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
-                        <div class="flex items-center gap-2.5">
-                            <i data-lucide="phone-call" class="w-4 h-4 text-rose-600"></i>
-                            <span>急難救助設定</span>
-                        </div>
-                        <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
-                    </button>
-
-                    <button onclick="switchView('airlines'); closeDrawer();" id="drawer-btn-airlines" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
-                        <div class="flex items-center gap-2.5">
-                            <i data-lucide="plane" class="w-4 h-4 text-sky-600"></i>
-                            <span>航空公司行李庫</span>
-                        </div>
-                        <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="p-6 border-t border-slate-100">
-                <a href="index.html" class="w-full h-11 bg-slate-100 hover:bg-slate-200 active:scale-98 rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-slate-700 transition-all">
-                    <i data-lucide="external-link" class="w-4 h-4"></i>
-                    <span>返回前台列表</span>
-                </a>
-            </div>
-        </aside>
-
-        <!-- 主內容管理區 -->
-        <main class="flex-1 max-w-5xl xl:max-w-6xl w-full mx-auto px-5 sm:px-8 py-6 overflow-y-auto">
-
-            <!-- VIEW 1: 國家選擇頁 -->
+            <!-- 視圖一：國家列表頁 -->
             <section id="view-country-list" class="space-y-4">
-                <div class="flex items-center justify-between gap-4 h-11 w-full">
+                <div class="h-11 flex items-center justify-between">
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">管理國家/地區</h2>
-                    <button id="btn-add-country-modal" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        <input type="text" id="country-search-input" placeholder="搜尋國家或城市名稱..." class="w-full h-11 pl-10 pr-4 bg-white border border-slate-200/80 rounded-2xl text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 shadow-2xs transition-all">
+                    </div>
+                    <button type="button" id="btn-add-country-modal" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
                         <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span>新增</span>
+                        <span>新增國家/地區</span>
                     </button>
                 </div>
 
-                <div class="relative w-full">
-                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                    <input type="text" id="country-search-input" placeholder="搜尋國家或地區..." class="w-full h-11 pl-10 pr-4 bg-white border border-slate-200/80 rounded-2xl font-medium text-slate-800 placeholder:text-slate-400 focus:border-brand-500 transition-all shadow-xs">
+                <!-- 洲別切換 Tab 列 -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar" id="continent-tabs">
+                    <button type="button" onclick="window.setContinentFilter('ALL')" class="continent-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-brand-500 text-white shadow-xs" data-continent="ALL">全部</button>
+                    <button type="button" onclick="window.setContinentFilter('亞洲')" class="continent-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all" data-continent="亞洲">亞洲</button>
+                    <button type="button" onclick="window.setContinentFilter('歐洲')" class="continent-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all" data-continent="歐洲">歐洲</button>
+                    <button type="button" onclick="window.setContinentFilter('美洲')" class="continent-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all" data-continent="美洲">美洲</button>
+                    <button type="button" onclick="window.setContinentFilter('大洋洲')" class="continent-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all" data-continent="大洋洲">大洋洲</button>
+                    <button type="button" onclick="window.setContinentFilter('非洲')" class="continent-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all" data-continent="非洲">非洲</button>
+                    <button type="button" onclick="window.setContinentFilter('其他')" class="continent-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all" data-continent="其他">其他</button>
                 </div>
 
-                <div id="countries-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pt-1"></div>
+                <div id="countries-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-1"></div>
             </section>
 
-            <!-- VIEW 2: 行前資訊設定 -->
-            <section id="view-schema-notice" class="hidden space-y-4 pb-12">
-                <div class="flex items-center justify-between gap-4 h-11 w-full">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
-                            <i data-lucide="info" class="w-4 h-4"></i>
-                        </div>
-                        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">行前資訊設定</h2>
-                    </div>
-                    
-                    <button onclick="saveNoticeSchema()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
-                        <i data-lucide="check" class="w-4 h-4"></i>
-                        <span>儲存設定</span>
-                    </button>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <p class="text-xs text-slate-400">定義全域各國行程共用的行前須知公版題目與格式欄位。</p>
-                    <button type="button" onclick="addSchemaItem('notice')" class="h-9 px-3.5 text-xs font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-xl transition-all flex items-center gap-1 shrink-0 cursor-pointer">
-                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                        <span>增加題目</span>
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-xs">
-                    <div id="schema-notice-container" class="space-y-3"></div>
-                </div>
-            </section>
-
-            <!-- VIEW 3: 急難救助設定 -->
-            <section id="view-schema-emergency" class="hidden space-y-4 pb-12">
-                <div class="flex items-center justify-between gap-4 h-11 w-full">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-                            <i data-lucide="phone-call" class="w-4 h-4"></i>
-                        </div>
-                        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">急難救助設定</h2>
-                    </div>
-                    
-                    <button onclick="saveEmergencySchema()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
-                        <i data-lucide="check" class="w-4 h-4"></i>
-                        <span>儲存設定</span>
-                    </button>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <p class="text-xs text-slate-400">定義全域各國行程共用的急難救助專線與聯絡窗口題目。</p>
-                    <button type="button" onclick="addSchemaItem('emergency')" class="h-9 px-3.5 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all flex items-center gap-1 shrink-0 cursor-pointer">
-                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                        <span>增加題目</span>
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-xs">
-                    <div id="schema-emergency-container" class="space-y-3"></div>
-                </div>
-            </section>
-
-            <!-- VIEW 4: 各國家地區設定頁 -->
+            <!-- 視圖二：國家公版詳情頁 -->
             <section id="view-country-detail" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-list')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
                         <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                        <span>返回 國家/地區 列表</span>
+                        <span>返回國家清單</span>
                     </button>
                     <button onclick="saveCurrentCountryDetail()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
                         <i data-lucide="check" class="w-4 h-4"></i>
@@ -278,72 +205,102 @@
                 </div>
 
                 <div class="h-11 flex items-center">
-                    <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight" id="detail-country-name">-</h3>
+                    <h2 id="detail-country-name" class="text-2xl font-extrabold text-slate-900 tracking-tight"></h2>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-1 items-start">
-                    <div class="lg:col-span-5 space-y-2">
-                        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">基本設定</div>
-                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
-                            <div class="p-3.5 px-4 flex items-center justify-between">
-                                <span class="text-sm font-bold text-slate-800">通用幣別</span>
-                                <input type="text" id="detail-base-currency" class="text-right font-mono font-bold text-slate-700 uppercase bg-transparent border-none w-36 p-0">
-                            </div>
-                            <div class="p-3.5 px-4 flex items-center justify-between">
-                                <span class="text-sm font-bold text-slate-800">時區 (UTC)</span>
-                                <input type="text" id="detail-base-timezone" class="text-right font-mono font-bold text-slate-700 bg-transparent border-none w-36 p-0">
-                            </div>
-                            
-                            <button type="button" onclick="switchView('country-regions-page')" class="w-full p-4 flex items-center justify-between hover:bg-slate-50/80 active:bg-slate-100 transition-colors text-left cursor-pointer">
-                                <span class="text-sm font-bold text-slate-800 block">旅遊地區</span>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs text-slate-400" id="detail-base-regions-count">已設定 0 個地區</span>
-                                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
-                                </div>
-                            </button>
-
-                            <button type="button" onclick="switchView('country-covers-page')" class="w-full p-4 flex items-center justify-between hover:bg-slate-50/80 active:bg-slate-100 transition-colors text-left cursor-pointer">
-                                <span class="text-sm font-bold text-slate-800 block">封面圖片庫</span>
-                                <div class="flex items-center gap-2">
-                                    <div id="detail-base-covers-preview-strip" class="flex items-center -space-x-2"></div>
-                                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
-                                </div>
-                            </button>
+                <!-- 國家基礎設定 (幣別、時差、洲別) -->
+                <div class="space-y-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">基礎資訊</span>
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
+                        <div class="p-3.5 px-4 flex items-center justify-between">
+                            <span class="text-sm font-bold text-slate-800">所屬洲別</span>
+                            <select id="detail-base-continent" class="text-right text-xs font-bold text-slate-800 bg-transparent border-none focus:outline-none cursor-pointer">
+                                <option value="亞洲">亞洲</option>
+                                <option value="歐洲">歐洲</option>
+                                <option value="美洲">美洲</option>
+                                <option value="大洋洲">大洋洲</option>
+                                <option value="非洲">非洲</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="p-3.5 px-4 flex items-center justify-between">
+                            <span class="text-sm font-bold text-slate-800">主要使用幣別</span>
+                            <input type="text" id="detail-base-currency" placeholder="例如：JPY, USD" class="text-right font-mono font-bold text-slate-800 placeholder:text-slate-300 uppercase bg-transparent border-none w-32 p-0 focus:outline-none">
+                        </div>
+                        <div class="p-3.5 px-4 flex items-center justify-between">
+                            <span class="text-sm font-bold text-slate-800">與台灣時差</span>
+                            <input type="text" id="detail-base-timezone" placeholder="例如：+1 (快 1 小時)" class="text-right font-bold text-slate-800 placeholder:text-slate-300 bg-transparent border-none w-44 p-0 focus:outline-none">
                         </div>
                     </div>
+                </div>
 
-                    <div class="lg:col-span-7 space-y-2">
-                        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">其他設定</div>
-                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
-                            <button type="button" onclick="switchView('country-notice-page')" class="w-full p-4 flex items-center justify-between hover:bg-slate-50/80 active:bg-slate-100 transition-colors text-left cursor-pointer">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
-                                        <i data-lucide="info" class="w-4 h-4"></i>
-                                    </div>
-                                    <span class="text-sm font-bold text-slate-800">公版行前須知</span>
+                <!-- 滿版子頁面入口列表 -->
+                <div class="space-y-2 pt-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">公版項目設定</span>
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
+                        <div onclick="switchView('country-regions-page')" class="p-4 flex items-center justify-between hover:bg-slate-50/70 active:bg-slate-100 transition-colors cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                                    <i data-lucide="map-pin" class="w-4 h-4"></i>
                                 </div>
-                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
-                            </button>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900">旅遊地區管理</h4>
+                                    <p class="text-xs text-slate-400" id="detail-base-regions-count">尚未設定區域</p>
+                                </div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                        </div>
 
-                            <button type="button" onclick="switchView('country-emergency-page')" class="w-full p-4 flex items-center justify-between hover:bg-slate-50/80 active:bg-slate-100 transition-colors text-left cursor-pointer">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                                        <i data-lucide="phone-call" class="w-4 h-4"></i>
-                                    </div>
-                                    <span class="text-sm font-bold text-slate-800">急難救助資訊</span>
+                        <div onclick="switchView('country-covers-page')" class="p-4 flex items-center justify-between hover:bg-slate-50/70 active:bg-slate-100 transition-colors cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                                    <i data-lucide="image" class="w-4 h-4"></i>
                                 </div>
-                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
-                            </button>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900">封面相簿庫</h4>
+                                    <div class="flex items-center gap-1.5 mt-1" id="detail-base-covers-preview-strip"></div>
+                                </div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                        </div>
 
-                            <button type="button" onclick="switchView('country-coupons-page')" class="w-full p-4 flex items-center justify-between hover:bg-slate-50/80 active:bg-slate-100 transition-colors text-left cursor-pointer">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                                        <i data-lucide="ticket-percent" class="w-4 h-4"></i>
-                                    </div>
-                                    <span class="text-sm font-bold text-slate-800">公版優惠券</span>
+                        <div onclick="switchView('country-notice-page')" class="p-4 flex items-center justify-between hover:bg-slate-50/70 active:bg-slate-100 transition-colors cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                    <i data-lucide="clipboard-list" class="w-4 h-4"></i>
                                 </div>
-                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
-                            </button>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900">行前須知公版</h4>
+                                    <p class="text-xs text-slate-400">電壓插座、簽證、網路與退稅規定</p>
+                                </div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                        </div>
+
+                        <div onclick="switchView('country-emergency-page')" class="p-4 flex items-center justify-between hover:bg-slate-50/70 active:bg-slate-100 transition-colors cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900">急難救助資訊</h4>
+                                    <p class="text-xs text-slate-400">直撥緊急電話、駐外館處專線與溝通提示</p>
+                                </div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                        </div>
+
+                        <div onclick="switchView('country-coupons-page')" class="p-4 flex items-center justify-between hover:bg-slate-50/70 active:bg-slate-100 transition-colors cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                    <i data-lucide="ticket" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900">推薦優惠券</h4>
+                                    <p class="text-xs text-slate-400">提供旅客該國家的免稅折價券與兌換碼</p>
+                                </div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
                         </div>
                     </div>
                 </div>
@@ -361,11 +318,11 @@
                         <span>儲存</span>
                     </button>
                 </div>
-            
+
                 <div class="h-11 flex items-center">
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">旅遊地區</h2>
                 </div>
-            
+
                 <div class="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 space-y-5 shadow-xs">
                     <!-- 新增主要區域（移除所有「例如」） -->
                     <div class="space-y-2">
@@ -377,17 +334,15 @@
                             </button>
                         </div>
                     </div>
-            
+
                     <div class="pt-2 border-t border-slate-100 space-y-3">
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">已建立的區域與城市 (<span id="regions-page-count">0</span>)</span>
-                        
-                        <!-- 兩層級區域清單 -->
                         <div id="regions-groups-container" class="space-y-3.5"></div>
                     </div>
                 </div>
             </section>
 
-            <!-- 滿版子頁面：封面圖片庫 -->
+            <!-- 滿版子頁面：封面相簿庫 -->
             <section id="view-country-covers-page" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
@@ -401,23 +356,29 @@
                 </div>
 
                 <div class="h-11 flex items-center">
-                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">封面圖片庫</h2>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">封面相簿庫</h2>
                 </div>
 
                 <div class="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 space-y-4 shadow-xs">
-                    <label id="cover-dropzone" class="border-2 border-dashed border-slate-200 hover:border-brand-500 bg-slate-50/60 hover:bg-brand-50/30 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]">
-                        <div id="dropzone-icon-container" class="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center transition-transform">
-                            <i data-lucide="image-plus" class="w-6 h-6"></i>
+                    <div id="cover-dropzone" class="border-2 border-dashed border-slate-200 hover:border-brand-500/60 rounded-2xl p-6 text-center transition-all bg-slate-50/50 cursor-pointer">
+                        <input type="file" id="cover-file-input" multiple accept="image/*" class="hidden">
+                        <div class="flex flex-col items-center gap-2 pointer-events-none">
+                            <div class="w-10 h-10 rounded-xl bg-white shadow-xs flex items-center justify-center text-slate-400">
+                                <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-700">拖曳圖片到此，或點擊上傳新封面</span>
+                            <span class="text-[11px] text-slate-400">支援 JPG, PNG, WEBP 高畫質旅遊風景圖</span>
                         </div>
-                        <span id="dropzone-label-text" class="text-sm font-bold text-slate-700">點擊選取或將照片拖曳至此上傳</span>
-                        <input type="file" id="cover-file-input" accept="image/*" multiple class="hidden">
-                    </label>
+                    </div>
 
-                    <div id="cover-thumbnails-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 pt-2"></div>
+                    <div class="space-y-2 pt-2">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">已上傳圖片 (首張為預設封面)</span>
+                        <div id="cover-thumbnails-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+                    </div>
                 </div>
             </section>
 
-            <!-- 滿版子頁面：公版行前須知 -->
+            <!-- 滿版子頁面：行前須知 -->
             <section id="view-country-notice-page" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
@@ -431,7 +392,7 @@
                 </div>
 
                 <div class="h-11 flex items-center justify-between">
-                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">公版行前須知</h2>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">行前須知資訊</h2>
                     <button onclick="switchView('schema-notice')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 cursor-pointer">
                         <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
                         <span>編輯題目規範</span>
@@ -441,9 +402,8 @@
                 <div id="notice-dynamic-fields-container" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4"></div>
             </section>
 
-            <!-- 滿版子頁面：急難救助資訊 -->
+            <!-- 滿版子頁面：急難救助資訊 (含三大直撥電話、駐外使館與自訂題目) -->
             <section id="view-country-emergency-page" class="hidden space-y-6 pb-16">
-                <!-- 頂部返回與儲存列 -->
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
                         <i data-lucide="chevron-left" class="w-5 h-5"></i>
@@ -454,7 +414,7 @@
                         <span>儲存</span>
                     </button>
                 </div>
-            
+
                 <div class="h-11 flex items-center justify-between">
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">急難救助資訊</h2>
                     <button onclick="switchView('schema-emergency')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 cursor-pointer">
@@ -462,7 +422,7 @@
                         <span>編輯自訂題目規範</span>
                     </button>
                 </div>
-            
+
                 <!-- 區塊一：當地緊急直撥專線 -->
                 <div class="space-y-2">
                     <div class="flex items-center justify-between px-1">
@@ -493,7 +453,7 @@
                         </div>
                     </div>
                 </div>
-            
+
                 <!-- 區塊二：駐外使館 / 辦事處資訊 -->
                 <div class="space-y-3">
                     <div class="flex items-center justify-between px-1">
@@ -506,12 +466,10 @@
                             <span>新增駐外館處</span>
                         </button>
                     </div>
-            
-                    <div id="embassies-container" class="space-y-3">
-                        <!-- 動態渲染各駐外館處卡片 -->
-                    </div>
+
+                    <div id="embassies-container" class="space-y-3"></div>
                 </div>
-            
+
                 <!-- 區塊三：公版動態自訂題目欄位 -->
                 <div class="space-y-2 pt-2">
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1 block">其他救助資訊與備註 (由急難救助題目庫動態生成)</span>
@@ -519,117 +477,157 @@
                 </div>
             </section>
 
-            <!-- 滿版子頁面：公版優惠券 -->
+            <!-- 滿版子頁面：優惠券 -->
             <section id="view-country-coupons-page" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
                         <i data-lucide="chevron-left" class="w-5 h-5"></i>
                         <span class="back-to-country-text">返回設定</span>
                     </button>
-                    <div class="flex items-center gap-2">
-                        <button onclick="openAddCouponModal()" class="h-11 px-4 text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 active:scale-95 rounded-2xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
-                            <span>新增優惠券</span>
-                        </button>
-                        <button onclick="saveCurrentCountryDetail()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
-                            <i data-lucide="check" class="w-4 h-4"></i>
-                            <span>儲存</span>
-                        </button>
-                    </div>
+                    <button onclick="openAddCouponModal()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>新增優惠券</span>
+                    </button>
                 </div>
 
                 <div class="h-11 flex items-center">
-                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">公版優惠券</h2>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">推薦優惠券</h2>
                 </div>
 
-                <div id="coupons-grid" class="pt-1"></div>
+                <div id="coupons-grid"></div>
             </section>
 
-            <!-- VIEW 5: 航司行李庫 -->
-            <section id="view-airlines" class="hidden space-y-4">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-2xl font-bold text-slate-900 tracking-tight">航空公司行李規範庫</h2>
-                    <button id="btn-add-airline" class="h-11 px-5 flex items-center justify-center gap-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 active:scale-95 rounded-2xl transition-all shadow-xs cursor-pointer">
+            <!-- 視圖三：行前須知題目設定規範 -->
+            <section id="view-schema-notice" class="hidden space-y-4 pb-12">
+                <div class="flex items-center justify-between gap-4 h-11 w-full">
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">行前須知題目規範</h2>
+                    <button onclick="saveNoticeSchema()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>儲存題目設定</span>
+                    </button>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 space-y-4 shadow-xs">
+                    <div id="schema-notice-container" class="space-y-2.5"></div>
+                    <button type="button" onclick="addSchemaItem('notice')" class="w-full h-11 border border-dashed border-slate-300 hover:border-brand-500 text-xs font-bold text-slate-600 hover:text-brand-600 rounded-xl flex items-center justify-center gap-1.5 transition-all">
                         <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span>新增航司</span>
+                        <span>新增行前須知題目</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 視圖四：急難救助題目設定規範 -->
+            <section id="view-schema-emergency" class="hidden space-y-4 pb-12">
+                <div class="flex items-center justify-between gap-4 h-11 w-full">
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">急難救助題目規範</h2>
+                    <button onclick="saveEmergencySchema()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>儲存題目設定</span>
+                    </button>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 space-y-4 shadow-xs">
+                    <div id="schema-emergency-container" class="space-y-2.5"></div>
+                    <button type="button" onclick="addSchemaItem('emergency')" class="w-full h-11 border border-dashed border-slate-300 hover:border-brand-500 text-xs font-bold text-slate-600 hover:text-brand-600 rounded-xl flex items-center justify-center gap-1.5 transition-all">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>新增急難救助題目</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 視圖五：航空公司行李公版庫 -->
+            <section id="view-airlines" class="hidden space-y-4 pb-12">
+                <div class="flex items-center justify-between gap-4 h-11 w-full">
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">航空公司行李公版庫</h2>
+                    <button id="btn-add-airline" type="button" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>新增航空公司</span>
                     </button>
                 </div>
                 <div id="airlines-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </section>
-        </main>
-    </div>
 
-    <!-- 彈窗：新增國家/地區 -->
-    <div id="modal-country" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        </div>
+    </main>
+
+    <!-- ==================== 彈窗模組 ==================== -->
+
+    <!-- 新增國家/地區 Modal -->
+    <div id="modal-country" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs hidden">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
                 <h3 class="text-base font-bold text-slate-900">新增國家/地區</h3>
-                <button type="button" id="btn-close-country-modal" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button type="button" id="btn-close-country-modal" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
             </div>
-
             <form id="form-country-create" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">國家 / 地區名稱</label>
-                    <input type="text" id="create-country-name" required placeholder="日本、韓國、泰國" class="w-full h-11 px-3.5 border border-slate-200 rounded-2xl font-bold text-slate-900">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-600 block">國家/地區名稱</label>
+                    <input type="text" id="create-country-name" required placeholder="輸入名稱" class="w-full h-11 px-3.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
                 </div>
-
-                <div class="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
-                    <button type="button" id="btn-cancel-country-modal" class="w-1/2 h-11 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-2xl">取消</button>
-                    <button type="submit" class="w-1/2 h-11 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all">建立並前往設定</button>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-600 block">所屬洲別</label>
+                    <select id="create-country-continent" class="w-full h-11 px-3.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                        <option value="亞洲" selected>亞洲</option>
+                        <option value="歐洲">歐洲</option>
+                        <option value="美洲">美洲</option>
+                        <option value="大洋洲">大洋洲</option>
+                        <option value="非洲">非洲</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" id="btn-cancel-country-modal" class="h-10 px-4 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-all cursor-pointer">取消</button>
+                    <button type="submit" class="h-10 px-5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-xl transition-all shadow-xs cursor-pointer">建立</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- 彈窗：新增優惠券 -->
-    <div id="modal-coupon" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900" id="modal-coupon-title">新增公版優惠券</h3>
-                <button type="button" id="btn-close-coupon-modal" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <!-- 新增優惠券 Modal -->
+    <div id="modal-coupon" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs hidden">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-slate-900">新增優惠券</h3>
+                <button type="button" id="btn-close-coupon-modal" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
             </div>
-            <form id="form-coupon" class="space-y-3.5">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">商戶 / 店名</label>
-                    <input type="text" id="coupon-store" required placeholder="例如：Bic Camera, 唐吉訶德" class="w-full h-11 px-3.5 border border-slate-200 rounded-2xl font-bold">
+            <form id="form-coupon" class="space-y-3">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-600 block">商家名稱</label>
+                    <input type="text" id="coupon-store" required placeholder="例如：Bic Camera / 唐吉訶德" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium">
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">優惠簡稱</label>
-                    <input type="text" id="coupon-discount" required placeholder="免稅 10% + 最高 7% 折扣" class="w-full h-11 px-3.5 border border-slate-200 rounded-2xl font-semibold text-amber-600">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-600 block">折扣內容</label>
+                    <input type="text" id="coupon-discount" required placeholder="例如：免稅 10% + 現折 7%" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">優惠代碼</label>
-                        <input type="text" id="coupon-code" placeholder="JOOGO2026" class="w-full h-11 px-3.5 border border-slate-200 rounded-2xl font-mono uppercase">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-600 block">優惠代碼 (選填)</label>
+                        <input type="text" id="coupon-code" placeholder="例：SUMMER2026" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs font-bold">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">有效期限</label>
-                        <input type="text" id="coupon-expiry" placeholder="長期有效" class="w-full h-11 px-3.5 border border-slate-200 rounded-2xl">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-600 block">有效期限 (選填)</label>
+                        <input type="text" id="coupon-expiry" placeholder="例：2026/12/31" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">條碼圖片 / 領取連結</label>
-                    <input type="url" id="coupon-link" placeholder="https://..." class="w-full h-11 px-3.5 border border-slate-200 rounded-2xl font-mono" autocorrect="off" autocapitalize="none">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-600 block">條碼/兌換連結 (選填)</label>
+                    <input type="url" id="coupon-link" placeholder="https://..." class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium">
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">使用限制說明</label>
-                    <input type="text" id="coupon-notes" placeholder="結帳前出示條碼，菸酒不適用" class="w-full h-11 px-3.5 border border-slate-200 rounded-2xl">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-600 block">備註說明 (選填)</label>
+                    <input type="text" id="coupon-notes" placeholder="例如：結帳前需出示護照" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium">
                 </div>
-                <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
-                    <button type="button" id="btn-cancel-coupon" class="w-1/2 h-11 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-2xl">取消</button>
-                    <button type="submit" class="w-1/2 h-11 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-95 rounded-2xl transition-all">儲存優惠券</button>
+                <div class="flex items-center justify-end gap-2 pt-3">
+                    <button type="button" id="btn-cancel-coupon" class="h-10 px-4 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-all cursor-pointer">取消</button>
+                    <button type="submit" class="h-10 px-5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-xl transition-all shadow-xs cursor-pointer">加入優惠券</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Toast 提示 -->
-    <div id="toast-message" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-xl backdrop-blur-md transition-all flex items-center gap-2">
-        <i data-lucide="info" class="w-4 h-4 text-brand-400"></i>
-        <span id="toast-text">提示訊息</span>
-    </div>
-
-    <!-- 載入後台主模組控制器 -->
+    <!-- 後台主腳本模組 -->
     <script type="module" src="./js/pages/admin.js"></script>
 </body>
 </html>
