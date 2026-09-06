@@ -470,31 +470,38 @@
         // 點擊大頭貼登出
         document.getElementById('btn-user-profile').addEventListener('click', async () => {
             if (confirm(`確定要登出「${currentUser.name}」嗎？`)) {
-                await logout();
+                try {
+                    await logout();
+                    window.location.replace("login.html");
+                } catch (err) {
+                    showToast("登出失敗：" + err.message);
+                }
             }
         });
 
         // ==================== 身份狀態驗證與初始化 ====================
         onAuthStateChange((user) => {
             if (!user) {
-                window.location.href = "login.html";
-            } else {
-                currentUser.uid = user.uid;
-                currentUser.name = user.displayName || user.email.split('@')[0];
-                currentUser.avatar = user.photoURL || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120";
-
-                document.getElementById('user-display-name').innerText = currentUser.name;
-                document.getElementById('user-avatar').src = currentUser.avatar;
-
-                const today = new Date();
-                const future = new Date();
-                future.setDate(today.getDate() + 6);
-                document.getElementById('trip-start').value = today.toISOString().split('T')[0];
-                document.getElementById('trip-end').value = future.toISOString().split('T')[0];
-
-                loadTrips();
-                if (window.lucide) lucide.createIcons();
+                // 改用 replace 可防止上一頁歷史紀錄引發閃爍跳轉迴圈
+                window.location.replace("login.html");
+                return;
             }
+
+            currentUser.uid = user.uid;
+            currentUser.name = user.displayName || user.email.split('@')[0];
+            currentUser.avatar = user.photoURL || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120";
+
+            document.getElementById('user-display-name').innerText = currentUser.name;
+            document.getElementById('user-avatar').src = currentUser.avatar;
+
+            const today = new Date();
+            const future = new Date();
+            future.setDate(today.getDate() + 6);
+            document.getElementById('trip-start').value = today.toISOString().split('T')[0];
+            document.getElementById('trip-end').value = future.toISOString().split('T')[0];
+
+            loadTrips();
+            if (window.lucide) lucide.createIcons();
         });
     </script>
 </body>
