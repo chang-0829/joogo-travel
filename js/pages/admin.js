@@ -1,12 +1,10 @@
 // js/pages/admin.js
-
-// 1. 所有 import 統一放在最頂部
 import { onAuthStateChange } from "../api/authApi.js";
 import { subscribeCountries, getCountryDetail, saveCountryDetail, removeCountry } from "../api/countryApi.js";
 import { subscribeSchema, saveSchema } from "../api/schemaApi.js";
 import { CoverManager } from "../components/coverManager.js";
 
-// 2. 身份驗證守門員 (未登入強制導向，僅需執行一次)
+// ==================== 身份驗證守門員 (未登入強制導向) ====================
 onAuthStateChange(user => {
     if (!user) {
         window.location.replace("login.html");
@@ -17,12 +15,12 @@ onAuthStateChange(user => {
 let currentCountries = [];
 let activeCountryId = null;
 let activeCountryData = null;
-let detailRegionGroups = []; // 兩層級地區：[{ name: "北海道", subRegions: ["札幌", "函館"] }]
+let detailRegionGroups = []; // 兩層級地區結構：[{ name: "北海道", subRegions: ["札幌", "函館"] }]
 let searchQuery = "";
 
 let activeNoticeSchema = [];
 let activeEmergencySchema = [];
-let isOpeningCountry = false; // 防止重複觸控
+let isOpeningCountry = false;
 
 // ==================== Toast 提示 ====================
 export function showToast(msg) {
@@ -47,7 +45,7 @@ const coverManager = new CoverManager({
     onToast: showToast
 });
 
-// F5 防呆
+// F5 瀏覽器防呆
 window.addEventListener('beforeunload', (e) => {
     if (coverManager.isUploading) {
         e.preventDefault();
@@ -102,7 +100,7 @@ export function switchView(viewName) {
 }
 window.switchView = switchView;
 
-// ==================== 國家清單渲染 (修復觸控延遲與陰影卡死) ====================
+// ==================== 國家清單渲染 ====================
 function renderCountries() {
     const grid = document.getElementById('countries-grid');
     if (!grid) return;
@@ -110,7 +108,6 @@ function renderCountries() {
     const filtered = currentCountries.filter(c => {
         if (!searchQuery) return true;
         const matchName = c.id.toLowerCase().includes(searchQuery);
-        // 支援新舊格式的搜尋檢索
         const matchRegions = (c.regions || []).some(r => {
             if (typeof r === 'string') return r.toLowerCase().includes(searchQuery);
             if (r && r.name) {
@@ -156,7 +153,6 @@ function renderCountries() {
     if (window.lucide) lucide.createIcons();
 }
 
-// 點擊編輯國家 (加入防止連點鎖定)
 window.openCountryDetail = async function(countryId) {
     if (isOpeningCountry) return;
     isOpeningCountry = true;
@@ -176,7 +172,6 @@ window.openCountryDetail = async function(countryId) {
 
         coverManager.setCovers(activeCountryData.coverImages || []);
 
-        // 轉換新舊格式為標準雙層級資料結構
         const rawRegions = activeCountryData.regions || [];
         detailRegionGroups = rawRegions.map(r => {
             if (typeof r === 'string') {
@@ -217,11 +212,29 @@ window.saveCurrentCountryDetail = async function() {
     }
 
     try {
-        // 自動吸收未完成的地區輸入
+        // 自動吸收未完成按新增的主要區域
         const parentInput = document.getElementById('regions-parent-input');
         if (parentInput && parentInput.value.trim()) {
-            window.addParentRegion();
+            const val = parentInput.value.trim();
+            if (!detailRegionGroups.some(g => g.name === val)) {
+                detailRegionGroups.push({ name: val, subRegions: [] });
+                parentInput.value = '';
+            }
         }
+
+        // 自動吸收各主要區域下尚未按下 Enter 的次級城市
+        detailRegionGroups.forEach((group, pIdx) => {
+            const subInput = document.getElementById(`sub-region-input-${pIdx}`);
+            if (subInput && subInput.value.trim()) {
+                const subVal = subInput.value.trim();
+                if (!group.subRegions.includes(subVal)) {
+                    group.subRegions.push(subVal);
+                    subInput.value = '';
+                }
+            }
+        });
+
+        renderRegionGroups();
 
         const dynamicNoticeData = {};
         activeNoticeSchema.forEach(field => {
@@ -238,7 +251,7 @@ window.saveCurrentCountryDetail = async function() {
         const updated = {
             currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
             timezone: document.getElementById('detail-base-timezone').value.trim(),
-            regions: detailRegionGroups, // 儲存二層級結構
+            regions: detailRegionGroups,
             coverImages: coverManager.getCovers(),
             notice: dynamicNoticeData,
             emergency: dynamicEmergencyData
@@ -281,7 +294,6 @@ function renderRegionGroups() {
                 </button>
             </div>
 
-            <!-- 次級城市標籤列 -->
             <div class="flex flex-wrap items-center gap-2 pt-1">
                 ${group.subRegions.map((sub, sIdx) => `
                     <span class="inline-flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl shadow-2xs">
@@ -292,7 +304,6 @@ function renderRegionGroups() {
                     </span>
                 `).join('')}
 
-                <!-- 新增次級城市快速輸入框 -->
                 <div class="inline-flex items-center">
                     <input type="text" id="sub-region-input-${pIdx}" placeholder="+ 新增次級 (按 Enter)" class="h-8 px-2.5 bg-white border border-slate-200/80 rounded-xl text-xs font-medium text-slate-700 w-36 focus:w-44 transition-all" onkeydown="if(event.key==='Enter'){event.preventDefault(); window.addSubRegion(${pIdx});}">
                 </div>
@@ -325,7 +336,6 @@ window.addSubRegion = function(pIdx) {
     if (val && !detailRegionGroups[pIdx].subRegions.includes(val)) {
         detailRegionGroups[pIdx].subRegions.push(val);
         renderRegionGroups();
-        // 自動聚焦回輸入框以利連續輸入
         setTimeout(() => {
             const nextInput = document.getElementById(`sub-region-input-${pIdx}`);
             if (nextInput) nextInput.focus();
@@ -502,6 +512,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     subscribeSchema('emergency', schema => {
         activeEmergencySchema = schema;
+        // 修正：呼叫正確的通用渲染函式
         renderSchemaEditor('emergency', activeEmergencySchema);
         if (activeCountryData) renderDynamicFields('emergency', activeEmergencySchema, activeCountryData.emergency || {});
     });
@@ -514,7 +525,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 抽屜選單
     const drawer = document.getElementById('drawer-menu');
     const backdrop = document.getElementById('drawer-backdrop');
     const openDrawer = () => {
@@ -533,7 +543,6 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-close-drawer')?.addEventListener('click', window.closeDrawer);
     backdrop?.addEventListener('click', window.closeDrawer);
 
-    // 新增國家彈窗
     document.getElementById('btn-add-country-modal')?.addEventListener('click', () => {
         document.getElementById('form-country-create').reset();
         document.getElementById('modal-country').classList.remove('hidden');
@@ -553,7 +562,6 @@ window.addEventListener('DOMContentLoaded', () => {
         window.openCountryDetail(name);
     });
 
-    // 優惠券彈窗
     document.getElementById('btn-close-coupon-modal')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('btn-cancel-coupon')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('form-coupon')?.addEventListener('submit', async (e) => {
@@ -575,7 +583,6 @@ window.addEventListener('DOMContentLoaded', () => {
         showToast("成功儲存優惠券！");
     });
 
-    // 新增主要區域綁定
     document.getElementById('regions-parent-input')?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
