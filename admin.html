@@ -453,16 +453,51 @@
                         <span>儲存</span>
                     </button>
                 </div>
-
+            
                 <div class="h-11 flex items-center justify-between">
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">急難救助資訊</h2>
                     <button onclick="switchView('schema-emergency')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 cursor-pointer">
                         <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
-                        <span>編輯題目規範</span>
+                        <span>編輯自訂題目規範</span>
                     </button>
                 </div>
-
-                <div id="emergency-dynamic-fields-container" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4"></div>
+            
+                <!-- 區塊一：固定三大緊急電話 (各國鎖死直撥專線) -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between px-1">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">當地緊急直撥專線 (固定欄位)</span>
+                        <span class="text-[11px] text-slate-400">供前台生成「當地警察 / 當地救護 / 當地消防」三快捷按鈕</span>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
+                        <div class="p-3.5 px-4 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                <span class="text-sm font-bold text-slate-800">當地警察</span>
+                            </div>
+                            <input type="tel" id="detail-emg-police" placeholder="例如：110" class="text-right font-mono font-bold text-slate-800 placeholder:text-slate-300 bg-transparent border-none w-40 p-0">
+                        </div>
+                        <div class="p-3.5 px-4 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span class="text-sm font-bold text-slate-800">當地救護</span>
+                            </div>
+                            <input type="tel" id="detail-emg-ambulance" placeholder="例如：119" class="text-right font-mono font-bold text-slate-800 placeholder:text-slate-300 bg-transparent border-none w-40 p-0">
+                        </div>
+                        <div class="p-3.5 px-4 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                                <span class="text-sm font-bold text-slate-800">當地消防</span>
+                            </div>
+                            <input type="tel" id="detail-emg-fire" placeholder="例如：119" class="text-right font-mono font-bold text-slate-800 placeholder:text-slate-300 bg-transparent border-none w-40 p-0">
+                        </div>
+                    </div>
+                </div>
+            
+                <!-- 區塊二：公版動態自訂題目欄位 -->
+                <div class="space-y-2 pt-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1 block">其他救助資訊與備註 (由急難救助題目庫動態生成)</span>
+                    <div id="emergency-dynamic-fields-container" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4"></div>
+                </div>
             </section>
 
             <!-- 滿版子頁面：公版優惠券 -->
