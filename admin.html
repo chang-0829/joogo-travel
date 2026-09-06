@@ -280,7 +280,7 @@
                 </div>
             </section>
 
-            <!-- ==================== 3. 封面圖片庫 (支援電腦拖曳 + 上傳中斷防呆 + 預設高度統一) ==================== -->
+            <!-- ==================== 3. 封面圖片庫 ==================== -->
             <section id="view-country-covers-page" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
@@ -513,7 +513,10 @@
         let detailRegionTags = [];
         let currentCovers = [];
         let searchQuery = "";
-        let isUploadingCovers = false; // 上傳狀態鎖定 (防呆)
+        
+        // 上傳中斷控制器
+        let coverUploadAbortController = null;
+        let isUploadingCovers = false;
 
         function showToast(msg) {
             const toast = document.getElementById('toast-message');
@@ -524,14 +527,6 @@
                 setTimeout(() => toast.classList.add('hidden'), 2200);
             }
         }
-
-        // ==================== 防呆機制 1：瀏覽器關閉/重新整理攔截 ====================
-        window.addEventListener('beforeunload', (e) => {
-            if (isUploadingCovers) {
-                e.preventDefault();
-                e.returnValue = "圖片正在上傳中，離開將會中斷上傳程序！";
-            }
-        });
 
         // ==================== 抽屜選單 ====================
         const drawer = document.getElementById('drawer-menu');
@@ -645,7 +640,7 @@
             renderCoverThumbnails();
         };
 
-        // ==================== 統一上傳處理函式 (支援選檔與拖曳) ====================
+        // ==================== 統一上傳處理函式 (支援隨時中斷) ====================
         async function handleCoverFilesUpload(fileList) {
             const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
             if (!files.length) {
@@ -653,26 +648,40 @@
                 return;
             }
 
+            // 初始化中斷控制器
+            coverUploadAbortController = new AbortController();
             isUploadingCovers = true;
+
             const dropzoneLabel = document.getElementById('dropzone-label-text');
             const dropzoneIcon = document.getElementById('dropzone-icon-container');
             
-            dropzoneLabel.innerText = `正在上傳 ${files.length} 張照片，請勿離開頁面...`;
+            dropzoneLabel.innerText = `正在上傳 ${files.length} 張照片...`;
             dropzoneIcon.classList.add('animate-bounce');
             showToast(`正在上傳 ${files.length} 張照片至雲端...`);
 
             try {
                 for (const file of files) {
-                    const cloudUrl = await uploadToCloudinary(file);
+                    // 若中途被使用者離開而中斷，直接退出
+                    if (!isUploadingCovers || coverUploadAbortController.signal.aborted) {
+                        break;
+                    }
+                    const cloudUrl = await uploadToCloudinary(file, coverUploadAbortController.signal);
                     currentCovers.push(cloudUrl);
                     renderCoverThumbnails();
                 }
-                showToast("全部圖片上傳完成！");
+                if (isUploadingCovers) {
+                    showToast("全部圖片上傳完成！");
+                }
             } catch (err) {
-                console.error("上傳失敗", err);
-                showToast("部分圖片上傳失敗：" + err.message);
+                if (err.name === 'AbortError' || !isUploadingCovers) {
+                    console.log("上傳已主動中斷");
+                } else {
+                    console.error("上傳失敗", err);
+                    showToast("部分圖片上傳失敗：" + err.message);
+                }
             } finally {
                 isUploadingCovers = false;
+                coverUploadAbortController = null;
                 dropzoneLabel.innerText = "點擊選取或將照片拖曳至此上傳";
                 dropzoneIcon.classList.remove('animate-bounce');
                 coverFileInput.value = "";
@@ -710,13 +719,15 @@
             }
         });
 
-        // ==================== 頁面視圖切換 (含防呆機制 2) ====================
+        // ==================== 頁面視圖切換 (離開時立即終止上傳，無阻斷彈窗) ====================
         window.switchView = function(viewName) {
-            // 若圖片上傳中，進行防呆攔截
+            // 若當前正在上傳且切換頁面，直接自動終止上傳並重設狀態
             if (isUploadingCovers) {
-                if (!confirm("圖片仍在背景上傳中，離開頁面可能會中斷上傳，確定要離開嗎？")) {
-                    return;
+                if (coverUploadAbortController) {
+                    coverUploadAbortController.abort();
                 }
+                isUploadingCovers = false;
+                showToast("已終止未完成的圖片上傳");
             }
 
             const views = [
@@ -860,11 +871,6 @@
         window.saveCurrentCountryDetail = async function() {
             if (!activeCountryId) return;
 
-            if (isUploadingCovers) {
-                showToast("圖片仍在背景上傳中，請稍候再儲存！");
-                return;
-            }
-
             try {
                 const leftover = detailRegionInput.value.trim();
                 if (leftover && !detailRegionTags.includes(leftover)) {
@@ -877,7 +883,7 @@
                     currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
                     timezone: document.getElementById('detail-base-timezone').value.trim(),
                     regions: detailRegionTags,
-                    coverImages: currentCovers, // 陣列第 0 位即為預設封面
+                    coverImages: currentCovers,
                     notice: {
                         voltage: document.getElementById('detail-notice-voltage').value.trim(),
                         visa: document.getElementById('detail-notice-visa').value.trim(),
