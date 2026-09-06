@@ -34,7 +34,6 @@
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
         }
-        /* 防止 iOS Safari 聚焦放大 */
         input, select, textarea {
             font-size: 16px !important;
             outline: none !important;
@@ -48,12 +47,9 @@
 </head>
 <body class="h-full flex flex-col lg:flex-row font-sans text-slate-800 antialiased bg-[#f8fafc] overflow-hidden">
 
-    <!-- ==================== 電腦版專用：專業 SaaS 左側固定側邊欄 ==================== -->
+    <!-- 電腦版專用：專業 SaaS 左側固定側邊欄 -->
     <aside id="desktop-sidebar" class="hidden lg:flex lg:flex-col lg:w-64 bg-white border-r border-slate-200/80 h-full shrink-0 z-20 select-none justify-between">
-        
-        <!-- 上方導覽清單 -->
         <div class="p-5 space-y-6 overflow-y-auto no-scrollbar">
-            <!-- 品牌識別 -->
             <div class="flex items-center gap-3 pb-2 border-b border-slate-100">
                 <div class="w-10 h-10 rounded-2xl bg-brand-50 border border-brand-100 text-brand-600 flex items-center justify-center font-black text-sm shrink-0">
                     J
@@ -66,33 +62,27 @@
                 </div>
             </div>
 
-            <!-- 分組 1：資料庫管理 (含題目設定選單) -->
             <div class="space-y-1">
                 <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">公版資料庫管理</div>
                 
-                <!-- 管理國家/地區 -->
                 <button type="button" onclick="switchView('country-list')" id="sidebar-btn-countries" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold bg-brand-50 text-brand-600 transition-all cursor-pointer">
                     <i data-lucide="globe" class="w-4 h-4 shrink-0"></i>
                     <span class="truncate">管理國家/地區</span>
                 </button>
 
-                <!-- 公版題目設定 (全新主選單) -->
                 <button type="button" onclick="switchView('schema-settings')" id="sidebar-btn-schemas" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
                     <i data-lucide="sliders-horizontal" class="w-4 h-4 shrink-0"></i>
                     <span class="truncate">公版題目設定</span>
                 </button>
 
-                <!-- 航空公司行李庫 -->
                 <button type="button" onclick="switchView('airlines')" id="sidebar-btn-airlines" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
                     <i data-lucide="plane" class="w-4 h-4 shrink-0"></i>
                     <span class="truncate">航空公司行李庫</span>
                 </button>
             </div>
 
-            <!-- 分組 2：前台服務捷徑 -->
             <div class="space-y-1 pt-2">
                 <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">前台服務</div>
-                
                 <a href="index.html" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
                     <i data-lucide="external-link" class="w-4 h-4 shrink-0"></i>
                     <span class="truncate">前往前台首頁</span>
@@ -100,14 +90,13 @@
             </div>
         </div>
 
-        <!-- 側邊欄底部：版權資訊 -->
         <div class="p-5 border-t border-slate-100/80 text-center space-y-0.5">
             <p class="text-[11px] text-slate-400 font-mono">Copyright © 2026</p>
             <p class="text-[11px] text-slate-400">揪行 JooGO All Rights Reserved.</p>
         </div>
     </aside>
 
-    <!-- ==================== 右側主舞台容器 ==================== -->
+    <!-- 右側主舞台容器 -->
     <div class="flex-1 flex flex-col h-full overflow-hidden">
 
         <!-- 手機端專用頁首 -->
@@ -129,7 +118,7 @@
             </div>
         </header>
 
-        <!-- 手機端抽屜選單 (含公版題目設定) -->
+        <!-- 手機端抽屜選單 -->
         <div id="drawer-backdrop" class="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-xs hidden opacity-0 transition-opacity duration-300"></div>
         <aside id="drawer-menu" class="fixed top-0 right-0 bottom-0 z-50 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
             <div class="p-6 space-y-6">
@@ -179,14 +168,13 @@
             </div>
         </aside>
 
-        <!-- ==================== 主內容管理區 ==================== -->
+        <!-- 主內容管理區 -->
         <main class="flex-1 max-w-5xl xl:max-w-6xl w-full mx-auto px-5 sm:px-8 py-6 overflow-y-auto">
 
-            <!-- ==================== VIEW 1: 國家選擇頁 ==================== -->
+            <!-- VIEW 1: 國家選擇頁 -->
             <section id="view-country-list" class="space-y-4">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">管理國家/地區</h2>
-                    
                     <button id="btn-add-country-modal" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         <span>新增</span>
@@ -201,11 +189,10 @@
                 <div id="countries-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pt-1"></div>
             </section>
 
-            <!-- ==================== VIEW 2: 全新「公版題目設定」獨立管理頁 (主選單直接進入) ==================== -->
+            <!-- VIEW 2: 公版題目設定獨立管理頁 -->
             <section id="view-schema-settings" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">公版題目設定</h2>
-                    
                     <button onclick="saveAllSchemas()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
                         <i data-lucide="check" class="w-4 h-4"></i>
                         <span>儲存題目設定</span>
@@ -214,10 +201,7 @@
 
                 <p class="text-xs text-slate-400">在此設定行前須知與急難救助的公版題目架構，所有國家與前台行程將自動依據此題目規格呈現。</p>
 
-                <!-- 電腦版左右雙欄儀表板佈局 -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2 items-start">
-                    
-                    <!-- 左欄：公版行前須知題目 -->
                     <div class="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 space-y-4 shadow-xs">
                         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                             <div class="flex items-center gap-2">
@@ -231,11 +215,9 @@
                                 <span>增加題目</span>
                             </button>
                         </div>
-
                         <div id="schema-notice-container" class="space-y-3"></div>
                     </div>
 
-                    <!-- 右欄：急難救助題目 -->
                     <div class="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 space-y-4 shadow-xs">
                         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                             <div class="flex items-center gap-2">
@@ -249,21 +231,18 @@
                                 <span>增加題目</span>
                             </button>
                         </div>
-
                         <div id="schema-emergency-container" class="space-y-3"></div>
                     </div>
-
                 </div>
             </section>
 
-            <!-- ==================== VIEW 3: 各國家地區設定頁 ==================== -->
+            <!-- VIEW 3: 各國家地區設定頁 -->
             <section id="view-country-detail" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-list')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
                         <i data-lucide="chevron-left" class="w-5 h-5"></i>
                         <span>返回 國家/地區 列表</span>
                     </button>
-                    
                     <button onclick="saveCurrentCountryDetail()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
                         <i data-lucide="check" class="w-4 h-4"></i>
                         <span>儲存</span>
@@ -275,7 +254,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-1 items-start">
-                    <!-- 左欄：基本設定 -->
                     <div class="lg:col-span-5 space-y-2">
                         <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">基本設定</div>
                         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
@@ -288,7 +266,6 @@
                                 <input type="text" id="detail-base-timezone" class="text-right font-mono font-bold text-slate-700 bg-transparent border-none w-36 p-0">
                             </div>
                             
-                            <!-- 旅遊地區入口 -->
                             <button type="button" onclick="switchView('country-regions-page')" class="w-full p-4 flex items-center justify-between hover:bg-slate-50/80 active:bg-slate-100 transition-colors text-left cursor-pointer">
                                 <span class="text-sm font-bold text-slate-800 block">旅遊地區</span>
                                 <div class="flex items-center gap-2">
@@ -297,7 +274,6 @@
                                 </div>
                             </button>
 
-                            <!-- 封面圖片庫入口 -->
                             <button type="button" onclick="switchView('country-covers-page')" class="w-full p-4 flex items-center justify-between hover:bg-slate-50/80 active:bg-slate-100 transition-colors text-left cursor-pointer">
                                 <span class="text-sm font-bold text-slate-800 block">封面圖片庫</span>
                                 <div class="flex items-center gap-2">
@@ -308,7 +284,6 @@
                         </div>
                     </div>
 
-                    <!-- 右欄：其他設定 (無說明文字) -->
                     <div class="lg:col-span-7 space-y-2">
                         <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">其他設定</div>
                         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
@@ -346,7 +321,7 @@
                 </div>
             </section>
 
-            <!-- ==================== 滿版子頁面：旅遊地區 ==================== -->
+            <!-- 滿版子頁面：旅遊地區 -->
             <section id="view-country-regions-page" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
@@ -381,7 +356,7 @@
                 </div>
             </section>
 
-            <!-- ==================== 滿版子頁面：封面圖片庫 ==================== -->
+            <!-- 滿版子頁面：封面圖片庫 -->
             <section id="view-country-covers-page" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
@@ -411,7 +386,7 @@
                 </div>
             </section>
 
-            <!-- ==================== 滿版子頁面：公版行前須知 (依據 Schema 動態渲染) ==================== -->
+            <!-- 滿版子頁面：公版行前須知 -->
             <section id="view-country-notice-page" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
@@ -435,7 +410,7 @@
                 <div id="notice-dynamic-fields-container" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4"></div>
             </section>
 
-            <!-- ==================== 滿版子頁面：急難救助資訊 (依據 Schema 動態渲染) ==================== -->
+            <!-- 滿版子頁面：急難救助資訊 -->
             <section id="view-country-emergency-page" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
@@ -459,7 +434,7 @@
                 <div id="emergency-dynamic-fields-container" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4"></div>
             </section>
 
-            <!-- ==================== 滿版子頁面：公版優惠券 ==================== -->
+            <!-- 滿版子頁面：公版優惠券 -->
             <section id="view-country-coupons-page" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
@@ -485,7 +460,7 @@
                 <div id="coupons-grid" class="pt-1"></div>
             </section>
 
-            <!-- ==================== VIEW 4: 航司行李庫 ==================== -->
+            <!-- VIEW 4: 航司行李庫 -->
             <section id="view-airlines" class="hidden space-y-4">
                 <div class="flex items-center justify-between">
                     <h2 class="text-2xl font-bold text-slate-900 tracking-tight">航空公司行李規範庫</h2>
@@ -499,7 +474,7 @@
         </main>
     </div>
 
-    <!-- ==================== 彈窗：新增國家/地區 ==================== -->
+    <!-- 彈窗：新增國家/地區 -->
     <div id="modal-country" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -521,7 +496,7 @@
         </div>
     </div>
 
-    <!-- ==================== 彈窗：新增優惠券 ==================== -->
+    <!-- 彈窗：新增優惠券 -->
     <div id="modal-coupon" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -569,728 +544,7 @@
         <span id="toast-text">提示訊息</span>
     </div>
 
-    <!-- ==================== JS 模組控制 ==================== -->
-    <script type="module">
-        import { db } from "./js/config/firebase.js";
-        import { 
-            collection, doc, onSnapshot, getDoc, setDoc, deleteDoc 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { uploadToCloudinary } from "./js/api/uploadApi.js";
-
-        let currentCountries = [];
-        let activeCountryId = null;
-        let activeCountryData = null;
-        let detailRegionTags = [];
-        let currentCovers = [];
-        let searchQuery = "";
-        
-        let coverUploadAbortController = null;
-        let isUploadingCovers = false;
-
-        // ==================== 題目架構 (Schema) 預設與狀態 ====================
-        const DEFAULT_NOTICE_SCHEMA = [
-            { id: "voltage", label: "電壓與插座規格", type: "text" },
-            { id: "visa", label: "簽證 / 入境申報規範", type: "text" },
-            { id: "traffic", label: "交通與支付指南", type: "textarea" },
-            { id: "tax", label: "退稅與其他注意事項", type: "textarea" }
-        ];
-
-        const DEFAULT_EMERGENCY_SCHEMA = [
-            { id: "police", label: "當地報警電話", type: "tel" },
-            { id: "ambulance", label: "當地救護車專線", type: "tel" },
-            { id: "embassy", label: "台灣駐外館處 / 急難救助電話", type: "text" },
-            { id: "memo", label: "求助專線備註說明", type: "textarea" }
-        ];
-
-        let activeNoticeSchema = [...DEFAULT_NOTICE_SCHEMA];
-        let activeEmergencySchema = [...DEFAULT_EMERGENCY_SCHEMA];
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast-message');
-            const toastText = document.getElementById('toast-text');
-            if (toast && toastText) {
-                toastText.innerText = msg;
-                toast.classList.remove('hidden');
-                setTimeout(() => toast.classList.add('hidden'), 2200);
-            }
-        }
-
-        // F5 防呆
-        window.addEventListener('beforeunload', (e) => {
-            if (isUploadingCovers) {
-                e.preventDefault();
-                e.returnValue = '';
-                return '';
-            }
-        });
-
-        // ==================== 監聽並同步題目架構 ====================
-        function initSchemasListener() {
-            onSnapshot(doc(db, "templates", "schemas", "items", "notice"), (docSnap) => {
-                if (docSnap.exists() && Array.isArray(docSnap.data().fields)) {
-                    activeNoticeSchema = docSnap.data().fields;
-                } else {
-                    setDoc(doc(db, "templates", "schemas", "items", "notice"), { fields: DEFAULT_NOTICE_SCHEMA });
-                    activeNoticeSchema = [...DEFAULT_NOTICE_SCHEMA];
-                }
-                renderNoticeSchemaEditor();
-                renderDynamicNoticeFields();
-            });
-
-            onSnapshot(doc(db, "templates", "schemas", "items", "emergency"), (docSnap) => {
-                if (docSnap.exists() && Array.isArray(docSnap.data().fields)) {
-                    activeEmergencySchema = docSnap.data().fields;
-                } else {
-                    setDoc(doc(db, "templates", "schemas", "items", "emergency"), { fields: DEFAULT_EMERGENCY_SCHEMA });
-                    activeEmergencySchema = [...DEFAULT_EMERGENCY_SCHEMA];
-                }
-                renderEmergencySchemaEditor();
-                renderDynamicEmergencyFields();
-            });
-        }
-
-        // ==================== 渲染題目設定頁面清單 ====================
-        function renderNoticeSchemaEditor() {
-            const container = document.getElementById('schema-notice-container');
-            if (!container) return;
-
-            container.innerHTML = activeNoticeSchema.map((item, idx) => `
-                <div class="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center gap-2">
-                    <span class="w-6 text-center text-xs font-bold text-slate-400 font-mono">${idx + 1}</span>
-                    <input type="text" value="${item.label}" oninput="activeNoticeSchema[${idx}].label = this.value" placeholder="題目名稱" class="flex-1 h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
-                    <select onchange="activeNoticeSchema[${idx}].type = this.value" class="h-10 px-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600">
-                        <option value="text" ${item.type === 'text' ? 'selected' : ''}>單行文字</option>
-                        <option value="textarea" ${item.type === 'textarea' ? 'selected' : ''}>多行長文</option>
-                        <option value="tel" ${item.type === 'tel' ? 'selected' : ''}>電話格式</option>
-                    </select>
-                    <button type="button" onclick="removeSchemaItem('notice', ${idx})" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-200/60 transition-colors">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            `).join('');
-
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function renderEmergencySchemaEditor() {
-            const container = document.getElementById('schema-emergency-container');
-            if (!container) return;
-
-            container.innerHTML = activeEmergencySchema.map((item, idx) => `
-                <div class="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center gap-2">
-                    <span class="w-6 text-center text-xs font-bold text-slate-400 font-mono">${idx + 1}</span>
-                    <input type="text" value="${item.label}" oninput="activeEmergencySchema[${idx}].label = this.value" placeholder="題目名稱" class="flex-1 h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
-                    <select onchange="activeEmergencySchema[${idx}].type = this.value" class="h-10 px-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600">
-                        <option value="text" ${item.type === 'text' ? 'selected' : ''}>單行文字</option>
-                        <option value="textarea" ${item.type === 'textarea' ? 'selected' : ''}>多行長文</option>
-                        <option value="tel" ${item.type === 'tel' ? 'selected' : ''}>電話格式</option>
-                    </select>
-                    <button type="button" onclick="removeSchemaItem('emergency', ${idx})" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-200/60 transition-colors">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            `).join('');
-
-            if (window.lucide) lucide.createIcons();
-        }
-
-        window.addSchemaItem = (type) => {
-            const newId = 'field_' + Date.now();
-            if (type === 'notice') {
-                activeNoticeSchema.push({ id: newId, label: '新增題目', type: 'text' });
-                renderNoticeSchemaEditor();
-            } else {
-                activeEmergencySchema.push({ id: newId, label: '新增題目', type: 'text' });
-                renderEmergencySchemaEditor();
-            }
-        };
-
-        window.removeSchemaItem = (type, idx) => {
-            if (type === 'notice') {
-                activeNoticeSchema.splice(idx, 1);
-                renderNoticeSchemaEditor();
-            } else {
-                activeEmergencySchema.splice(idx, 1);
-                renderEmergencySchemaEditor();
-            }
-        };
-
-        window.saveAllSchemas = async () => {
-            try {
-                await setDoc(doc(db, "templates", "schemas", "items", "notice"), { fields: activeNoticeSchema });
-                await setDoc(doc(db, "templates", "schemas", "items", "emergency"), { fields: activeEmergencySchema });
-                showToast("公版題目設定已全部儲存！");
-            } catch (err) {
-                showToast("儲存失敗：" + err.message);
-            }
-        };
-
-        // ==================== 動態填入各國答案輸入框 ====================
-        function renderDynamicNoticeFields() {
-            const container = document.getElementById('notice-dynamic-fields-container');
-            if (!container) return;
-            const n = (activeCountryData && activeCountryData.notice) ? activeCountryData.notice : {};
-
-            container.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${activeNoticeSchema.map(field => {
-                        const val = n[field.id] || '';
-                        const isFull = field.type === 'textarea';
-                        return `
-                            <div class="space-y-1.5 ${isFull ? 'md:col-span-2' : ''}">
-                                <label class="text-sm font-bold text-slate-800 block">${field.label}</label>
-                                ${field.type === 'textarea' ? `
-                                    <textarea id="dynamic-notice-${field.id}" rows="3" class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs">${val}</textarea>
-                                ` : `
-                                    <input type="${field.type || 'text'}" id="dynamic-notice-${field.id}" value="${val}" class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs">
-                                `}
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-
-        function renderDynamicEmergencyFields() {
-            const container = document.getElementById('emergency-dynamic-fields-container');
-            if (!container) return;
-            const emg = (activeCountryData && activeCountryData.emergency) ? activeCountryData.emergency : {};
-
-            container.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${activeEmergencySchema.map(field => {
-                        const val = emg[field.id] || (activeCountryData ? activeCountryData[field.id] : '') || '';
-                        const isFull = field.type === 'textarea';
-                        return `
-                            <div class="space-y-1.5 ${isFull ? 'md:col-span-2' : ''}">
-                                <label class="text-sm font-bold text-slate-800 block">${field.label}</label>
-                                ${field.type === 'textarea' ? `
-                                    <textarea id="dynamic-emergency-${field.id}" rows="3" class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs">${val}</textarea>
-                                ` : `
-                                    <input type="${field.type || 'text'}" id="dynamic-emergency-${field.id}" value="${val}" class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl ${field.type === 'tel' ? 'font-mono font-bold text-slate-700' : ''} text-xs">
-                                `}
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-
-        // ==================== 抽屜選單 ====================
-        const drawer = document.getElementById('drawer-menu');
-        const backdrop = document.getElementById('drawer-backdrop');
-
-        function openDrawer() {
-            backdrop.classList.remove('hidden');
-            setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
-            drawer.classList.remove('translate-x-full');
-            document.body.style.overflow = 'hidden';
-        }
-
-        window.closeDrawer = function() {
-            backdrop.classList.add('opacity-0');
-            drawer.classList.add('translate-x-full');
-            setTimeout(() => backdrop.classList.add('hidden'), 300);
-            document.body.style.overflow = '';
-        };
-
-        document.getElementById('btn-hamburger').addEventListener('click', openDrawer);
-        document.getElementById('btn-close-drawer').addEventListener('click', window.closeDrawer);
-        backdrop.addEventListener('click', window.closeDrawer);
-
-        // ==================== 旅遊地區管理邏輯 ====================
-        const regionsPageInput = document.getElementById('regions-page-tag-input');
-        const regionsPageBadgeList = document.getElementById('regions-page-badge-list');
-        const regionsPageCount = document.getElementById('regions-page-count');
-        const detailBaseRegionsCount = document.getElementById('detail-base-regions-count');
-
-        function renderDetailRegionTags() {
-            const count = detailRegionTags.length;
-            if (regionsPageCount) regionsPageCount.innerText = count;
-            if (detailBaseRegionsCount) detailBaseRegionsCount.innerText = `已設定 ${count} 個地區`;
-
-            if (detailRegionTags.length === 0) {
-                regionsPageBadgeList.innerHTML = `<div class="py-4 text-xs text-slate-400">目前尚無地區，請於上方輸入新增。</div>`;
-                return;
-            }
-
-            regionsPageBadgeList.innerHTML = detailRegionTags.map((tag, idx) => `
-                <span class="inline-flex items-center gap-1.5 pl-3.5 pr-2 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold rounded-xl transition-colors">
-                    <span>${tag}</span>
-                    <button type="button" onclick="window.removeDetailRegionTag(${idx})" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 focus:outline-none">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                </span>
-            `).join('');
-
-            if (window.lucide) lucide.createIcons();
-        }
-
-        window.removeDetailRegionTag = function(idx) {
-            detailRegionTags.splice(idx, 1);
-            renderDetailRegionTags();
-        };
-
-        window.handleAddRegionTag = function() {
-            const val = regionsPageInput.value.trim();
-            if (val && !detailRegionTags.includes(val)) {
-                detailRegionTags.push(val);
-                renderDetailRegionTags();
-                regionsPageInput.value = '';
-            }
-        };
-
-        regionsPageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                window.handleAddRegionTag();
-            }
-        });
-
-        document.getElementById('btn-add-region-tag').addEventListener('click', window.handleAddRegionTag);
-
-        // ==================== 封面圖滿版管理與預設選擇 ====================
-        function renderCoverThumbnails() {
-            const container = document.getElementById('cover-thumbnails-grid');
-            const mainPageStrip = document.getElementById('detail-base-covers-preview-strip');
-
-            mainPageStrip.innerHTML = currentCovers.slice(0, 3).map(u => `
-                <img src="${u}" class="w-6 h-6 rounded-full object-cover border-2 border-white shadow-2xs">
-            `).join('');
-
-            if (currentCovers.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-slate-300">尚未上傳任何封面照片</div>`;
-                return;
-            }
-
-            container.innerHTML = currentCovers.map((imgUrl, idx) => {
-                const isDefault = idx === 0;
-                return `
-                <div class="relative group rounded-2xl overflow-hidden aspect-video bg-slate-100 border ${isDefault ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-slate-200/80'} shadow-2xs">
-                    <img src="${imgUrl}" class="w-full h-full object-cover">
-                    
-                    <div class="absolute top-1.5 left-1.5 flex items-center">
-                        ${isDefault ? `
-                            <span class="h-6 px-2 text-[10px] font-bold bg-brand-500 text-white rounded-md shadow-xs inline-flex items-center gap-1 leading-none">
-                                <i data-lucide="check" class="w-3 h-3"></i>
-                                <span>預設封面</span>
-                            </span>
-                        ` : `
-                            <button type="button" onclick="window.setDefaultCoverImage(${idx})" class="h-6 px-2 text-[10px] font-semibold bg-slate-900/65 hover:bg-slate-900 text-white rounded-md shadow-xs transition-all opacity-85 hover:opacity-100 inline-flex items-center justify-center leading-none">
-                                <span>設為預設</span>
-                            </button>
-                        `}
-                    </div>
-
-                    <button type="button" onclick="window.removeCoverImage(${idx})" class="w-7 h-7 bg-slate-900/75 hover:bg-rose-600 text-white rounded-full flex items-center justify-center absolute top-1.5 right-1.5 shadow-md transition-all active:scale-90">
-                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                </div>
-                `;
-            }).join('');
-
-            if (window.lucide) lucide.createIcons();
-        }
-
-        window.setDefaultCoverImage = function(idx) {
-            if (idx === 0) return;
-            const target = currentCovers.splice(idx, 1)[0];
-            currentCovers.unshift(target);
-            renderCoverThumbnails();
-            showToast("已更新預設封面");
-        };
-
-        window.removeCoverImage = function(idx) {
-            currentCovers.splice(idx, 1);
-            renderCoverThumbnails();
-        };
-
-        async function handleCoverFilesUpload(fileList) {
-            const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
-            if (!files.length) {
-                showToast("未偵測到有效圖片檔案");
-                return;
-            }
-
-            coverUploadAbortController = new AbortController();
-            isUploadingCovers = true;
-
-            const dropzoneLabel = document.getElementById('dropzone-label-text');
-            const dropzoneIcon = document.getElementById('dropzone-icon-container');
-            
-            dropzoneLabel.innerText = `正在上傳 ${files.length} 張照片...`;
-            dropzoneIcon.classList.add('animate-bounce');
-            showToast(`正在上傳 ${files.length} 張照片至雲端...`);
-
-            try {
-                for (const file of files) {
-                    if (!isUploadingCovers || coverUploadAbortController.signal.aborted) {
-                        break;
-                    }
-                    const cloudUrl = await uploadToCloudinary(file, coverUploadAbortController.signal);
-                    currentCovers.push(cloudUrl);
-                    renderCoverThumbnails();
-                }
-                if (isUploadingCovers) {
-                    showToast("全部圖片上傳完成！");
-                }
-            } catch (err) {
-                if (err.name === 'AbortError' || !isUploadingCovers) {
-                    console.log("上傳已終止");
-                } else {
-                    console.error("上傳失敗", err);
-                    showToast("圖片上傳失敗：" + err.message);
-                }
-            } finally {
-                isUploadingCovers = false;
-                coverUploadAbortController = null;
-                dropzoneLabel.innerText = "點擊選取或將照片拖曳至此上傳";
-                dropzoneIcon.classList.remove('animate-bounce');
-                coverFileInput.value = "";
-            }
-        }
-
-        const coverFileInput = document.getElementById('cover-file-input');
-        coverFileInput.addEventListener('change', (e) => {
-            handleCoverFilesUpload(e.target.files);
-        });
-
-        const coverDropzone = document.getElementById('cover-dropzone');
-        ['dragenter', 'dragover'].forEach(eventName => {
-            coverDropzone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                coverDropzone.classList.add('border-brand-500', 'bg-brand-50/50');
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            coverDropzone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                coverDropzone.classList.remove('border-brand-500', 'bg-brand-50/50');
-            }, false);
-        });
-
-        coverDropzone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            if (dt && dt.files && dt.files.length > 0) {
-                handleCoverFilesUpload(dt.files);
-            }
-        });
-
-        // ==================== 頁面視圖切換 ====================
-        window.switchView = function(viewName) {
-            if (isUploadingCovers) {
-                const leave = confirm("圖片正在上傳中，離開將會終止上傳，確定要離開嗎？");
-                if (!leave) {
-                    return;
-                }
-                if (coverUploadAbortController) {
-                    coverUploadAbortController.abort();
-                }
-                isUploadingCovers = false;
-                showToast("已終止未完成的圖片上傳");
-                
-                const dropzoneLabel = document.getElementById('dropzone-label-text');
-                const dropzoneIcon = document.getElementById('dropzone-icon-container');
-                if (dropzoneLabel) dropzoneLabel.innerText = "點擊選取或將照片拖曳至此上傳";
-                if (dropzoneIcon) dropzoneIcon.classList.remove('animate-bounce');
-                if (coverFileInput) coverFileInput.value = "";
-            }
-
-            const views = [
-                'country-list', 
-                'schema-settings',
-                'country-detail', 
-                'country-regions-page',
-                'country-covers-page', 
-                'country-notice-page', 
-                'country-emergency-page', 
-                'country-coupons-page', 
-                'airlines'
-            ];
-
-            views.forEach(v => {
-                const el = document.getElementById(`view-${v}`);
-                if (el) el.classList.toggle('hidden', v !== viewName);
-            });
-
-            // 側邊欄 Active 狀態同步
-            const isCountries = viewName === 'country-list';
-            const isSchemas = viewName === 'schema-settings';
-            const isAirlines = viewName === 'airlines';
-
-            const sideCountries = document.getElementById('sidebar-btn-countries');
-            const sideSchemas = document.getElementById('sidebar-btn-schemas');
-            const sideAirlines = document.getElementById('sidebar-btn-airlines');
-
-            const activeCls = "w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold bg-brand-50 text-brand-600 transition-all cursor-pointer";
-            const inactiveCls = "w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer";
-
-            sideCountries.className = isCountries ? activeCls : inactiveCls;
-            sideSchemas.className = isSchemas ? activeCls : inactiveCls;
-            sideAirlines.className = isAirlines ? activeCls : inactiveCls;
-        };
-
-        const searchInput = document.getElementById('country-search-input');
-        searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value.trim().toLowerCase();
-            renderCountries();
-        });
-
-        // ==================== 渲染國家卡片列表 ====================
-        function renderCountries() {
-            const grid = document.getElementById('countries-grid');
-            
-            const filtered = currentCountries.filter(c => {
-                if (!searchQuery) return true;
-                const matchName = c.id.toLowerCase().includes(searchQuery);
-                const matchRegions = (c.regions || []).some(r => r.toLowerCase().includes(searchQuery));
-                return matchName || matchRegions;
-            });
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center text-xs text-slate-400">找不到符合條件的國家或地區</div>`;
-                return;
-            }
-
-            grid.innerHTML = filtered.map(c => {
-                const cover = (c.coverImages && c.coverImages.length > 0) ? c.coverImages[0] : 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=600';
-                return `
-                <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between">
-                    <div class="relative h-36 w-full bg-slate-100 overflow-hidden">
-                        <img src="${cover}" class="w-full h-full object-cover">
-                    </div>
-
-                    <div class="p-4 flex items-center justify-between">
-                        <h3 class="font-bold text-base text-slate-900 tracking-tight">${c.id}</h3>
-                        <div class="flex items-center gap-1">
-                            <button onclick="window.openCountryDetail('${c.id}')" title="編輯" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-brand-600 rounded-xl hover:bg-slate-50 transition-colors">
-                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="window.deleteCountry('${c.id}')" title="刪除" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-50 transition-colors">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                `;
-            }).join('');
-
-            if (window.lucide) lucide.createIcons();
-        }
-
-        // ==================== 即時監聽國家列表 ====================
-        function initCountriesListener() {
-            onSnapshot(collection(db, "templates", "countries", "items"), (snapshot) => {
-                currentCountries = [];
-                snapshot.forEach(docSnap => {
-                    currentCountries.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                renderCountries();
-
-                if (activeCountryId) {
-                    const found = currentCountries.find(x => x.id === activeCountryId);
-                    if (found) {
-                        activeCountryData = found;
-                    }
-                }
-            }, (error) => {
-                showToast("即時監聽失敗：" + error.message);
-            });
-        }
-
-        // ==================== 國家詳情整合設定 ====================
-        window.openCountryDetail = async function(countryId) {
-            activeCountryId = countryId;
-            const docRef = doc(db, "templates", "countries", "items", countryId);
-            const docSnap = await getDoc(docRef);
-            if (!docSnap.exists()) return;
-            activeCountryData = docSnap.data();
-
-            document.getElementById('detail-country-name').innerText = countryId;
-
-            document.querySelectorAll('.back-to-country-text').forEach(el => {
-                el.innerText = `返回 ${countryId} 設定`;
-            });
-
-            document.getElementById('detail-base-currency').value = activeCountryData.currency || '';
-            document.getElementById('detail-base-timezone').value = activeCountryData.timezone || '';
-            
-            currentCovers = [...(activeCountryData.coverImages || [])];
-            renderCoverThumbnails();
-
-            detailRegionTags = [...(activeCountryData.regions || [])];
-            renderDetailRegionTags();
-
-            renderDynamicNoticeFields();
-            renderDynamicEmergencyFields();
-
-            renderCoupons();
-            switchView('country-detail');
-        };
-
-        // 儲存變更
-        window.saveCurrentCountryDetail = async function() {
-            if (!activeCountryId) return;
-
-            if (isUploadingCovers) {
-                showToast("圖片仍在背景上傳中，請稍候再儲存！");
-                return;
-            }
-
-            try {
-                const regionInput = document.getElementById('regions-page-tag-input');
-                const leftover = regionInput ? regionInput.value.trim() : '';
-                if (leftover && !detailRegionTags.includes(leftover)) {
-                    detailRegionTags.push(leftover);
-                    regionInput.value = '';
-                    renderDetailRegionTags();
-                }
-
-                // 動態取得題目欄位回答
-                const dynamicNoticeData = {};
-                activeNoticeSchema.forEach(field => {
-                    const el = document.getElementById(`dynamic-notice-${field.id}`);
-                    if (el) dynamicNoticeData[field.id] = el.value.trim();
-                });
-
-                const dynamicEmergencyData = {};
-                activeEmergencySchema.forEach(field => {
-                    const el = document.getElementById(`dynamic-emergency-${field.id}`);
-                    if (el) dynamicEmergencyData[field.id] = el.value.trim();
-                });
-
-                const updated = {
-                    currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
-                    timezone: document.getElementById('detail-base-timezone').value.trim(),
-                    regions: detailRegionTags,
-                    coverImages: currentCovers,
-                    notice: dynamicNoticeData,
-                    emergency: dynamicEmergencyData
-                };
-
-                await setDoc(doc(db, "templates", "countries", "items", activeCountryId), updated, { merge: true });
-                showToast(`已儲存「${activeCountryId}」所有資料！`);
-            } catch (err) {
-                showToast("儲存失敗：" + err.message);
-            }
-        };
-
-        // ==================== 優惠券清單渲染 ====================
-        function renderCoupons() {
-            const coupons = (activeCountryData && activeCountryData.coupons) ? activeCountryData.coupons : [];
-            const grid = document.getElementById('coupons-grid');
-            if (!grid) return;
-
-            if (coupons.length === 0) {
-                grid.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200/80 p-8 text-center text-xs text-slate-400">目前尚無優惠券，可點選上方「新增優惠券」按鈕。</div>`;
-                return;
-            }
-
-            grid.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                ${coupons.map((cp, idx) => `
-                    <div class="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-3">
-                        <div class="space-y-0.5 flex-1 min-w-0">
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold text-slate-900 truncate">${cp.store}</span>
-                                ${cp.code ? `<span class="px-2 py-0.5 text-[10px] font-mono font-bold bg-slate-100 text-slate-600 rounded">${cp.code}</span>` : ''}
-                            </div>
-                            <div class="text-xs font-bold text-amber-600">${cp.discount}</div>
-                            ${cp.expiry ? `<div class="text-[11px] text-slate-400">有效期限：${cp.expiry}</div>` : ''}
-                            ${cp.link ? `<a href="${cp.link}" target="_blank" class="text-[11px] text-brand-600 hover:underline inline-block mt-0.5 truncate max-w-xs">條碼或兌換連結 ↗</a>` : ''}
-                        </div>
-                        <button onclick="window.removeCoupon(${idx})" class="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-rose-600 rounded-xl shrink-0 transition-colors">
-                            <i data-lucide="trash" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                `).join('')}
-            </div>`;
-
-            if (window.lucide) lucide.createIcons();
-        }
-
-        window.openAddCouponModal = () => {
-            document.getElementById('form-coupon').reset();
-            document.getElementById('modal-coupon').classList.remove('hidden');
-        };
-
-        window.removeCoupon = async (index) => {
-            if (!confirm("確定刪除此優惠券？")) return;
-            const coupons = (activeCountryData && activeCountryData.coupons) ? activeCountryData.coupons : [];
-            coupons.splice(index, 1);
-            activeCountryData.coupons = coupons;
-            await setDoc(doc(db, "templates", "countries", "items", activeCountryId), { coupons }, { merge: true });
-            renderCoupons();
-            showToast("已刪除優惠券！");
-        };
-
-        document.getElementById('form-coupon').onsubmit = async (e) => {
-            e.preventDefault();
-            const coupons = (activeCountryData && activeCountryData.coupons) ? activeCountryData.coupons : [];
-            const newCoupon = {
-                store: document.getElementById('coupon-store').value.trim(),
-                discount: document.getElementById('coupon-discount').value.trim(),
-                code: document.getElementById('coupon-code').value.trim(),
-                expiry: document.getElementById('coupon-expiry').value.trim(),
-                link: document.getElementById('coupon-link').value.trim(),
-                notes: document.getElementById('coupon-notes').value.trim()
-            };
-            coupons.push(newCoupon);
-            activeCountryData.coupons = coupons;
-            await setDoc(doc(db, "templates", "countries", "items", activeCountryId), { coupons }, { merge: true });
-            document.getElementById('modal-coupon').classList.add('hidden');
-            renderCoupons();
-            showToast("成功儲存優惠券！");
-        };
-
-        document.getElementById('btn-close-coupon-modal').onclick = () => document.getElementById('modal-coupon').classList.add('hidden');
-        document.getElementById('btn-cancel-coupon').onclick = () => document.getElementById('modal-coupon').classList.add('hidden');
-
-        // ==================== 刪除國家 ====================
-        window.deleteCountry = async (id) => {
-            if (confirm(`確定要刪除「${id}」及其所有公版資料嗎？`)) {
-                await deleteDoc(doc(db, "templates", "countries", "items", id));
-                showToast("已刪除該國家/地區！");
-            }
-        };
-
-        // ==================== 新增國家/地區 ====================
-        document.getElementById('btn-add-country-modal').onclick = () => {
-            document.getElementById('form-country-create').reset();
-            document.getElementById('modal-country').classList.remove('hidden');
-        };
-
-        document.getElementById('btn-close-country-modal').onclick = () => document.getElementById('modal-country').classList.add('hidden');
-        document.getElementById('btn-cancel-country-modal').onclick = () => document.getElementById('modal-country').classList.add('hidden');
-
-        document.getElementById('form-country-create').onsubmit = async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('create-country-name').value.trim();
-
-            const initData = {
-                currency: "",
-                timezone: "",
-                regions: [],
-                coverImages: [],
-                notice: {},
-                emergency: {}
-            };
-
-            await setDoc(doc(db, "templates", "countries", "items", name), initData, { merge: true });
-            document.getElementById('modal-country').classList.add('hidden');
-            showToast("國家已建立！進入設定");
-            window.openCountryDetail(name);
-        };
-
-        // ==================== 初始化 ====================
-        window.addEventListener('DOMContentLoaded', () => {
-            initSchemasListener();
-            initCountriesListener();
-            if (window.lucide) lucide.createIcons();
-        });
-    </script>
+    <!-- 載入後台主模組控制器 -->
+    <script type="module" src="./js/pages/admin.js"></script>
 </body>
 </html>
