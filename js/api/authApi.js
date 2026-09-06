@@ -9,7 +9,6 @@ import {
 
 const provider = new GoogleAuthProvider();
 
-// Google 登入
 export const loginWithGoogle = async () => {
     try {
         const result = await signInWithPopup(auth, provider);
@@ -20,7 +19,6 @@ export const loginWithGoogle = async () => {
     }
 };
 
-// 登出
 export const logout = async () => {
     try {
         await signOut(auth);
@@ -30,17 +28,15 @@ export const logout = async () => {
     }
 };
 
-// 狀態監聽
 export const onAuthStateChange = (callback) => {
     return onAuthStateChanged(auth, callback);
 };
 
-// 當前使用者
 export const getCurrentUser = () => {
     return auth.currentUser;
 };
 
-// ==================== 全域相容別名匯出（徹底防呆） ====================
+// ==================== 全命名雙向相容別名 ====================
 export const logoutUser = logout;
 export const loginUser = loginWithGoogle;
 export const subscribeAuthState = onAuthStateChange;
