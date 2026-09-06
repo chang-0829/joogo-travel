@@ -1,7 +1,7 @@
 // js/api/uploadApi.js
 
-const CLOUD_NAME = "你的_CLOUD_NAME"; 
-const UPLOAD_PRESET = "你的_UPLOAD_PRESET_名稱";
+const CLOUD_NAME = "ddkqopoxl"; 
+const UPLOAD_PRESET = "joogo_preset";
 
 /**
  * 將 File 物件直傳至 Cloudinary (支援 AbortSignal 中斷)
