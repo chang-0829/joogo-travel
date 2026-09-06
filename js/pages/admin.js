@@ -174,23 +174,38 @@ function renderContinentSelectOptions() {
 
 function renderContinentsSortEditor() {
     const list = document.getElementById('continents-sort-list');
+    const countEl = document.getElementById('continents-count');
+    if (countEl) countEl.innerText = activeContinentsList.length;
     if (!list) return;
 
     list.innerHTML = activeContinentsList.map((item, idx) => `
-        <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between gap-3">
+        <div class="p-2.5 sm:p-3 bg-white hover:bg-slate-50/80 border border-slate-200/90 rounded-xl flex items-center justify-between gap-3 transition-all shadow-2xs group">
             <div class="flex items-center gap-2.5 flex-1 min-w-0">
-                <span class="w-6 text-center text-xs font-bold text-slate-400 font-mono">${idx + 1}</span>
-                <input type="text" value="${item}" oninput="window.updateContinentName(${idx}, this.value)" class="flex-1 h-9 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none">
+                <!-- 精緻序號膠囊 -->
+                <span class="w-6 h-6 rounded-lg bg-brand-50 text-brand-600 text-[11px] font-mono font-bold flex items-center justify-center shrink-0">
+                    ${idx + 1}
+                </span>
+                
+                <!-- 名稱輸入框 -->
+                <input type="text" value="${item}" 
+                    oninput="window.updateContinentName(${idx}, this.value)" 
+                    class="flex-1 h-9 px-3 bg-slate-50 group-hover:bg-white focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg text-xs font-bold text-slate-800 transition-all focus:outline-none">
             </div>
+
+            <!-- 操作按鈕組 -->
             <div class="flex items-center gap-1 shrink-0">
-                <button type="button" onclick="window.moveContinentOrder(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70 disabled:opacity-30 disabled:pointer-events-none transition-colors" title="上移">
-                    <i data-lucide="arrow-up" class="w-4 h-4 pointer-events-none"></i>
+                <button type="button" onclick="window.moveContinentOrder(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} 
+                    class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-all cursor-pointer" title="往上移">
+                    <i data-lucide="chevron-up" class="w-4 h-4 pointer-events-none"></i>
                 </button>
-                <button type="button" onclick="window.moveContinentOrder(${idx}, 1)" ${idx === activeContinentsList.length - 1 ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70 disabled:opacity-30 disabled:pointer-events-none transition-colors" title="下移">
-                    <i data-lucide="arrow-down" class="w-4 h-4 pointer-events-none"></i>
+                <button type="button" onclick="window.moveContinentOrder(${idx}, 1)" ${idx === activeContinentsList.length - 1 ? 'disabled' : ''} 
+                    class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-all cursor-pointer" title="往下移">
+                    <i data-lucide="chevron-down" class="w-4 h-4 pointer-events-none"></i>
                 </button>
-                <button type="button" onclick="window.removeContinentItem(${idx})" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="刪除此洲別">
-                    <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                <div class="w-px h-4 bg-slate-200 mx-0.5"></div>
+                <button type="button" onclick="window.removeContinentItem(${idx})" 
+                    class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer" title="刪除此洲別">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5 pointer-events-none"></i>
                 </button>
             </div>
         </div>
@@ -263,7 +278,8 @@ function renderCountries() {
 
     const defaultContinent = activeContinentsList[0] || "亞洲";
 
-    const filtered = currentCountries.filter(c => {
+    // 1. 篩選
+    let filtered = currentCountries.filter(c => {
         const countryContinent = c.continent || defaultContinent;
         if (currentContinentFilter !== "ALL" && countryContinent !== currentContinentFilter) {
             return false;
@@ -281,6 +297,22 @@ function renderCountries() {
             return false;
         });
         return matchName || matchRegions;
+    });
+
+    // 2. 排序：當在全部 (ALL) 時，嚴格依據 activeContinentsList 的自訂順序排列國家
+    filtered.sort((a, b) => {
+        const contA = a.continent || defaultContinent;
+        const contB = b.continent || defaultContinent;
+        
+        let idxA = activeContinentsList.indexOf(contA);
+        let idxB = activeContinentsList.indexOf(contB);
+        if (idxA === -1) idxA = 999;
+        if (idxB === -1) idxB = 999;
+
+        if (idxA !== idxB) {
+            return idxA - idxB;
+        }
+        return a.id.localeCompare(b.id, 'zh-Hant'); // 同洲別時依國名筆劃排序
     });
 
     if (filtered.length === 0) {
