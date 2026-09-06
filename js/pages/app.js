@@ -91,8 +91,8 @@ function calculateDuration(dep, arr) {
 // 初始化房間：整合真實身份與成員身分驗證
 async function initRoom() {
   if (!currentTripId) {
-    alert("無效的行程房間 ID！");
-    window.location.href = "index.html";
+    showToast("無效的行程房間 ID！");
+    setTimeout(() => { window.location.href = "index.html"; }, 1000);
     return;
   }
 
@@ -105,8 +105,8 @@ async function initRoom() {
   const tripDocRef = doc(db, "trips", currentTripId);
   onSnapshot(tripDocRef, async (docSnap) => {
     if (!docSnap.exists()) {
-      alert("此行程房間已不存在！");
-      window.location.href = "index.html";
+      showToast("此行程房間已不存在！");
+      setTimeout(() => { window.location.href = "index.html"; }, 1000);
       return;
     }
 
@@ -114,8 +114,8 @@ async function initRoom() {
 
     // 防護關鍵：檢查當前登入者是否在該房間的成員清單中
     if (!data.memberUids || !data.memberUids.includes(currentUser.uid)) {
-      alert("您並非此行程成員，無法進入！請向主揪索取 6 碼邀請碼加入。");
-      window.location.href = "index.html";
+      showToast("您並非此行程成員，請向主揪索取 6 碼邀請碼加入。");
+      setTimeout(() => { window.location.href = "index.html"; }, 1500);
       return;
     }
 
@@ -144,7 +144,7 @@ function renderRoomOverview() {
   const { title, country, startDate, endDate, coverImage, members, inviteCode } = currentTripData;
 
   document.getElementById('overview-title').innerText = title;
-  document.getElementById('overview-country-tag').innerHTML = `<i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-600"></i>${country}`;
+  document.getElementById('overview-country-tag').innerHTML = `<i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-600 pointer-events-none"></i>${country}`;
   document.getElementById('overview-days-tag').innerText = calculateDaysAndNights(startDate, endDate);
   document.getElementById('overview-dates').innerText = `${formatSlashDate(startDate)} ~ ${formatSlashDate(endDate)}`;
   document.getElementById('overview-cover-img').src = coverImage;
@@ -335,8 +335,8 @@ function openAdminFlightModal() {
         <span>${p.name}</span>
       </div>
       <div class="grid grid-cols-2 gap-2">
-        <input type="text" id="seat-out-${p.id}" value="${p.seatOut || ''}" placeholder="去程座位 (如 12A)" class="h-[36px] px-2.5 border border-slate-200 rounded-lg text-xs font-bold uppercase">
-        <input type="text" id="seat-in-${p.id}" value="${p.seatIn || ''}" placeholder="回程座位 (如 12A)" class="h-[36px] px-2.5 border border-slate-200 rounded-lg text-xs font-bold uppercase">
+        <input type="text" id="seat-out-${p.id}" value="${p.seatOut || ''}" placeholder="去程座位 (如 12A)" class="h-10 px-2.5 border border-slate-200 rounded-lg text-xs font-bold uppercase">
+        <input type="text" id="seat-in-${p.id}" value="${p.seatIn || ''}" placeholder="回程座位 (如 12A)" class="h-10 px-2.5 border border-slate-200 rounded-lg text-xs font-bold uppercase">
       </div>
     </div>
   `).join('');
@@ -456,10 +456,10 @@ function switchFlightSubTab(tab) {
     const btn = document.getElementById(`subtab-admin-${t}`);
     const sec = document.getElementById(`section-admin-${t}`);
     if (t === tab) {
-      btn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all";
+      btn.className = "min-h-[36px] flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all";
       sec.classList.remove('hidden');
     } else {
-      btn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all";
+      btn.className = "min-h-[36px] flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all";
       sec.classList.add('hidden');
     }
   });
@@ -554,7 +554,7 @@ function renderPaymentsList() {
       : `<span class="px-2.5 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-800 rounded-full border border-amber-100">待審核</span>`;
 
     const approveBtn = (isMeAdmin && !isApproved)
-      ? `<button onclick="window.handleApprovePayment('${p.id}')" class="px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl active:scale-95 transition-all shadow-xs">通過審核</button>`
+      ? `<button onclick="window.handleApprovePayment('${p.id}')" class="min-h-[38px] px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl active:scale-95 transition-all shadow-xs">通過審核</button>`
       : '';
 
     return `
@@ -588,12 +588,12 @@ function renderSettlementList(transfers) {
     <div class="p-3.5 bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-200/80">
       <div class="flex items-center gap-2">
         <span class="font-bold text-xs text-slate-800">${t.from}</span>
-        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-400"></i>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
         <span class="font-bold text-xs text-brand-600">${t.to}</span>
       </div>
       <div class="flex items-center gap-2">
         <span class="font-bold text-sm text-slate-900 font-mono">NT$ ${t.amount.toLocaleString()}</span>
-        <button onclick="navigator.clipboard.writeText('${t.amount}'); window.showToast('已複製轉帳金額');" class="px-2.5 py-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg shadow-2xs active:scale-95">複製金額</button>
+        <button onclick="navigator.clipboard.writeText('${t.amount}'); window.showToast('已複製轉帳金額');" class="min-h-[36px] px-3 py-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg shadow-2xs active:scale-95">複製金額</button>
       </div>
     </div>
   `).join('');
@@ -622,7 +622,7 @@ export function renderHotelOverviewList() {
     if (currentHotelsList.length > 1) {
       tabsHeader.classList.remove('hidden');
       tabsHeader.innerHTML = currentHotelsList.map((h, i) => `
-        <button onclick="window.switchHotelTab(${i})" class="flex-1 py-1.5 px-3 text-xs font-bold rounded-lg transition-all text-center whitespace-nowrap ${i === activeHotelIdx ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'}">
+        <button onclick="window.switchHotelTab(${i})" class="min-h-[38px] flex-1 py-1.5 px-3 text-xs font-bold rounded-lg transition-all text-center whitespace-nowrap ${i === activeHotelIdx ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'}">
           ${h.nameZh} (${calculateNightsOnly(h.checkInDate, h.checkOutDate)}晚)
         </button>
       `).join('');
@@ -652,7 +652,7 @@ export function renderHotelOverviewList() {
         <div class="flex items-center gap-1.5">
           <i data-lucide="map-pin" class="w-4 h-4 text-slate-400 shrink-0"></i>
           <span class="font-medium text-slate-800">${h.addressZh}</span>
-          <button onclick="navigator.clipboard.writeText('${h.addressForeign || h.addressZh}'); window.showToast('外語地址已複製');" title="複製外語地址" class="p-1 text-slate-400 hover:text-brand-600">
+          <button onclick="navigator.clipboard.writeText('${h.addressForeign || h.addressZh}'); window.showToast('外語地址已複製');" title="複製外語地址" class="min-h-[36px] min-w-[36px] p-1 text-slate-400 hover:text-brand-600 flex items-center justify-center">
             <i data-lucide="copy" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -677,7 +677,7 @@ export function renderHotelOverviewList() {
               <span class="font-bold text-slate-900 text-sm">${h.gateCode}</span>
             </div>
           </div>
-          <button onclick="navigator.clipboard.writeText('${h.gateCode}'); window.showToast('大門密碼已複製');" class="p-1.5 text-slate-400 hover:text-brand-600">
+          <button onclick="navigator.clipboard.writeText('${h.gateCode}'); window.showToast('大門密碼已複製');" class="min-h-[36px] min-w-[36px] p-1.5 text-slate-400 hover:text-brand-600 flex items-center justify-center">
             <i data-lucide="copy" class="w-4 h-4"></i>
           </button>
         </div>
@@ -695,7 +695,7 @@ export function renderHotelOverviewList() {
       </div>
 
       <div class="pt-1 space-y-2">
-        <button onclick="window.toggleHotelRoomsCollapse('${h.id}')" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/60 text-xs font-bold text-slate-700">
+        <button onclick="window.toggleHotelRoomsCollapse('${h.id}')" class="w-full min-h-[44px] flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/60 text-xs font-bold text-slate-700">
           <span class="flex items-center gap-1.5">
             <i data-lucide="door-closed" class="w-4 h-4 text-brand-600"></i>
             房間分配與密碼 (${h.rooms?.length || 0} 間)
@@ -717,7 +717,7 @@ export function renderHotelOverviewList() {
                     <span class="text-xs font-bold text-slate-800">${r.roomType || '標準房'}</span>
                   </div>
                   ${r.entryType === 'code' ? `
-                    <button onclick="window.togglePinVisibility('${r.id}')" class="text-slate-400 hover:text-slate-600 text-[11px] font-semibold flex items-center gap-1">
+                    <button onclick="window.togglePinVisibility('${r.id}')" class="min-h-[36px] px-2 text-slate-400 hover:text-slate-600 text-[11px] font-semibold flex items-center gap-1">
                       <i data-lucide="${isPinVisible ? 'eye-off' : 'eye'}" class="w-3.5 h-3.5"></i>
                       <span>${isPinVisible ? '隱藏密碼' : '顯示密碼'}</span>
                     </button>
@@ -742,7 +742,7 @@ export function renderHotelOverviewList() {
                       <span class="text-slate-400 mr-2">房間密碼</span>
                       <span class="font-bold text-slate-900">${isPinVisible ? r.roomCode : '••••••'}</span>
                     </div>
-                    <button onclick="navigator.clipboard.writeText('${r.roomCode}'); window.showToast('房間密碼已複製');" class="text-slate-400 hover:text-brand-600 p-1">
+                    <button onclick="navigator.clipboard.writeText('${r.roomCode}'); window.showToast('房間密碼已複製');" class="min-h-[36px] min-w-[36px] text-slate-400 hover:text-brand-600 p-1 flex items-center justify-center">
                       <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                     </button>
                   </div>
@@ -807,7 +807,7 @@ function renderAdminSingleHotelForm() {
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-slate-800">基本住宿資訊</span>
           ${currentHotelsList.length > 1 ? `
-            <button type="button" id="btn-ask-remove-hotel" class="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1">
+            <button type="button" id="btn-ask-remove-hotel" class="min-h-[36px] text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 p-1">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 刪除此住宿
             </button>
           ` : ''}
@@ -815,32 +815,32 @@ function renderAdminSingleHotelForm() {
 
         <div>
           <label class="block text-[11px] font-bold text-slate-600 mb-1">飯店中文名稱</label>
-          <input type="text" id="admin-h-nameZh" value="${h.nameZh}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+          <input type="text" id="admin-h-nameZh" value="${h.nameZh}" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
         </div>
 
         <div>
           <label class="block text-[11px] font-bold text-slate-600 mb-1">外語名稱 (英文/日文)</label>
-          <input type="text" id="admin-h-nameForeign" value="${h.nameForeign || ''}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+          <input type="text" id="admin-h-nameForeign" value="${h.nameForeign || ''}" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs">
         </div>
 
         <div>
           <label class="block text-[11px] font-bold text-slate-600 mb-1">中文地址</label>
-          <input type="text" id="admin-h-addressZh" value="${h.addressZh}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+          <input type="text" id="admin-h-addressZh" value="${h.addressZh}" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs">
         </div>
 
         <div>
           <label class="block text-[11px] font-bold text-slate-600 mb-1">外語地址 (計程車/導航用)</label>
-          <input type="text" id="admin-h-addressForeign" value="${h.addressForeign || ''}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+          <input type="text" id="admin-h-addressForeign" value="${h.addressForeign || ''}" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs">
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">連絡電話</label>
-            <input type="text" id="admin-h-phone" value="${h.phone || ''}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+            <input type="text" id="admin-h-phone" value="${h.phone || ''}" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs">
           </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">訂房編號</label>
-            <input type="text" id="admin-h-refNo" value="${h.refNo}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold">
+            <input type="text" id="admin-h-refNo" value="${h.refNo}" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold">
           </div>
         </div>
 
@@ -848,15 +848,15 @@ function renderAdminSingleHotelForm() {
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">Check-in 日期/時間</label>
             <div class="grid grid-cols-2 gap-1">
-              <input type="date" id="admin-h-checkinDate" value="${h.checkInDate}" class="h-[40px] px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
-              <input type="time" id="admin-h-checkinTime" value="${h.checkInTime}" class="h-[40px] px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+              <input type="date" id="admin-h-checkinDate" value="${h.checkInDate}" class="h-11 px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+              <input type="time" id="admin-h-checkinTime" value="${h.checkInTime}" class="h-11 px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
             </div>
           </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">Check-out 日期/時間</label>
             <div class="grid grid-cols-2 gap-1">
-              <input type="date" id="admin-h-checkoutDate" value="${h.checkOutDate}" class="h-[40px] px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
-              <input type="time" id="admin-h-checkoutTime" value="${h.checkOutTime}" class="h-[40px] px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+              <input type="date" id="admin-h-checkoutDate" value="${h.checkOutDate}" class="h-11 px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+              <input type="time" id="admin-h-checkoutTime" value="${h.checkOutTime}" class="h-11 px-1.5 bg-white border border-slate-200 rounded-lg text-xs">
             </div>
           </div>
         </div>
@@ -864,14 +864,14 @@ function renderAdminSingleHotelForm() {
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">大樓門禁</label>
-            <select id="admin-h-gateType" class="w-full h-[40px] px-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold">
+            <select id="admin-h-gateType" class="w-full h-11 px-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold">
               <option value="code" ${h.gateType === 'code' ? 'selected' : ''}>需大門密碼</option>
               <option value="none" ${h.gateType === 'none' ? 'selected' : ''}>自由進出/無門禁</option>
             </select>
           </div>
           <div id="admin-h-gateCode-box" class="${h.gateType === 'none' ? 'hidden' : ''}">
             <label class="block text-[11px] font-bold text-slate-600 mb-1">大門密碼</label>
-            <input type="text" id="admin-h-gateCode" value="${h.gateCode || ''}" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold font-mono">
+            <input type="text" id="admin-h-gateCode" value="${h.gateCode || ''}" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold font-mono">
           </div>
         </div>
       </div>
@@ -892,7 +892,7 @@ function renderAdminSingleHotelForm() {
       <div class="space-y-3 pt-1">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-slate-800">房間清單 (${h.rooms?.length || 0} 間)</span>
-          <button type="button" id="btn-add-room" class="px-2.5 py-1.5 text-xs font-bold text-stone-800 bg-stone-100 hover:bg-stone-200 rounded-xl flex items-center gap-1">
+          <button type="button" id="btn-add-room" class="min-h-[36px] px-3 py-1.5 text-xs font-bold text-stone-800 bg-stone-100 hover:bg-stone-200 rounded-xl flex items-center gap-1">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增房間
           </button>
         </div>
@@ -901,26 +901,26 @@ function renderAdminSingleHotelForm() {
           ${(h.rooms || []).map((r, rIdx) => `
             <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5 relative">
               ${(h.rooms.length > 1) ? `
-                <button type="button" onclick="window.askRemoveRoom(${rIdx})" class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center absolute -top-2 -right-2 shadow-xs">
-                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                <button type="button" onclick="window.askRemoveRoom(${rIdx})" class="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center absolute -top-2 -right-2 shadow-xs active:scale-90">
+                  <i data-lucide="x" class="w-4 h-4 pointer-events-none"></i>
                 </button>
               ` : ''}
 
               <div class="grid grid-cols-2 gap-2">
                 <div>
                   <label class="block text-[10px] font-bold text-slate-500 mb-0.5">房號</label>
-                  <input type="text" id="admin-r-no-${rIdx}" value="${r.roomNo}" class="w-full h-[36px] px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold font-mono">
+                  <input type="text" id="admin-r-no-${rIdx}" value="${r.roomNo}" class="w-full h-10 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold font-mono">
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold text-slate-500 mb-0.5">房型名稱</label>
-                  <input type="text" id="admin-r-type-${rIdx}" value="${r.roomType || ''}" class="w-full h-[36px] px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold">
+                  <input type="text" id="admin-r-type-${rIdx}" value="${r.roomType || ''}" class="w-full h-10 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold">
                 </div>
               </div>
 
               <div class="grid grid-cols-2 gap-2">
                 <div>
                   <label class="block text-[10px] font-bold text-slate-500 mb-0.5">開鎖方式</label>
-                  <select id="admin-r-entry-${rIdx}" class="w-full h-[36px] px-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold">
+                  <select id="admin-r-entry-${rIdx}" class="w-full h-10 px-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold">
                     <option value="code" ${r.entryType === 'code' ? 'selected' : ''}>密碼鎖</option>
                     <option value="card" ${r.entryType === 'card' ? 'selected' : ''}>感應房卡</option>
                     <option value="key" ${r.entryType === 'key' ? 'selected' : ''}>實體鑰匙</option>
@@ -928,12 +928,12 @@ function renderAdminSingleHotelForm() {
                 </div>
                 <div id="admin-r-code-box-${rIdx}" class="${r.entryType !== 'code' ? 'hidden' : ''}">
                   <label class="block text-[10px] font-bold text-slate-500 mb-0.5">房間通行密碼</label>
-                  <input type="text" id="admin-r-code-${rIdx}" value="${r.roomCode || ''}" class="w-full h-[36px] px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold font-mono">
+                  <input type="text" id="admin-r-code-${rIdx}" value="${r.roomCode || ''}" class="w-full h-10 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold font-mono">
                 </div>
               </div>
 
               <div>
-                <label class="block text-[10px] font-bold text-slate-500 mb-1">指派住客 (Ctrl/Cmd 可複選)</label>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">指派住客 (可複選)</label>
                 <select id="admin-r-partners-${rIdx}" multiple class="w-full text-xs font-medium border border-slate-200 rounded-xl p-2 bg-white text-slate-800 min-h-[80px]">
                   ${partnerList.map(p => {
                     const isAssignedHere = (r.assignedPartnerIds || []).includes(p.id);
@@ -997,7 +997,7 @@ function openAddExpenseModal() {
   `).join('');
 
   taxiContainer.innerHTML = partnerList.map(p => `
-    <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-xl cursor-pointer">
+    <label class="min-h-[44px] flex items-center gap-2 p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer">
       <input type="checkbox" value="${p.id}" checked class="w-4 h-4 accent-brand-600">
       <span class="text-xs font-semibold text-slate-800 truncate">${p.name}</span>
     </label>
@@ -1006,13 +1006,12 @@ function openAddExpenseModal() {
   document.getElementById('add-expense-modal').classList.remove('hidden');
 }
 
-// ==================== 頁面事件監聽與身份驗證 ====================
+// ==================== 頁面事件監聽與初始化 ====================
 
 window.addEventListener('DOMContentLoaded', () => {
-  // 核心登入狀態監聽
   subscribeAuthState((user) => {
     if (!user) {
-      window.location.href = "login.html";
+      window.location.replace("login.html");
     } else {
       currentUser.uid = user.uid;
       currentUser.name = user.displayName || user.email.split('@')[0];
@@ -1024,98 +1023,113 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // 主分頁切換
-  document.getElementById('tab-btn-overview').onclick = () => switchTab('overview');
-  document.getElementById('tab-btn-itinerary').onclick = () => switchTab('itinerary');
-  document.getElementById('tab-btn-bookkeeping').onclick = () => switchTab('bookkeeping');
+  document.getElementById('tab-btn-overview')?.addEventListener('click', () => switchTab('overview'));
+  document.getElementById('tab-btn-itinerary')?.addEventListener('click', () => switchTab('itinerary'));
+  document.getElementById('tab-btn-bookkeeping')?.addEventListener('click', () => switchTab('bookkeeping'));
 
   // 身分預視切換
-  document.getElementById('preview-user-p1').onclick = () => switchUserPreview('admin');
-  document.getElementById('preview-user-p2').onclick = () => switchUserPreview('member');
+  document.getElementById('preview-user-p1')?.addEventListener('click', () => switchUserPreview('admin'));
+  document.getElementById('preview-user-p2')?.addEventListener('click', () => switchUserPreview('member'));
 
-  // 行程設定 Modal
-  document.getElementById('btn-open-trip-settings').onclick = () => document.getElementById('admin-trip-modal').classList.remove('hidden');
-  document.getElementById('btn-close-trip-settings').onclick = () => document.getElementById('admin-trip-modal').classList.add('hidden');
-  document.getElementById('btn-cancel-trip-settings').onclick = () => document.getElementById('admin-trip-modal').classList.add('hidden');
-  document.getElementById('form-trip-settings').onsubmit = handleSaveTripSettings;
+  // 行程設定 Modal (管理員)
+  document.getElementById('btn-open-trip-settings')?.addEventListener('click', () => document.getElementById('admin-trip-modal').classList.remove('hidden'));
+  document.getElementById('btn-close-trip-settings')?.addEventListener('click', () => document.getElementById('admin-trip-modal').classList.add('hidden'));
+  document.getElementById('btn-cancel-trip-settings')?.addEventListener('click', () => document.getElementById('admin-trip-modal').classList.add('hidden'));
+  document.getElementById('form-trip-settings')?.addEventListener('submit', handleSaveTripSettings);
 
-  document.getElementById('btn-copy-invite-code').onclick = () => {
+  document.getElementById('btn-copy-invite-code')?.addEventListener('click', () => {
     if (currentTripData?.inviteCode) {
       navigator.clipboard.writeText(currentTripData.inviteCode);
       showToast(`已複製邀請碼：${currentTripData.inviteCode}`);
     }
-  };
+  });
 
-  // 航班 Modal (全員)
-  document.querySelector('button:has(i[data-lucide="plane"])').onclick = () => {
+  // 8 大全員工具按鈕明確 ID 監聽（根除 Lucide 圖標置換崩潰問題）
+  document.getElementById('btn-tool-flight')?.addEventListener('click', () => {
     document.getElementById('public-flight-modal').classList.remove('hidden');
     if (window.lucide) lucide.createIcons();
-  };
-  document.getElementById('btn-close-public-flight').onclick = () => document.getElementById('public-flight-modal').classList.add('hidden');
-  document.getElementById('btn-close-public-flight-footer').onclick = () => document.getElementById('public-flight-modal').classList.add('hidden');
-
-  document.getElementById('flight-tab-out').onclick = () => {
-    document.getElementById('flight-tab-out').className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 transition-all";
-    document.getElementById('flight-tab-in').className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 flex items-center justify-center gap-1.5 transition-all";
-    document.getElementById('flight-card-out').classList.remove('hidden');
-    document.getElementById('flight-card-in').classList.add('hidden');
-  };
-  document.getElementById('flight-tab-in').onclick = () => {
-    document.getElementById('flight-tab-in').className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 transition-all";
-    document.getElementById('flight-tab-out').className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 flex items-center justify-center gap-1.5 transition-all";
-    document.getElementById('flight-card-in').classList.remove('hidden');
-    document.getElementById('flight-card-out').classList.add('hidden');
-  };
-
-  document.getElementById('btn-egg-out-seat').onclick = () => openSeatEggModal('out');
-  document.getElementById('btn-egg-in-seat').onclick = () => openSeatEggModal('in');
-  document.getElementById('btn-close-seat-egg').onclick = () => document.getElementById('seat-egg-modal').classList.add('hidden');
-  document.getElementById('btn-close-seat-egg-footer').onclick = () => document.getElementById('seat-egg-modal').classList.add('hidden');
-
-  // 航班設定 (管理員)
-  document.querySelector('button:has(i[data-lucide="plane-takeoff"])').onclick = openAdminFlightModal;
-  document.getElementById('btn-close-admin-flight').onclick = () => document.getElementById('admin-flight-modal').classList.add('hidden');
-  document.getElementById('btn-cancel-admin-flight').onclick = () => document.getElementById('admin-flight-modal').classList.add('hidden');
-  document.getElementById('form-admin-flight').onsubmit = handleSaveFlightSettings;
-
-  document.getElementById('subtab-admin-out').onclick = () => switchFlightSubTab('out');
-  document.getElementById('subtab-admin-in').onclick = () => switchFlightSubTab('in');
-  document.getElementById('subtab-admin-seats').onclick = () => switchFlightSubTab('seats');
-
-  document.getElementById('template-select-out').onchange = (e) => applyAirlineTemplate('out', e.target.value);
-  document.getElementById('template-select-in').onchange = (e) => applyAirlineTemplate('in', e.target.value);
-
-  // 住宿 Modal (全員)
-  document.querySelector('button:has(i[data-lucide="building-2"])').onclick = () => {
+  });
+  document.getElementById('btn-tool-hotel')?.addEventListener('click', () => {
     document.getElementById('public-hotel-modal').classList.remove('hidden');
     if (window.lucide) lucide.createIcons();
-  };
-  document.getElementById('btn-close-public-hotel').onclick = () => document.getElementById('public-hotel-modal').classList.add('hidden');
-  document.getElementById('btn-close-public-hotel-footer').onclick = () => document.getElementById('public-hotel-modal').classList.add('hidden');
+  });
+  document.getElementById('btn-tool-notice')?.addEventListener('click', () => showToast("公版行前須知檢視即將開放！"));
+  document.getElementById('btn-tool-emergency')?.addEventListener('click', () => showToast("急難求助電話清單即將開放！"));
+  document.getElementById('btn-tool-tickets')?.addEventListener('click', () => showToast("電子票券憑證庫即將開放！"));
+  document.getElementById('btn-tool-coupons')?.addEventListener('click', () => showToast("優惠券專區即將開放！"));
+  document.getElementById('btn-tool-shopping')?.addEventListener('click', () => showToast("即時購物分攤清單即將開放！"));
+  document.getElementById('btn-tool-checklist')?.addEventListener('click', () => showToast("行李打包準備清單即將開放！"));
 
-  // 住宿設定 (管理員)
-  const adminHotelBtn = document.querySelectorAll('#admin-control-section button')[3];
-  if (adminHotelBtn) adminHotelBtn.onclick = openAdminHotelModal;
-  document.getElementById('btn-close-admin-hotel').onclick = () => document.getElementById('admin-hotel-modal').classList.add('hidden');
-  document.getElementById('btn-cancel-admin-hotel').onclick = () => document.getElementById('admin-hotel-modal').classList.add('hidden');
+  // 8 大管理員按鈕明確 ID 監聽
+  document.getElementById('btn-admin-flight')?.addEventListener('click', openAdminFlightModal);
+  document.getElementById('btn-admin-hotel')?.addEventListener('click', openAdminHotelModal);
+  document.getElementById('btn-admin-voucher')?.addEventListener('click', () => showToast("憑證管理功能建構中"));
+  document.getElementById('btn-admin-booking')?.addEventListener('click', () => showToast("預訂管理功能建構中"));
+  document.getElementById('btn-admin-fx')?.addEventListener('click', () => showToast("匯率即時試算功能建構中"));
+  document.getElementById('btn-admin-other')?.addEventListener('click', () => showToast("其他進階設定功能建構中"));
 
-  document.getElementById('admin-hotel-select').onchange = (e) => {
+  // 航班彈窗關閉
+  document.getElementById('btn-close-public-flight')?.addEventListener('click', () => document.getElementById('public-flight-modal').classList.add('hidden'));
+  document.getElementById('btn-close-public-flight-footer')?.addEventListener('click', () => document.getElementById('public-flight-modal').classList.add('hidden'));
+
+  // 航班去回分頁
+  document.getElementById('flight-tab-out')?.addEventListener('click', () => {
+    document.getElementById('flight-tab-out').className = "min-h-[38px] flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 transition-all";
+    document.getElementById('flight-tab-in').className = "min-h-[38px] flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 flex items-center justify-center gap-1.5 transition-all";
+    document.getElementById('flight-card-out').classList.remove('hidden');
+    document.getElementById('flight-card-in').classList.add('hidden');
+  });
+  document.getElementById('flight-tab-in')?.addEventListener('click', () => {
+    document.getElementById('flight-tab-in').className = "min-h-[38px] flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 transition-all";
+    document.getElementById('flight-tab-out').className = "min-h-[38px] flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 flex items-center justify-center gap-1.5 transition-all";
+    document.getElementById('flight-card-in').classList.remove('hidden');
+    document.getElementById('flight-card-out').classList.add('hidden');
+  });
+
+  // 座位彩蛋彈窗
+  document.getElementById('btn-egg-out-seat')?.addEventListener('click', () => openSeatEggModal('out'));
+  document.getElementById('btn-egg-in-seat')?.addEventListener('click', () => openSeatEggModal('in'));
+  document.getElementById('btn-close-seat-egg')?.addEventListener('click', () => document.getElementById('seat-egg-modal').classList.add('hidden'));
+  document.getElementById('btn-close-seat-egg-footer')?.addEventListener('click', () => document.getElementById('seat-egg-modal').classList.add('hidden'));
+
+  // 航班設定彈窗
+  document.getElementById('btn-close-admin-flight')?.addEventListener('click', () => document.getElementById('admin-flight-modal').classList.add('hidden'));
+  document.getElementById('btn-cancel-admin-flight')?.addEventListener('click', () => document.getElementById('admin-flight-modal').classList.add('hidden'));
+  document.getElementById('form-admin-flight')?.addEventListener('submit', handleSaveFlightSettings);
+
+  document.getElementById('subtab-admin-out')?.addEventListener('click', () => switchFlightSubTab('out'));
+  document.getElementById('subtab-admin-in')?.addEventListener('click', () => switchFlightSubTab('in'));
+  document.getElementById('subtab-admin-seats')?.addEventListener('click', () => switchFlightSubTab('seats'));
+
+  document.getElementById('template-select-out')?.addEventListener('change', (e) => applyAirlineTemplate('out', e.target.value));
+  document.getElementById('template-select-in')?.addEventListener('change', (e) => applyAirlineTemplate('in', e.target.value));
+
+  // 住宿彈窗關閉
+  document.getElementById('btn-close-public-hotel')?.addEventListener('click', () => document.getElementById('public-hotel-modal').classList.add('hidden'));
+  document.getElementById('btn-close-public-hotel-footer')?.addEventListener('click', () => document.getElementById('public-hotel-modal').classList.add('hidden'));
+
+  // 住宿設定關閉
+  document.getElementById('btn-close-admin-hotel')?.addEventListener('click', () => document.getElementById('admin-hotel-modal').classList.add('hidden'));
+  document.getElementById('btn-cancel-admin-hotel')?.addEventListener('click', () => document.getElementById('admin-hotel-modal').classList.add('hidden'));
+
+  document.getElementById('admin-hotel-select')?.addEventListener('change', (e) => {
     activeHotelIdx = parseInt(e.target.value, 10);
     renderAdminSingleHotelForm();
-  };
-  document.getElementById('hotel-subtab-info').onclick = () => {
+  });
+  document.getElementById('hotel-subtab-info')?.addEventListener('click', () => {
     activeHotelSubTab = 'info';
-    document.getElementById('hotel-subtab-info').className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all flex items-center justify-center gap-1.5";
-    document.getElementById('hotel-subtab-rooms').className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all flex items-center justify-center gap-1.5";
+    document.getElementById('hotel-subtab-info').className = "min-h-[38px] flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all flex items-center justify-center gap-1.5";
+    document.getElementById('hotel-subtab-rooms').className = "min-h-[38px] flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all flex items-center justify-center gap-1.5";
     renderAdminSingleHotelForm();
-  };
-  document.getElementById('hotel-subtab-rooms').onclick = () => {
+  });
+  document.getElementById('hotel-subtab-rooms')?.addEventListener('click', () => {
     activeHotelSubTab = 'rooms';
-    document.getElementById('hotel-subtab-rooms').className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all flex items-center justify-center gap-1.5";
-    document.getElementById('hotel-subtab-info').className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all flex items-center justify-center gap-1.5";
+    document.getElementById('hotel-subtab-rooms').className = "min-h-[38px] flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all flex items-center justify-center gap-1.5";
+    document.getElementById('hotel-subtab-info').className = "min-h-[38px] flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all flex items-center justify-center gap-1.5";
     renderAdminSingleHotelForm();
-  };
+  });
 
-  document.getElementById('btn-add-new-hotel').onclick = () => {
+  document.getElementById('btn-add-new-hotel')?.addEventListener('click', () => {
     currentHotelsList.push({
       id: `h_${Date.now()}`,
       nameZh: "新住宿飯店",
@@ -1138,9 +1152,9 @@ window.addEventListener('DOMContentLoaded', () => {
     renderAdminHotelDropdown();
     renderAdminSingleHotelForm();
     showToast("已新增住宿，請填寫基本資料與房間！");
-  };
+  });
 
-  document.getElementById('btn-save-all-hotels').onclick = async () => {
+  document.getElementById('btn-save-all-hotels')?.addEventListener('click', async () => {
     const btn = document.getElementById('btn-save-all-hotels');
     btn.disabled = true;
     btn.innerText = "儲存中...";
@@ -1188,20 +1202,20 @@ window.addEventListener('DOMContentLoaded', () => {
       btn.disabled = false;
       btn.innerText = "儲存住宿設定";
     }
-  };
+  });
 
-  document.getElementById('btn-cancel-remove-hotel').onclick = () => document.getElementById('confirm-remove-hotel-modal').classList.add('hidden');
-  document.getElementById('btn-confirm-remove-hotel-ok').onclick = () => {
+  document.getElementById('btn-cancel-remove-hotel')?.addEventListener('click', () => document.getElementById('confirm-remove-hotel-modal').classList.add('hidden'));
+  document.getElementById('btn-confirm-remove-hotel-ok')?.addEventListener('click', () => {
     currentHotelsList.splice(activeHotelIdx, 1);
     activeHotelIdx = Math.max(0, currentHotelsList.length - 1);
     document.getElementById('confirm-remove-hotel-modal').classList.add('hidden');
     renderAdminHotelDropdown();
     renderAdminSingleHotelForm();
     showToast("已刪除該住宿");
-  };
+  });
 
-  document.getElementById('btn-cancel-remove-room').onclick = () => document.getElementById('confirm-remove-room-modal').classList.add('hidden');
-  document.getElementById('btn-confirm-remove-room-ok').onclick = () => {
+  document.getElementById('btn-cancel-remove-room')?.addEventListener('click', () => document.getElementById('confirm-remove-room-modal').classList.add('hidden'));
+  document.getElementById('btn-confirm-remove-room-ok')?.addEventListener('click', () => {
     const h = currentHotelsList[activeHotelIdx];
     if (h && roomIdxPendingRemove !== null) {
       h.rooms.splice(roomIdxPendingRemove, 1);
@@ -1210,12 +1224,12 @@ window.addEventListener('DOMContentLoaded', () => {
       renderAdminSingleHotelForm();
       showToast("已刪除該房間");
     }
-  };
+  });
 
   // 記帳次頁籤切換
-  document.getElementById('bk-sub-expenses').onclick = () => switchBookkeepingSub('expenses');
-  document.getElementById('bk-sub-payments').onclick = () => switchBookkeepingSub('payments');
-  document.getElementById('bk-sub-settlement').onclick = () => switchBookkeepingSub('settlement');
+  document.getElementById('bk-sub-expenses')?.addEventListener('click', () => switchBookkeepingSub('expenses'));
+  document.getElementById('bk-sub-payments')?.addEventListener('click', () => switchBookkeepingSub('payments'));
+  document.getElementById('bk-sub-settlement')?.addEventListener('click', () => switchBookkeepingSub('settlement'));
 
   ['all', 'kitty', 'advance', 'taxi'].forEach(type => {
     const btn = document.getElementById(`exp-filter-${type}`);
@@ -1225,25 +1239,25 @@ window.addEventListener('DOMContentLoaded', () => {
         ['all', 'kitty', 'advance', 'taxi'].forEach(t => {
           const b = document.getElementById(`exp-filter-${t}`);
           if (b) b.className = (t === type)
-            ? "px-3 py-1 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-xs whitespace-nowrap"
-            : "px-3 py-1 text-xs font-semibold rounded-lg text-slate-600 whitespace-nowrap";
+            ? "min-h-[36px] px-3 py-1 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-xs whitespace-nowrap"
+            : "min-h-[36px] px-3 py-1 text-xs font-semibold rounded-lg text-slate-600 whitespace-nowrap";
         });
         renderExpensesList();
       };
     }
   });
 
-  document.getElementById('btn-open-add-expense').onclick = openAddExpenseModal;
-  document.getElementById('btn-close-expense-modal').onclick = () => document.getElementById('add-expense-modal').classList.add('hidden');
-  document.getElementById('btn-cancel-expense-modal').onclick = () => document.getElementById('add-expense-modal').classList.add('hidden');
+  document.getElementById('btn-open-add-expense')?.addEventListener('click', openAddExpenseModal);
+  document.getElementById('btn-close-expense-modal')?.addEventListener('click', () => document.getElementById('add-expense-modal').classList.add('hidden'));
+  document.getElementById('btn-cancel-expense-modal')?.addEventListener('click', () => document.getElementById('add-expense-modal').classList.add('hidden'));
 
-  document.getElementById('exp-type').onchange = (e) => {
+  document.getElementById('exp-type')?.addEventListener('change', (e) => {
     const val = e.target.value;
     document.getElementById('box-exp-payer').classList.toggle('hidden', val === 'kitty');
     document.getElementById('box-taxi-members').classList.toggle('hidden', val !== 'taxi');
-  };
+  });
 
-  document.getElementById('form-add-expense').onsubmit = async (e) => {
+  document.getElementById('form-add-expense')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = e.target.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
@@ -1283,13 +1297,13 @@ window.addEventListener('DOMContentLoaded', () => {
       submitBtn.disabled = false;
       submitBtn.innerText = "儲存支出";
     }
-  };
+  });
 
-  document.getElementById('btn-open-submit-payment').onclick = () => document.getElementById('submit-payment-modal').classList.remove('hidden');
-  document.getElementById('btn-close-payment-modal').onclick = () => document.getElementById('submit-payment-modal').classList.add('hidden');
-  document.getElementById('btn-cancel-payment-modal').onclick = () => document.getElementById('submit-payment-modal').classList.add('hidden');
+  document.getElementById('btn-open-submit-payment')?.addEventListener('click', () => document.getElementById('submit-payment-modal').classList.remove('hidden'));
+  document.getElementById('btn-close-payment-modal')?.addEventListener('click', () => document.getElementById('submit-payment-modal').classList.add('hidden'));
+  document.getElementById('btn-cancel-payment-modal')?.addEventListener('click', () => document.getElementById('submit-payment-modal').classList.add('hidden'));
 
-  document.getElementById('form-submit-payment').onsubmit = async (e) => {
+  document.getElementById('form-submit-payment')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = e.target.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
@@ -1316,7 +1330,9 @@ window.addEventListener('DOMContentLoaded', () => {
       submitBtn.disabled = false;
       submitBtn.innerText = "送出審核";
     }
-  };
+  });
+
+  if (window.lucide) lucide.createIcons();
 });
 
 function switchBookkeepingSub(tab) {
@@ -1326,10 +1342,10 @@ function switchBookkeepingSub(tab) {
     const sec = document.getElementById(`bk-section-${s}`);
     if (btn && sec) {
       if (s === tab) {
-        btn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-xs transition-all";
+        btn.className = "min-h-[38px] flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-xs transition-all";
         sec.classList.remove('hidden');
       } else {
-        btn.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 transition-all";
+        btn.className = "min-h-[38px] flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 transition-all";
         sec.classList.add('hidden');
       }
     }
@@ -1344,10 +1360,10 @@ function switchTab(tabName) {
     const content = document.getElementById(`tab-content-${t}`);
     if (btn && content) {
       if (t === tabName) {
-        btn.className = "flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 whitespace-nowrap";
+        btn.className = "min-h-[40px] flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 whitespace-nowrap";
         content.classList.remove('hidden');
       } else {
-        btn.className = "flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all text-slate-600 flex items-center justify-center gap-1.5 whitespace-nowrap";
+        btn.className = "min-h-[40px] flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all text-slate-600 flex items-center justify-center gap-1.5 whitespace-nowrap";
         content.classList.add('hidden');
       }
     }
@@ -1359,13 +1375,13 @@ function switchUserPreview(role) {
   const btnP2 = document.getElementById('preview-user-p2');
   if (role === 'admin') {
     activeUserId = currentUser.uid;
-    btnP1.className = "px-2.5 py-1 font-bold rounded-lg transition-all bg-white text-slate-900 shadow-2xs";
-    btnP2.className = "px-2.5 py-1 font-semibold rounded-lg transition-all text-slate-600";
+    btnP1.className = "min-h-[36px] px-3 py-1 font-bold rounded-lg transition-all bg-white text-slate-900 shadow-2xs";
+    btnP2.className = "min-h-[36px] px-3 py-1 font-semibold rounded-lg transition-all text-slate-600";
     showToast("已切換為：管理員視角");
   } else {
     activeUserId = "guest_member";
-    btnP1.className = "px-2.5 py-1 font-semibold rounded-lg transition-all text-slate-600";
-    btnP2.className = "px-2.5 py-1 font-bold rounded-lg transition-all bg-white text-slate-900 shadow-2xs";
+    btnP1.className = "min-h-[36px] px-3 py-1 font-semibold rounded-lg transition-all text-slate-600";
+    btnP2.className = "min-h-[36px] px-3 py-1 font-bold rounded-lg transition-all bg-white text-slate-900 shadow-2xs";
     showToast("已切換為：一般成員視角");
   }
   renderRoomOverview();
