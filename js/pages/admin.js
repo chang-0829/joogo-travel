@@ -55,7 +55,7 @@ window.addEventListener('beforeunload', (e) => {
     }
 });
 
-// ==================== 視圖切換與路由控制 ====================
+// ==================== 視圖切換與路由控制 (修復電腦與手機選單高亮) ====================
 export function switchView(viewName) {
     if (coverManager.isUploading) {
         const leave = confirm("圖片正在上傳中，離開將會終止上傳，確定要離開嗎？");
@@ -81,7 +81,7 @@ export function switchView(viewName) {
         if (el) el.classList.toggle('hidden', v !== viewName);
     });
 
-    // 只要進入國家列表或任何該國的細部設定子頁面，都屬於「管理國家/地區」的範疇
+    // 只要進入國家清單或任何國家設定細節頁面，皆屬於「管理國家/地區」的範疇
     const isCountries = [
         'country-list', 
         'country-detail', 
@@ -96,7 +96,7 @@ export function switchView(viewName) {
     const isEmergencySchema = viewName === 'schema-emergency';
     const isAirlines = viewName === 'airlines';
 
-    // 電腦版側邊欄按鈕
+    // 電腦版側邊欄樣式切換
     const sideCountries = document.getElementById('sidebar-btn-countries');
     const sideNotice = document.getElementById('sidebar-btn-schema-notice');
     const sideEmergency = document.getElementById('sidebar-btn-schema-emergency');
@@ -110,7 +110,7 @@ export function switchView(viewName) {
     if (sideEmergency) sideEmergency.className = isEmergencySchema ? deskActiveCls : deskInactiveCls;
     if (sideAirlines) sideAirlines.className = isAirlines ? deskActiveCls : deskInactiveCls;
 
-    // 手機端抽屜選單按鈕 (同步狀態反白)
+    // 手機端抽屜選單樣式同步切換
     const drawerCountries = document.getElementById('drawer-btn-countries');
     const drawerNotice = document.getElementById('drawer-btn-schema-notice');
     const drawerEmergency = document.getElementById('drawer-btn-schema-emergency');
@@ -130,60 +130,55 @@ export function switchView(viewName) {
 }
 window.switchView = switchView;
 
-// ==================== 兩層級旅遊地區管理邏輯 (修正第 1、2 點按鈕與輸入框視覺) ====================
-function renderRegionGroups() {
-    const count = detailRegionGroups.length;
-    const countEl = document.getElementById('regions-page-count');
-    const mainCountEl = document.getElementById('detail-base-regions-count');
-    const container = document.getElementById('regions-groups-container');
+// ==================== 國家清單渲染 ====================
+function renderCountries() {
+    const grid = document.getElementById('countries-grid');
+    if (!grid) return;
 
-    if (countEl) countEl.innerText = count;
-    if (mainCountEl) mainCountEl.innerText = `已設定 ${count} 個區域`;
+    const filtered = currentCountries.filter(c => {
+        if (!searchQuery) return true;
+        const matchName = c.id.toLowerCase().includes(searchQuery);
+        const matchRegions = (c.regions || []).some(r => {
+            if (typeof r === 'string') return r.toLowerCase().includes(searchQuery);
+            if (r && r.name) {
+                const matchParent = r.name.toLowerCase().includes(searchQuery);
+                const matchSub = (r.subRegions || []).some(sub => sub.toLowerCase().includes(searchQuery));
+                return matchParent || matchSub;
+            }
+            return false;
+        });
+        return matchName || matchRegions;
+    });
 
-    if (!container) return;
-
-    if (count === 0) {
-        container.innerHTML = `<div class="py-8 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前尚無區域，請使用上方輸入框新增主要區域。</div>`;
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-16 text-center text-xs text-slate-400">找不到符合條件的國家或地區</div>`;
         return;
     }
 
-    container.innerHTML = detailRegionGroups.map((group, pIdx) => `
-        <div class="p-4 sm:p-5 bg-white border border-slate-200/80 rounded-2xl space-y-3.5 shadow-2xs">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
-                    <span class="text-base font-bold text-slate-900">${group.name}</span>
-                    <span class="text-xs text-slate-400 font-mono">(${group.subRegions.length} 個城市)</span>
-                </div>
-                <!-- 修正第 2 點：刪除區域按鈕改成精緻的微膠囊危險樣式 -->
-                <button type="button" onclick="window.removeParentRegion(${pIdx})" class="h-8 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5 pointer-events-none"></i>
-                    <span>刪除區域</span>
-                </button>
+    grid.innerHTML = filtered.map(c => {
+        const cover = (c.coverImages && c.coverImages.length > 0) 
+            ? c.coverImages[0] 
+            : 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=600';
+        return `
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between">
+            <div class="relative h-36 w-full bg-slate-100 overflow-hidden">
+                <img src="${cover}" class="w-full h-full object-cover">
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
-                ${group.subRegions.map((sub, sIdx) => `
-                    <span class="inline-flex items-center pl-3 pr-1.5 py-1 bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-slate-800 text-xs font-semibold rounded-xl transition-all shadow-2xs">
-                        <span>${sub}</span>
-                        <button type="button" onclick="window.removeSubRegion(${pIdx}, ${sIdx})" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-rose-600 active:scale-90 transition-transform">
-                            <i data-lucide="x" class="w-3.5 h-3.5 pointer-events-none"></i>
-                        </button>
-                    </span>
-                `).join('')}
-
-                <!-- 修正第 1 點：次級輸入框改為精緻膠囊設計，帶入虛線邊框與新增圖標 -->
-                <div class="inline-flex items-center relative">
-                    <i data-lucide="plus" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none"></i>
-                    <input type="text" 
-                        id="sub-region-input-${pIdx}" 
-                        placeholder="新增次級城市 (按 Enter)" 
-                        class="h-8 pl-7 pr-3 bg-slate-50 hover:bg-white focus:bg-white border border-dashed border-slate-300 focus:border-brand-500 rounded-xl text-xs font-medium text-slate-700 placeholder:text-slate-400 w-44 focus:w-52 transition-all shadow-2xs" 
-                        onkeydown="if(event.key==='Enter'){event.preventDefault(); window.addSubRegion(${pIdx});}">
+            <div class="p-4 flex items-center justify-between">
+                <h3 class="font-bold text-base text-slate-900 tracking-tight">${c.id}</h3>
+                <div class="flex items-center gap-1 relative z-10">
+                    <button type="button" onclick="window.openCountryDetail('${c.id}')" title="編輯" class="w-11 h-11 flex items-center justify-center text-slate-500 hover:text-brand-600 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer">
+                        <i data-lucide="pencil" class="w-5 h-5 pointer-events-none"></i>
+                    </button>
+                    <button type="button" onclick="window.deleteCountry('${c.id}')" title="刪除" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer">
+                        <i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 
     if (window.lucide) lucide.createIcons();
 }
@@ -257,7 +252,7 @@ window.saveCurrentCountryDetail = async function() {
             }
         }
 
-        // 自動吸收次級城市尚未按下 Enter 的文字
+        // 自動吸收次級城市尚未按下 Enter 的文字防呆
         detailRegionGroups.forEach((group, pIdx) => {
             const subInput = document.getElementById(`sub-region-input-${pIdx}`);
             if (subInput && subInput.value.trim()) {
@@ -299,7 +294,7 @@ window.saveCurrentCountryDetail = async function() {
     }
 };
 
-// ==================== 兩層級旅遊地區管理邏輯 (落實 44pt 熱區) ====================
+// ==================== 兩層級旅遊地區管理邏輯 (僅保留單一宣告) ====================
 function renderRegionGroups() {
     const count = detailRegionGroups.length;
     const countEl = document.getElementById('regions-page-count');
@@ -317,30 +312,38 @@ function renderRegionGroups() {
     }
 
     container.innerHTML = detailRegionGroups.map((group, pIdx) => `
-        <div class="p-4 sm:p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
-            <div class="flex items-center justify-between">
+        <div class="p-4 sm:p-5 bg-white border border-slate-200/80 rounded-2xl space-y-3.5 shadow-2xs">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
                     <span class="text-base font-bold text-slate-900">${group.name}</span>
                     <span class="text-xs text-slate-400 font-mono">(${group.subRegions.length} 個城市)</span>
                 </div>
-                <button type="button" onclick="window.removeParentRegion(${pIdx})" class="min-h-[44px] px-2.5 text-xs font-bold text-rose-600 hover:text-rose-700 transition-colors flex items-center">
-                    刪除整個區域
+                <!-- 刪除區域按鈕：精緻危險色膠囊風格 -->
+                <button type="button" onclick="window.removeParentRegion(${pIdx})" class="h-8 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5 pointer-events-none"></i>
+                    <span>刪除區域</span>
                 </button>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2 pt-1">
+            <div class="flex flex-wrap items-center gap-2">
                 ${group.subRegions.map((sub, sIdx) => `
-                    <span class="inline-flex items-center pl-3 pr-1 py-1 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl shadow-2xs">
+                    <span class="inline-flex items-center pl-3 pr-1.5 py-1 bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-slate-800 text-xs font-semibold rounded-xl transition-all shadow-2xs">
                         <span>${sub}</span>
-                        <button type="button" onclick="window.removeSubRegion(${pIdx}, ${sIdx})" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-600 active:scale-90 transition-transform">
+                        <button type="button" onclick="window.removeSubRegion(${pIdx}, ${sIdx})" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-rose-600 active:scale-90 transition-transform">
                             <i data-lucide="x" class="w-3.5 h-3.5 pointer-events-none"></i>
                         </button>
                     </span>
                 `).join('')}
 
-                <div class="inline-flex items-center">
-                    <input type="text" id="sub-region-input-${pIdx}" placeholder="+ 新增次級 (按 Enter)" class="h-9 px-3 bg-white border border-slate-200/80 rounded-xl text-xs font-medium text-slate-700 w-40 focus:w-48 transition-all" onkeydown="if(event.key==='Enter'){event.preventDefault(); window.addSubRegion(${pIdx});}">
+                <!-- 次級輸入框：美化膠囊外觀，含圖示與虛線邊框 -->
+                <div class="inline-flex items-center relative">
+                    <i data-lucide="plus" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none"></i>
+                    <input type="text" 
+                        id="sub-region-input-${pIdx}" 
+                        placeholder="新增次級城市 (按 Enter)" 
+                        class="h-8 pl-7 pr-3 bg-slate-50 hover:bg-white focus:bg-white border border-dashed border-slate-300 focus:border-brand-500 rounded-xl text-xs font-medium text-slate-700 placeholder:text-slate-400 w-44 focus:w-52 transition-all shadow-2xs" 
+                        onkeydown="if(event.key==='Enter'){event.preventDefault(); window.addSubRegion(${pIdx});}">
                 </div>
             </div>
         </div>
@@ -611,7 +614,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 抽屜選單
+    // 抽屜選單開關
     const drawer = document.getElementById('drawer-menu');
     const backdrop = document.getElementById('drawer-backdrop');
     const openDrawer = () => {
