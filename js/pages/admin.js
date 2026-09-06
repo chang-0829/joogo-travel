@@ -5,7 +5,7 @@ import { subscribeSchema, saveSchema } from "../api/schemaApi.js";
 import { getAirlineTemplates, saveAirlineTemplate, deleteAirlineTemplate } from "../api/templateApi.js";
 import { CoverManager } from "../components/coverManager.js";
 
-// 身份驗證守門員 (未登入者立即導回登入頁)
+// 身份驗證守門員
 onAuthStateChange(user => {
     if (!user) {
         window.location.replace("login.html");
@@ -16,10 +16,13 @@ onAuthStateChange(user => {
 let currentCountries = [];
 let activeCountryId = null;
 let activeCountryData = null;
-let detailRegionGroups = []; // 兩層級地區結構：[{ name: "北海道", subRegions: ["札幌", "函館"] }]
-let detailEmbassies = [];    // 駐外館處列表
+let detailRegionGroups = [];
+let detailEmbassies = [];
 let searchQuery = "";
-let currentContinentFilter = "ALL"; // 洲別篩選：ALL, 亞洲, 歐洲, 美洲, 大洋洲, 非洲, 其他
+let currentContinentFilter = "ALL";
+
+// 洲別自訂清單 (可排序、可自訂)
+let activeContinentsList = ["亞洲", "歐洲", "美洲", "大洋洲", "非洲", "其他"];
 
 let activeNoticeSchema = [];
 let activeEmergencySchema = [];
@@ -67,6 +70,7 @@ export function switchView(viewName) {
 
     const views = [
         'country-list', 
+        'schema-continents',
         'schema-notice',
         'schema-emergency',
         'country-detail', 
@@ -93,12 +97,14 @@ export function switchView(viewName) {
         'country-coupons-page'
     ].includes(viewName);
 
+    const isContinentsSchema = viewName === 'schema-continents';
     const isNoticeSchema = viewName === 'schema-notice';
     const isEmergencySchema = viewName === 'schema-emergency';
     const isAirlines = viewName === 'airlines';
 
     // 電腦版側欄樣式切換
     const sideCountries = document.getElementById('sidebar-btn-countries');
+    const sideContinents = document.getElementById('sidebar-btn-schema-continents');
     const sideNotice = document.getElementById('sidebar-btn-schema-notice');
     const sideEmergency = document.getElementById('sidebar-btn-schema-emergency');
     const sideAirlines = document.getElementById('sidebar-btn-airlines');
@@ -107,12 +113,14 @@ export function switchView(viewName) {
     const deskInactiveCls = "w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer";
 
     if (sideCountries) sideCountries.className = isCountries ? deskActiveCls : deskInactiveCls;
+    if (sideContinents) sideContinents.className = isContinentsSchema ? deskActiveCls : deskInactiveCls;
     if (sideNotice) sideNotice.className = isNoticeSchema ? deskActiveCls : deskInactiveCls;
     if (sideEmergency) sideEmergency.className = isEmergencySchema ? deskActiveCls : deskInactiveCls;
     if (sideAirlines) sideAirlines.className = isAirlines ? deskActiveCls : deskInactiveCls;
 
     // 手機端抽屜樣式切換
     const drawerCountries = document.getElementById('drawer-btn-countries');
+    const drawerContinents = document.getElementById('drawer-btn-schema-continents');
     const drawerNotice = document.getElementById('drawer-btn-schema-notice');
     const drawerEmergency = document.getElementById('drawer-btn-schema-emergency');
     const drawerAirlines = document.getElementById('drawer-btn-airlines');
@@ -121,6 +129,7 @@ export function switchView(viewName) {
     const mobInactiveCls = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all";
 
     if (drawerCountries) drawerCountries.className = isCountries ? mobActiveCls : mobInactiveCls;
+    if (drawerContinents) drawerContinents.className = isContinentsSchema ? mobActiveCls : mobInactiveCls;
     if (drawerNotice) drawerNotice.className = isNoticeSchema ? mobActiveCls : mobInactiveCls;
     if (drawerEmergency) drawerEmergency.className = isEmergencySchema ? mobActiveCls : mobInactiveCls;
     if (drawerAirlines) drawerAirlines.className = isAirlines ? mobActiveCls : mobInactiveCls;
@@ -131,19 +140,119 @@ export function switchView(viewName) {
 }
 window.switchView = switchView;
 
-// ==================== 洲別篩選切換 ====================
-window.setContinentFilter = function(continent) {
-    currentContinentFilter = continent;
-    
-    document.querySelectorAll('.continent-tab-btn').forEach(btn => {
-        const isMatch = btn.getAttribute('data-continent') === continent;
-        if (isMatch) {
-            btn.className = "continent-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-brand-500 text-white shadow-xs";
-        } else {
-            btn.className = "continent-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all";
+// ==================== 洲別管理、排序與 Tab 渲染邏輯 ====================
+function renderContinentTabs() {
+    const container = document.getElementById('continent-tabs-container');
+    if (!container) return;
+
+    const allTabs = ['ALL', ...activeContinentsList];
+    container.innerHTML = allTabs.map(cont => {
+        const isMatch = currentContinentFilter === cont;
+        const label = cont === 'ALL' ? '全部' : cont;
+        const cls = isMatch 
+            ? "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-brand-500 text-white shadow-xs shrink-0 cursor-pointer" 
+            : "px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all shrink-0 cursor-pointer";
+        return `<button type="button" onclick="window.setContinentFilter('${cont}')" class="${cls}">${label}</button>`;
+    }).join('');
+}
+
+function renderContinentSelectOptions() {
+    const selects = [
+        document.getElementById('create-country-continent'),
+        document.getElementById('detail-base-continent')
+    ];
+
+    selects.forEach(sel => {
+        if (!sel) return;
+        const currentVal = sel.value;
+        sel.innerHTML = activeContinentsList.map(c => `<option value="${c}">${c}</option>`).join('');
+        if (currentVal && activeContinentsList.includes(currentVal)) {
+            sel.value = currentVal;
         }
     });
+}
 
+function renderContinentsSortEditor() {
+    const list = document.getElementById('continents-sort-list');
+    if (!list) return;
+
+    list.innerHTML = activeContinentsList.map((item, idx) => `
+        <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                <span class="w-6 text-center text-xs font-bold text-slate-400 font-mono">${idx + 1}</span>
+                <input type="text" value="${item}" oninput="window.updateContinentName(${idx}, this.value)" class="flex-1 h-9 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none">
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+                <button type="button" onclick="window.moveContinentOrder(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70 disabled:opacity-30 disabled:pointer-events-none transition-colors" title="上移">
+                    <i data-lucide="arrow-up" class="w-4 h-4 pointer-events-none"></i>
+                </button>
+                <button type="button" onclick="window.moveContinentOrder(${idx}, 1)" ${idx === activeContinentsList.length - 1 ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/70 disabled:opacity-30 disabled:pointer-events-none transition-colors" title="下移">
+                    <i data-lucide="arrow-down" class="w-4 h-4 pointer-events-none"></i>
+                </button>
+                <button type="button" onclick="window.removeContinentItem(${idx})" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="刪除此洲別">
+                    <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    if (window.lucide) lucide.createIcons();
+}
+
+window.addNewContinentItem = function() {
+    const input = document.getElementById('new-continent-input');
+    const val = input ? input.value.trim() : '';
+    if (!val) return;
+    if (activeContinentsList.includes(val)) {
+        showToast("該洲別名稱已存在！");
+        return;
+    }
+    activeContinentsList.push(val);
+    input.value = '';
+    renderContinentsSortEditor();
+};
+
+window.moveContinentOrder = function(idx, direction) {
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= activeContinentsList.length) return;
+    const temp = activeContinentsList[idx];
+    activeContinentsList[idx] = activeContinentsList[targetIdx];
+    activeContinentsList[targetIdx] = temp;
+    renderContinentsSortEditor();
+};
+
+window.updateContinentName = function(idx, val) {
+    if (val.trim()) {
+        activeContinentsList[idx] = val.trim();
+    }
+};
+
+window.removeContinentItem = function(idx) {
+    if (activeContinentsList.length <= 1) {
+        showToast("至少需保留一個洲別！");
+        return;
+    }
+    const name = activeContinentsList[idx];
+    if (!confirm(`確定刪除「${name}」？若有國家設為此洲別，將自動歸類至未分類。`)) return;
+    activeContinentsList.splice(idx, 1);
+    renderContinentsSortEditor();
+};
+
+window.saveContinentsSchema = async function() {
+    try {
+        await saveSchema('continents', { list: activeContinentsList });
+        renderContinentTabs();
+        renderContinentSelectOptions();
+        renderCountries();
+        showToast("洲別排序與設定已成功儲存！");
+    } catch (err) {
+        showToast("儲存失敗：" + err.message);
+    }
+};
+
+window.setContinentFilter = function(continent) {
+    currentContinentFilter = continent;
+    renderContinentTabs();
     renderCountries();
 };
 
@@ -152,8 +261,10 @@ function renderCountries() {
     const grid = document.getElementById('countries-grid');
     if (!grid) return;
 
+    const defaultContinent = activeContinentsList[0] || "亞洲";
+
     const filtered = currentCountries.filter(c => {
-        const countryContinent = c.continent || "亞洲";
+        const countryContinent = c.continent || defaultContinent;
         if (currentContinentFilter !== "ALL" && countryContinent !== currentContinentFilter) {
             return false;
         }
@@ -181,7 +292,7 @@ function renderCountries() {
         const cover = (c.coverImages && c.coverImages.length > 0) 
             ? c.coverImages[0] 
             : 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=600';
-        const continentTag = c.continent || "亞洲";
+        const continentTag = c.continent || defaultContinent;
 
         return `
         <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between">
@@ -224,9 +335,12 @@ window.openCountryDetail = async function(countryId) {
             el.innerText = `返回 ${countryId} 設定`;
         });
 
-        // 洲別、幣別與時區
+        // 重新同步下拉選單
+        renderContinentSelectOptions();
         const continentSelect = document.getElementById('detail-base-continent');
-        if (continentSelect) continentSelect.value = activeCountryData.continent || '亞洲';
+        if (continentSelect) {
+            continentSelect.value = activeCountryData.continent || activeContinentsList[0] || '亞洲';
+        }
 
         document.getElementById('detail-base-currency').value = activeCountryData.currency || '';
         document.getElementById('detail-base-timezone').value = activeCountryData.timezone || '';
@@ -406,7 +520,6 @@ window.saveCurrentCountryDetail = async function() {
     }
 
     try {
-        // 自動吸收未完成按新增的主要區域
         const parentInput = document.getElementById('regions-parent-input');
         if (parentInput && parentInput.value.trim()) {
             const val = parentInput.value.trim();
@@ -416,7 +529,6 @@ window.saveCurrentCountryDetail = async function() {
             }
         }
 
-        // 自動吸收次級城市尚未按下 Enter 的文字
         detailRegionGroups.forEach((group, pIdx) => {
             const subInput = document.getElementById(`sub-region-input-${pIdx}`);
             if (subInput && subInput.value.trim()) {
@@ -430,21 +542,18 @@ window.saveCurrentCountryDetail = async function() {
 
         renderRegionGroups();
 
-        // 收集行前須知題目答案
         const dynamicNoticeData = {};
         activeNoticeSchema.forEach(field => {
             const el = document.getElementById(`dynamic-notice-${field.id}`);
             if (el) dynamicNoticeData[field.id] = el.value.trim();
         });
 
-        // 收集急難救助題目答案
         const dynamicEmergencyData = {};
         activeEmergencySchema.forEach(field => {
             const el = document.getElementById(`dynamic-emergency-${field.id}`);
             if (el) dynamicEmergencyData[field.id] = el.value.trim();
         });
 
-        // 提取區塊一三大直撥電話
         const policeVal = document.getElementById('detail-emg-police') ? document.getElementById('detail-emg-police').value.trim() : '';
         const ambulanceVal = document.getElementById('detail-emg-ambulance') ? document.getElementById('detail-emg-ambulance').value.trim() : '';
         const fireVal = document.getElementById('detail-emg-fire') ? document.getElementById('detail-emg-fire').value.trim() : '';
@@ -456,8 +565,9 @@ window.saveCurrentCountryDetail = async function() {
             fire: fireVal
         };
 
+        const defaultContinent = activeContinentsList[0] || '亞洲';
         const updated = {
-            continent: document.getElementById('detail-base-continent') ? document.getElementById('detail-base-continent').value : (activeCountryData.continent || '亞洲'),
+            continent: document.getElementById('detail-base-continent') ? document.getElementById('detail-base-continent').value : (activeCountryData.continent || defaultContinent),
             currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
             timezone: document.getElementById('detail-base-timezone').value.trim(),
             regions: detailRegionGroups,
@@ -477,7 +587,7 @@ window.saveCurrentCountryDetail = async function() {
     }
 };
 
-// ==================== 兩層級旅遊地區管理邏輯 (重塑現代化質感輸入框) ====================
+// ==================== 兩層級旅遊地區管理邏輯 ====================
 function renderRegionGroups() {
     const count = detailRegionGroups.length;
     const countEl = document.getElementById('regions-page-count');
@@ -505,7 +615,6 @@ function renderRegionGroups() {
 
     container.innerHTML = detailRegionGroups.map((group, pIdx) => `
         <div class="bg-white border border-slate-200/90 rounded-2xl shadow-xs transition-all duration-150 overflow-hidden">
-            <!-- 頂部區域名稱列 -->
             <div class="px-4 py-3 bg-slate-50/60 border-b border-slate-100 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-brand-500 ring-4 ring-brand-100/80"></span>
@@ -520,7 +629,6 @@ function renderRegionGroups() {
                 </button>
             </div>
 
-            <!-- 次級城市標籤與現代化膠囊輸入器 -->
             <div class="p-3.5 sm:p-4">
                 <div class="flex flex-wrap items-center gap-2">
                     ${group.subRegions.map((sub, sIdx) => `
@@ -535,7 +643,6 @@ function renderRegionGroups() {
                         </span>
                     `).join('')}
 
-                    <!-- 沉浸式晶片輸入盒：簡潔微框、內嵌式 Return 快捷徽章 -->
                     <div class="inline-flex items-center h-8 bg-slate-50 hover:bg-white focus-within:bg-white border border-slate-200/90 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/10 rounded-xl px-2.5 transition-all shadow-2xs group">
                         <i data-lucide="plus" class="w-3.5 h-3.5 text-slate-400 group-focus-within:text-brand-500 mr-1.5 pointer-events-none transition-colors"></i>
                         <input type="text" 
@@ -795,6 +902,17 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }, err => showToast("即時監聽失敗：" + err.message));
 
+    // 監聽洲別 Schema 並即時同步排序清單、Tab 與所有下拉選單
+    subscribeSchema('continents', schema => {
+        if (schema && Array.isArray(schema.list) && schema.list.length > 0) {
+            activeContinentsList = schema.list;
+        }
+        renderContinentTabs();
+        renderContinentSelectOptions();
+        renderContinentsSortEditor();
+        renderCountries();
+    });
+
     subscribeSchema('notice', schema => {
         activeNoticeSchema = schema;
         renderSchemaEditor('notice', activeNoticeSchema);
@@ -837,6 +955,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // 新增國家彈窗
     document.getElementById('btn-add-country-modal')?.addEventListener('click', () => {
         document.getElementById('form-country-create').reset();
+        renderContinentSelectOptions();
         document.getElementById('modal-country').classList.remove('hidden');
     });
     document.getElementById('btn-close-country-modal')?.addEventListener('click', () => document.getElementById('modal-country').classList.add('hidden'));
@@ -845,7 +964,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-country-create')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('create-country-name').value.trim();
-        const continent = document.getElementById('create-country-continent').value;
+        const continent = document.getElementById('create-country-continent').value || activeContinentsList[0] || '亞洲';
         const initData = {
             continent: continent,
             currency: "", 
