@@ -1,10 +1,10 @@
 // js/pages/admin.js
-import { onAuthStateChange } from "../api/authApi.js";
+import { onAuthStateChange, logout } from "../api/authApi.js";
 import { subscribeCountries, getCountryDetail, saveCountryDetail, removeCountry } from "../api/countryApi.js";
 import { subscribeSchema, saveSchema } from "../api/schemaApi.js";
 import { CoverManager } from "../components/coverManager.js";
 
-// ==================== 身份驗證守門員 (未登入強制導向) ====================
+// 身份驗證守門員
 onAuthStateChange(user => {
     if (!user) {
         window.location.replace("login.html");
