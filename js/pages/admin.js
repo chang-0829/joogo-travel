@@ -1,5 +1,10 @@
 // js/pages/admin.js
 import { onAuthChanged } from "../api/authApi.js";
+onAuthStateChange(user => {
+    if (!user) {
+        window.location.replace("login.html");
+    }
+});
 import { subscribeCountries, getCountryDetail, saveCountryDetail, removeCountry } from "../api/countryApi.js";
 import { subscribeSchema, saveSchema } from "../api/schemaApi.js";
 import { CoverManager } from "../components/coverManager.js";
