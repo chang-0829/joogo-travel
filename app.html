@@ -32,29 +32,32 @@
         input, select, textarea, button {
             outline: none !important;
             -webkit-tap-highlight-color: transparent !important;
+            touch-action: manipulation;
         }
         input:focus, select:focus, textarea:focus {
             box-shadow: none !important;
             border-color: #0284c7 !important;
         }
         body {
-            padding-top: env(safe-area-inset-top);
+            /* 頂部由 header 統一行使安全區，避免安全邊界重複累加破版 */
             padding-bottom: env(safe-area-inset-bottom);
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
             overscroll-behavior-y: none;
             -webkit-overflow-scrolling: touch;
         }
+        /* 防止 iOS Safari 點擊輸入框時畫面強制放大 */
         input, select, textarea { font-size: 16px !important; }
-        input[type="date"] {
+        input[type="date"], input[type="time"] {
             -webkit-appearance: none;
             appearance: none;
-            min-height: 2.875rem;
+            min-height: 2.75rem;
             background-color: #ffffff;
             display: flex;
             align-items: center;
         }
-        input[type="date"]::-webkit-date-and-time-value {
+        input[type="date"]::-webkit-date-and-time-value,
+        input[type="time"]::-webkit-date-and-time-value {
             text-align: left;
             margin: 0;
             padding: 0;
@@ -67,40 +70,40 @@
 </head>
 <body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-brand-600 selection:text-white bg-slate-50">
 
-    <!-- 頂部導覽列 (含身分切換預視) -->
+    <!-- 頂部導覽列 (整合身分切換預視與 Safe Area) -->
     <header class="sticky top-0 z-40 bg-slate-50/90 backdrop-blur-md pt-[env(safe-area-inset-top)] border-b border-slate-200/50">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-3">
-            <button onclick="window.location.href='index.html'" class="flex items-center gap-1.5 py-1.5 px-2.5 -ml-2 text-slate-700 hover:text-slate-900 font-semibold text-sm rounded-xl hover:bg-slate-200/60 active:scale-95 transition-all shrink-0">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            <button onclick="window.location.href='index.html'" class="min-h-[44px] flex items-center gap-1.5 py-1.5 px-3 -ml-2 text-slate-700 hover:text-slate-900 font-semibold text-sm rounded-xl hover:bg-slate-200/60 active:scale-95 transition-all shrink-0">
+                <i data-lucide="arrow-left" class="w-5 h-5 pointer-events-none"></i>
                 <span>返回行程列表</span>
             </button>
 
             <!-- 視角切換器 (預視用) -->
             <div class="flex items-center bg-slate-200/80 p-0.5 rounded-xl text-xs shrink-0">
-                <button id="preview-user-p1" class="px-2.5 py-1 font-bold rounded-lg transition-all bg-white text-slate-900 shadow-2xs">
+                <button id="preview-user-p1" class="min-h-[36px] px-3 py-1 font-bold rounded-lg transition-all bg-white text-slate-900 shadow-2xs">
                     👑 Alex (管理員)
                 </button>
-                <button id="preview-user-p2" class="px-2.5 py-1 font-semibold rounded-lg transition-all text-slate-600">
+                <button id="preview-user-p2" class="min-h-[36px] px-3 py-1 font-semibold rounded-lg transition-all text-slate-600">
                     👤 小明 (成員)
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- 凍結三大 Tab 切換列 -->
-    <div class="sticky top-14 z-30 bg-slate-50/90 backdrop-blur-md py-3 border-b border-slate-200/40">
+    <!-- 凍結三大 Tab 切換列 (精確對齊 Safe Area，避免滑動疊蓋) -->
+    <div class="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30 bg-slate-50/90 backdrop-blur-md py-2.5 border-b border-slate-200/40">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center bg-slate-200/80 p-1 rounded-xl w-full">
-                <button id="tab-btn-overview" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 whitespace-nowrap">
-                    <i data-lucide="compass" class="w-4 h-4"></i>
+                <button id="tab-btn-overview" class="min-h-[40px] flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="compass" class="w-4 h-4 pointer-events-none"></i>
                     <span>房間首頁</span>
                 </button>
-                <button id="tab-btn-itinerary" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all text-slate-600 flex items-center justify-center gap-1.5 whitespace-nowrap">
-                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                <button id="tab-btn-itinerary" class="min-h-[40px] flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all text-slate-600 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="calendar" class="w-4 h-4 pointer-events-none"></i>
                     <span>行程規劃</span>
                 </button>
-                <button id="tab-btn-bookkeeping" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all text-slate-600 flex items-center justify-center gap-1.5 whitespace-nowrap">
-                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                <button id="tab-btn-bookkeeping" class="min-h-[40px] flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all text-slate-600 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="wallet" class="w-4 h-4 pointer-events-none"></i>
                     <span>旅遊記帳</span>
                 </button>
             </div>
@@ -138,73 +141,73 @@
             <div class="space-y-3">
                 <!-- 全員 8 大工具 -->
                 <div class="grid grid-cols-4 gap-3">
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="plane" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">航班資訊</span>
+                    <button id="btn-tool-flight" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="plane" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">航班資訊</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="building-2" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">住宿資訊</span>
+                    <button id="btn-tool-hotel" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="building-2" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">住宿資訊</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="clipboard-list" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">行前須知</span>
+                    <button id="btn-tool-notice" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="clipboard-list" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">行前須知</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="siren" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">急難求助</span>
+                    <button id="btn-tool-emergency" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="siren" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">急難求助</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="ticket" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">我的票券</span>
+                    <button id="btn-tool-tickets" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="ticket" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">我的票券</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="percent" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">優惠券</span>
+                    <button id="btn-tool-coupons" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="percent" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">優惠券</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="shopping-bag" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">購物清單</span>
+                    <button id="btn-tool-shopping" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="shopping-bag" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">購物清單</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="list-checks" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">準備清單</span>
+                    <button id="btn-tool-checklist" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="list-checks" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">準備清單</span>
                     </button>
                 </div>
 
-                <!-- 管理員專屬 8 大按鈕 (依權限切換) -->
+                <!-- 管理員專屬 8 大按鈕 (依權限切換，配置絕對唯一的 ID) -->
                 <div id="admin-control-section" class="grid grid-cols-4 gap-3 pt-0">
-                    <button id="btn-open-trip-settings" class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="sliders" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">行程設定</span>
+                    <button id="btn-open-trip-settings" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="sliders" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">行程設定</span>
                     </button>
-                    <button id="btn-copy-invite-code" class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="key-round" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">複製邀請碼</span>
+                    <button id="btn-copy-invite-code" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="key-round" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">複製邀請碼</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="plane-takeoff" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">航班設定</span>
+                    <button id="btn-admin-flight" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="plane-takeoff" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">航班設定</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="building-2" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">住宿設定</span>
+                    <button id="btn-admin-hotel" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="building-2" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">住宿設定</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="file-badge" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">憑證管理</span>
+                    <button id="btn-admin-voucher" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="file-badge" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">憑證管理</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="calendar-check" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">預訂管理</span>
+                    <button id="btn-admin-booking" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="calendar-check" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">預訂管理</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="coins" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">匯率管理</span>
+                    <button id="btn-admin-fx" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="coins" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">匯率管理</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
-                        <i data-lucide="settings" class="w-5 h-5 text-slate-600"></i>
-                        <span class="text-xs font-bold text-slate-800 mt-2">其他設定</span>
+                    <button id="btn-admin-other" class="min-h-[72px] flex flex-col items-center justify-center p-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs active:scale-95 transition-all">
+                        <i data-lucide="settings" class="w-5 h-5 text-slate-600 pointer-events-none"></i>
+                        <span class="text-xs font-bold text-slate-800 mt-1.5 pointer-events-none">其他設定</span>
                     </button>
                 </div>
             </div>
@@ -213,7 +216,7 @@
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <i data-lucide="users" class="w-4 h-4 text-brand-600"></i> 同行夥伴 (<span id="partner-count-display">0</span> 人)
+                        <i data-lucide="users" class="w-4 h-4 text-brand-600 pointer-events-none"></i> 同行夥伴 (<span id="partner-count-display">0</span> 人)
                     </h3>
                 </div>
                 <div class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs">
@@ -231,7 +234,7 @@
 
         <!-- ==================== TAB 3: 旅遊記帳 (Bookkeeping) ==================== -->
         <section id="tab-content-bookkeeping" class="hidden space-y-5 pb-12">
-            <!-- 公費池極夜黑頂部卡片 -->
+            <!-- 公費池卡片 -->
             <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-3xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden">
                 <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
@@ -262,13 +265,13 @@
 
             <!-- 記帳次頁籤切換列 -->
             <div class="flex items-center bg-slate-200/80 p-1 rounded-xl w-full">
-                <button id="bk-sub-expenses" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-xs transition-all">
+                <button id="bk-sub-expenses" class="min-h-[38px] flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-xs transition-all">
                     支出明細
                 </button>
-                <button id="bk-sub-payments" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 transition-all">
+                <button id="bk-sub-payments" class="min-h-[38px] flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 transition-all">
                     公費繳交紀錄
                 </button>
-                <button id="bk-sub-settlement" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 transition-all">
+                <button id="bk-sub-settlement" class="min-h-[38px] flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 transition-all">
                     拆帳與清算
                 </button>
             </div>
@@ -277,14 +280,14 @@
             <div id="bk-section-expenses" class="space-y-3">
                 <div class="flex items-center justify-between gap-3">
                     <div class="flex items-center bg-slate-200/70 p-1 rounded-xl no-scrollbar overflow-x-auto">
-                        <button id="exp-filter-all" class="px-3 py-1 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-xs whitespace-nowrap">全部</button>
-                        <button id="exp-filter-kitty" class="px-3 py-1 text-xs font-semibold rounded-lg text-slate-600 whitespace-nowrap">公費扣款</button>
-                        <button id="exp-filter-advance" class="px-3 py-1 text-xs font-semibold rounded-lg text-slate-600 whitespace-nowrap">成員墊付</button>
-                        <button id="exp-filter-taxi" class="px-3 py-1 text-xs font-semibold rounded-lg text-slate-600 whitespace-nowrap">乘車分攤</button>
+                        <button id="exp-filter-all" class="min-h-[36px] px-3 py-1 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-xs whitespace-nowrap">全部</button>
+                        <button id="exp-filter-kitty" class="min-h-[36px] px-3 py-1 text-xs font-semibold rounded-lg text-slate-600 whitespace-nowrap">公費扣款</button>
+                        <button id="exp-filter-advance" class="min-h-[36px] px-3 py-1 text-xs font-semibold rounded-lg text-slate-600 whitespace-nowrap">成員墊付</button>
+                        <button id="exp-filter-taxi" class="min-h-[36px] px-3 py-1 text-xs font-semibold rounded-lg text-slate-600 whitespace-nowrap">乘車分攤</button>
                     </div>
 
-                    <button id="btn-open-add-expense" class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 rounded-xl shrink-0 transition-all shadow-xs">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    <button id="btn-open-add-expense" class="min-h-[44px] flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 rounded-xl shrink-0 transition-all shadow-xs">
+                        <i data-lucide="plus" class="w-4 h-4 pointer-events-none"></i>
                         <span>記一筆</span>
                     </button>
                 </div>
@@ -299,8 +302,8 @@
                         <div class="text-xs text-slate-400">您個人已繳交公費</div>
                         <div class="text-xl font-bold text-slate-900 font-mono mt-0.5" id="my-paid-kitty-amount">NT$ 0</div>
                     </div>
-                    <button id="btn-open-submit-payment" class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl active:scale-95 transition-all shadow-xs">
-                        <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                    <button id="btn-open-submit-payment" class="min-h-[44px] flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl active:scale-95 transition-all shadow-xs">
+                        <i data-lucide="upload-cloud" class="w-4 h-4 pointer-events-none"></i>
                         <span>提交繳交憑證</span>
                     </button>
                 </div>
@@ -313,7 +316,7 @@
                 <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="arrow-left-right" class="w-5 h-5 text-brand-600"></i>
+                            <i data-lucide="arrow-left-right" class="w-5 h-5 text-brand-600 pointer-events-none"></i>
                             最終清算方案
                         </h3>
                         <span class="text-xs text-slate-400">最小化轉帳次數</span>
@@ -326,7 +329,7 @@
     </main>
 
     <!-- Toast 提示 -->
-    <div id="toast-message" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg backdrop-blur-md transition-all flex items-center gap-2">
+    <div id="toast-message" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg backdrop-blur-md transition-all flex items-center gap-2">
         <i data-lucide="info" class="w-4 h-4 text-brand-400"></i>
         <span id="toast-text">提示訊息</span>
     </div>
@@ -341,7 +344,7 @@
                     </div>
                     <h3 class="text-base font-bold text-slate-900">行程基本設定</h3>
                 </div>
-                <button type="button" id="btn-close-trip-settings" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100">
+                <button type="button" id="btn-close-trip-settings" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 active:scale-95">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -349,12 +352,12 @@
             <form id="form-trip-settings" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">行程名稱</label>
-                    <input type="text" id="admin-trip-title" required class="w-full h-[46px] px-3.5 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
+                    <input type="text" id="admin-trip-title" required class="w-full h-11 px-3.5 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">目的地國家 / 地區</label>
-                    <select id="admin-trip-country" class="w-full h-[46px] px-3 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
+                    <select id="admin-trip-country" class="w-full h-11 px-3 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
                         <option value="日本">日本</option>
                         <option value="韓國">韓國</option>
                         <option value="台灣">台灣</option>
@@ -367,17 +370,17 @@
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">開始日期</label>
-                        <input type="date" id="admin-trip-startdate" required class="w-full h-[46px] px-3 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
+                        <input type="date" id="admin-trip-startdate" required class="w-full h-11 px-3 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">結束日期</label>
-                        <input type="date" id="admin-trip-enddate" required class="w-full h-[46px] px-3 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
+                        <input type="date" id="admin-trip-enddate" required class="w-full h-11 px-3 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">封面圖片網址 (URL)</label>
-                    <input type="url" id="admin-trip-cover" required class="w-full h-[46px] px-3.5 border border-slate-200 rounded-xl text-base text-slate-800 bg-white">
+                    <input type="url" id="admin-trip-cover" required class="w-full h-11 px-3.5 border border-slate-200 rounded-xl text-base text-slate-800 bg-white" autocorrect="off" autocapitalize="none">
                 </div>
 
                 <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
@@ -386,8 +389,8 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                    <button type="button" id="btn-cancel-trip-settings" class="w-1/2 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
-                    <button type="submit" class="w-1/2 py-2.5 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 rounded-xl transition-all">更新行程</button>
+                    <button type="button" id="btn-cancel-trip-settings" class="w-1/2 h-11 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                    <button type="submit" class="w-1/2 h-11 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 rounded-xl transition-all">更新行程</button>
                 </div>
             </form>
         </div>
@@ -399,11 +402,11 @@
             <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 backdrop-blur-md shrink-0">
                 <div class="flex items-center gap-2.5">
                     <div class="p-2 bg-sky-500/10 text-sky-600 rounded-xl">
-                        <i data-lucide="plane" class="w-5 h-5"></i>
+                        <i data-lucide="plane" class="w-5 h-5 pointer-events-none"></i>
                     </div>
                     <h3 class="text-base font-bold text-slate-900 leading-tight">航班資訊</h3>
                 </div>
-                <button type="button" id="btn-close-public-flight" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200/60 active:scale-90 transition-all">
+                <button type="button" id="btn-close-public-flight" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200/60 active:scale-90 transition-all">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -411,11 +414,11 @@
             <div class="flex-1 overflow-y-auto p-5 space-y-4">
                 <!-- 去程 / 回程 分頁切換 -->
                 <div class="flex items-center bg-slate-200/80 p-1 rounded-xl w-full">
-                    <button id="flight-tab-out" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 transition-all">
+                    <button id="flight-tab-out" class="min-h-[38px] flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 transition-all">
                         <i data-lucide="plane-takeoff" class="w-3.5 h-3.5 text-brand-600"></i>
                         <span>去程航班</span>
                     </button>
-                    <button id="flight-tab-in" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 flex items-center justify-center gap-1.5 transition-all">
+                    <button id="flight-tab-in" class="min-h-[38px] flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-600 flex items-center justify-center gap-1.5 transition-all">
                         <i data-lucide="plane-landing" class="w-3.5 h-3.5 text-indigo-600"></i>
                         <span>回程航班</span>
                     </button>
@@ -599,7 +602,7 @@
             </div>
 
             <div class="px-5 py-3 border-t border-slate-100 flex justify-end bg-white shrink-0">
-                <button type="button" id="btn-close-public-flight-footer" class="px-5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">關閉</button>
+                <button type="button" id="btn-close-public-flight-footer" class="min-h-[44px] px-6 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">關閉</button>
             </div>
         </div>
     </div>
@@ -614,18 +617,18 @@
                     </div>
                     <h3 class="text-base font-bold text-slate-900" id="seat-egg-title">同行夥伴座位清單</h3>
                 </div>
-                <button type="button" id="btn-close-seat-egg" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100">
+                <button type="button" id="btn-close-seat-egg" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             <div id="seat-egg-list-container" class="space-y-2 max-h-64 overflow-y-auto"></div>
             <div class="pt-2 flex justify-end">
-                <button type="button" id="btn-close-seat-egg-footer" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl">關閉</button>
+                <button type="button" id="btn-close-seat-egg-footer" class="min-h-[44px] px-5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl">關閉</button>
             </div>
         </div>
     </div>
 
-    <!-- ==================== 航班設定 Modal (管理員專用，含公版自動套入) ==================== -->
+    <!-- ==================== 航班設定 Modal (管理員專用) ==================== -->
     <div id="admin-flight-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4">
         <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl flex flex-col overflow-hidden border border-slate-100 max-h-[92vh]">
             <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 backdrop-blur-md shrink-0">
@@ -635,7 +638,7 @@
                     </div>
                     <h3 class="text-base font-bold text-slate-900 leading-tight">航班與行李設定</h3>
                 </div>
-                <button type="button" id="btn-close-admin-flight" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200/60 active:scale-90 transition-all">
+                <button type="button" id="btn-close-admin-flight" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200/60 active:scale-90 transition-all">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -643,20 +646,19 @@
             <form id="form-admin-flight" class="flex-1 flex flex-col min-h-0 overflow-hidden">
                 <div class="flex-1 overflow-y-auto p-5 space-y-4">
                     <div class="flex items-center bg-slate-200/80 p-1 rounded-xl">
-                        <button type="button" id="subtab-admin-out" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all">去程航班</button>
-                        <button type="button" id="subtab-admin-in" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all">回程航班</button>
-                        <button type="button" id="subtab-admin-seats" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all">夥伴座位</button>
+                        <button type="button" id="subtab-admin-out" class="min-h-[36px] flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all">去程航班</button>
+                        <button type="button" id="subtab-admin-in" class="min-h-[36px] flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all">回程航班</button>
+                        <button type="button" id="subtab-admin-seats" class="min-h-[36px] flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all">夥伴座位</button>
                     </div>
 
                     <!-- 去程表單 -->
                     <div id="section-admin-out" class="space-y-3">
                         <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
-                            <!-- 公版快速套入選單 -->
                             <div class="flex items-center justify-between pb-2 border-b border-slate-200/60">
                                 <span class="text-xs font-bold text-brand-600 flex items-center gap-1">
                                     <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 快速套用公版規範
                                 </span>
-                                <select id="template-select-out" class="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-700">
+                                <select id="template-select-out" class="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-700 min-h-[36px]">
                                     <option value="">選擇航空公司...</option>
                                     <option value="CI">中華航空 (CI)</option>
                                     <option value="BR">長榮航空 (BR)</option>
@@ -667,16 +669,16 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">航空公司名稱</label>
-                                    <input type="text" id="input-out-airline" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="text" id="input-out-airline" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">班機號碼</label>
-                                    <input type="text" id="input-out-flightno" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
+                                    <input type="text" id="input-out-flightno" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1">訂位代號 (PNR)</label>
-                                <input type="text" id="input-out-pnr" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
+                                <input type="text" id="input-out-pnr" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
                             </div>
                         </div>
 
@@ -684,45 +686,45 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">起飛機場</label>
-                                    <input type="text" id="input-out-depairport" value="桃園 (TPE)" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="text" id="input-out-depairport" value="桃園 (TPE)" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">抵達機場</label>
-                                    <input type="text" id="input-out-arrairport" value="成田 (NRT)" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="text" id="input-out-arrairport" value="成田 (NRT)" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">起飛時間</label>
-                                    <input type="time" id="input-out-deptime" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="time" id="input-out-deptime" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">抵達時間</label>
-                                    <input type="time" id="input-out-arrtime" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="time" id="input-out-arrtime" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">航廈</label>
-                                    <input type="text" id="input-out-terminal" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="text" id="input-out-terminal" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">報到櫃檯</label>
-                                    <input type="text" id="input-out-counter" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="text" id="input-out-counter" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                             </div>
                             <div class="grid grid-cols-3 gap-2">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">報到時間</label>
-                                    <input type="time" id="input-out-checkintime" class="w-full h-[40px] px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="time" id="input-out-checkintime" class="w-full h-11 px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">登機時間</label>
-                                    <input type="time" id="input-out-boarding" class="w-full h-[40px] px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="time" id="input-out-boarding" class="w-full h-11 px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">登機門</label>
-                                    <input type="text" id="input-out-gate" class="w-full h-[40px] px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
+                                    <input type="text" id="input-out-gate" class="w-full h-11 px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
                                 </div>
                             </div>
                         </div>
@@ -732,18 +734,18 @@
                             <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="briefcase" class="w-4 h-4 text-sky-600"></i> 行李限額規範 (去程)</span>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-semibold text-slate-500">托運行李</label>
-                                <input type="text" id="input-bag-out-checked-quota" placeholder="件數與重量，如：2 件 (每件 23 kg)" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
-                                <input type="text" id="input-bag-out-checked-dim" placeholder="尺寸限制，如：三邊總和 ≤ 158 cm" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+                                <input type="text" id="input-bag-out-checked-quota" placeholder="件數與重量，如：2 件 (每件 23 kg)" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                <input type="text" id="input-bag-out-checked-dim" placeholder="尺寸限制，如：三邊總和 ≤ 158 cm" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs">
                             </div>
                             <div class="space-y-1 pt-1 border-t border-slate-200/60">
                                 <label class="block text-[10px] font-semibold text-slate-500">手提行李</label>
-                                <input type="text" id="input-bag-out-carry-quota" placeholder="如：1 件 (7 kg)" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
-                                <input type="text" id="input-bag-out-carry-dim" placeholder="如：55 x 40 x 23 cm" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+                                <input type="text" id="input-bag-out-carry-quota" placeholder="如：1 件 (7 kg)" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                <input type="text" id="input-bag-out-carry-dim" placeholder="如：55 x 40 x 23 cm" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs">
                             </div>
                             <div class="space-y-1 pt-1 border-t border-slate-200/60">
                                 <label class="block text-[10px] font-semibold text-slate-500">隨身物品</label>
-                                <input type="text" id="input-bag-out-personal-quota" placeholder="如：1 件 (隨身包)" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
-                                <input type="text" id="input-bag-out-personal-dim" placeholder="如：40 x 30 x 10 cm" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+                                <input type="text" id="input-bag-out-personal-quota" placeholder="如：1 件 (隨身包)" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                <input type="text" id="input-bag-out-personal-dim" placeholder="如：40 x 30 x 10 cm" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs">
                             </div>
                         </div>
                     </div>
@@ -755,7 +757,7 @@
                                 <span class="text-xs font-bold text-brand-600 flex items-center gap-1">
                                     <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 快速套用公版規範
                                 </span>
-                                <select id="template-select-in" class="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-700">
+                                <select id="template-select-in" class="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-700 min-h-[36px]">
                                     <option value="">選擇航空公司...</option>
                                     <option value="CI">中華航空 (CI)</option>
                                     <option value="BR">長榮航空 (BR)</option>
@@ -766,16 +768,16 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">航空公司名稱</label>
-                                    <input type="text" id="input-in-airline" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="text" id="input-in-airline" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">班機號碼</label>
-                                    <input type="text" id="input-in-flightno" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
+                                    <input type="text" id="input-in-flightno" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1">訂位代號 (PNR)</label>
-                                <input type="text" id="input-in-pnr" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
+                                <input type="text" id="input-in-pnr" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
                             </div>
                         </div>
 
@@ -783,45 +785,45 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">起飛機場</label>
-                                    <input type="text" id="input-in-depairport" value="成田 (NRT)" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="text" id="input-in-depairport" value="成田 (NRT)" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">抵達機場</label>
-                                    <input type="text" id="input-in-arrairport" value="桃園 (TPE)" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="text" id="input-in-arrairport" value="桃園 (TPE)" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">起飛時間</label>
-                                    <input type="time" id="input-in-deptime" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="time" id="input-in-deptime" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">抵達時間</label>
-                                    <input type="time" id="input-in-arrtime" required class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="time" id="input-in-arrtime" required class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">航廈</label>
-                                    <input type="text" id="input-in-terminal" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="text" id="input-in-terminal" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">報到櫃檯</label>
-                                    <input type="text" id="input-in-counter" class="w-full h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="text" id="input-in-counter" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                             </div>
                             <div class="grid grid-cols-3 gap-2">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">報到時間</label>
-                                    <input type="time" id="input-in-checkintime" class="w-full h-[40px] px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="time" id="input-in-checkintime" class="w-full h-11 px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">登機時間</label>
-                                    <input type="time" id="input-in-boarding" class="w-full h-[40px] px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                    <input type="time" id="input-in-boarding" class="w-full h-11 px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">登機門</label>
-                                    <input type="text" id="input-in-gate" class="w-full h-[40px] px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
+                                    <input type="text" id="input-in-gate" class="w-full h-11 px-2 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase">
                                 </div>
                             </div>
                         </div>
@@ -831,18 +833,18 @@
                             <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="briefcase" class="w-4 h-4 text-indigo-600"></i> 行李限額規範 (回程)</span>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-semibold text-slate-500">托運行李</label>
-                                <input type="text" id="input-bag-in-checked-quota" placeholder="件數與重量" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
-                                <input type="text" id="input-bag-in-checked-dim" placeholder="尺寸限制" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+                                <input type="text" id="input-bag-in-checked-quota" placeholder="件數與重量" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                <input type="text" id="input-bag-in-checked-dim" placeholder="尺寸限制" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs">
                             </div>
                             <div class="space-y-1 pt-1 border-t border-slate-200/60">
                                 <label class="block text-[10px] font-semibold text-slate-500">手提行李</label>
-                                <input type="text" id="input-bag-in-carry-quota" placeholder="件數與重量" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
-                                <input type="text" id="input-bag-in-carry-dim" placeholder="尺寸限制" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+                                <input type="text" id="input-bag-in-carry-quota" placeholder="件數與重量" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                <input type="text" id="input-bag-in-carry-dim" placeholder="尺寸限制" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs">
                             </div>
                             <div class="space-y-1 pt-1 border-t border-slate-200/60">
                                 <label class="block text-[10px] font-semibold text-slate-500">隨身物品</label>
-                                <input type="text" id="input-bag-in-personal-quota" placeholder="件數與重量" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
-                                <input type="text" id="input-bag-in-personal-dim" placeholder="尺寸限制" class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-xl text-xs">
+                                <input type="text" id="input-bag-in-personal-quota" placeholder="件數與重量" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                <input type="text" id="input-bag-in-personal-dim" placeholder="尺寸限制" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs">
                             </div>
                         </div>
                     </div>
@@ -855,8 +857,8 @@
                 </div>
 
                 <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-end gap-2.5 shrink-0 bg-white">
-                    <button type="button" id="btn-cancel-admin-flight" class="w-1/2 sm:w-auto px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
-                    <button type="submit" id="btn-submit-admin-flight" class="w-1/2 sm:w-auto px-5 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl transition-all">更新設定</button>
+                    <button type="button" id="btn-cancel-admin-flight" class="w-1/2 sm:w-auto px-5 py-2.5 min-h-[44px] text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                    <button type="submit" id="btn-submit-admin-flight" class="w-1/2 sm:w-auto px-6 py-2.5 min-h-[44px] text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl transition-all">更新設定</button>
                 </div>
             </form>
         </div>
@@ -872,7 +874,7 @@
                     </div>
                     <h3 class="text-base font-bold text-slate-900 leading-tight">住宿資訊</h3>
                 </div>
-                <button type="button" id="btn-close-public-hotel" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200/60 active:scale-90 transition-all">
+                <button type="button" id="btn-close-public-hotel" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200/60 active:scale-90 transition-all">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -883,7 +885,7 @@
             </div>
 
             <div class="px-5 py-3 border-t border-slate-100 flex justify-end bg-white shrink-0">
-                <button type="button" id="btn-close-public-hotel-footer" class="px-5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">關閉</button>
+                <button type="button" id="btn-close-public-hotel-footer" class="min-h-[44px] px-6 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">關閉</button>
             </div>
         </div>
     </div>
@@ -898,46 +900,42 @@
                     </div>
                     <h3 class="text-base font-bold text-slate-900 leading-tight">住宿與房間設定</h3>
                 </div>
-                <button type="button" id="btn-close-admin-hotel" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200/60 active:scale-90 transition-all">
+                <button type="button" id="btn-close-admin-hotel" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200/60 active:scale-90 transition-all">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
             <div class="flex-1 overflow-y-auto p-5 space-y-4">
-                <!-- 下拉切換住宿 & 新增住宿按鈕 -->
                 <div class="flex items-center justify-between gap-2.5">
                     <div class="relative flex-1">
-                        <select id="admin-hotel-select" class="w-full h-[44px] pl-3.5 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 appearance-none"></select>
+                        <select id="admin-hotel-select" class="w-full h-11 pl-3.5 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 appearance-none"></select>
                         <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                     </div>
-                    <button type="button" id="btn-add-new-hotel" class="h-[44px] px-3 text-xs font-bold text-stone-800 bg-stone-100 hover:bg-stone-200/80 active:scale-95 rounded-xl transition-all flex items-center gap-1 shrink-0">
-                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增住宿
+                    <button type="button" id="btn-add-new-hotel" class="min-h-[44px] px-3.5 text-xs font-bold text-stone-800 bg-stone-100 hover:bg-stone-200/80 active:scale-95 rounded-xl transition-all flex items-center gap-1 shrink-0">
+                        <i data-lucide="plus" class="w-4 h-4"></i> 新增住宿
                     </button>
                 </div>
 
-                <!-- 雙頁籤：基本資訊 / 房間分配 -->
                 <div class="flex items-center bg-slate-200/80 p-1 rounded-xl">
-                    <button type="button" id="hotel-subtab-info" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all flex items-center justify-center gap-1.5">
+                    <button type="button" id="hotel-subtab-info" class="min-h-[38px] flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-2xs transition-all flex items-center justify-center gap-1.5">
                         <i data-lucide="info" class="w-3.5 h-3.5 text-stone-700"></i> 基本資訊
                     </button>
-                    <button type="button" id="hotel-subtab-rooms" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all flex items-center justify-center gap-1.5">
+                    <button type="button" id="hotel-subtab-rooms" class="min-h-[38px] flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 transition-all flex items-center justify-center gap-1.5">
                         <i data-lucide="door-open" class="w-3.5 h-3.5 text-stone-700"></i> 房間分配
                     </button>
                 </div>
 
-                <!-- 內容動態注入容器 -->
                 <div id="admin-hotel-single-editor-container"></div>
             </div>
 
             <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-end gap-2.5 shrink-0 bg-white">
-                <button type="button" id="btn-cancel-admin-hotel" class="w-1/2 sm:w-auto px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
-                <button type="button" id="btn-save-all-hotels" class="w-1/2 sm:w-auto px-5 py-2.5 text-xs font-semibold text-white bg-stone-800 hover:bg-stone-900 active:scale-95 rounded-xl transition-all">儲存住宿設定</button>
+                <button type="button" id="btn-cancel-admin-hotel" class="w-1/2 sm:w-auto px-5 py-2.5 min-h-[44px] text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                <button type="button" id="btn-save-all-hotels" class="w-1/2 sm:w-auto px-6 py-2.5 min-h-[44px] text-xs font-semibold text-white bg-stone-800 hover:bg-stone-900 active:scale-95 rounded-xl transition-all">儲存住宿設定</button>
             </div>
         </div>
     </div>
 
-    <!-- ==================== 原生防呆二次確認 Modals ==================== -->
-    <!-- 刪除整間住宿 -->
+    <!-- 原生二次確認 Modal: 刪除住宿 -->
     <div id="confirm-remove-hotel-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4 border border-slate-100">
             <div class="flex items-center gap-3">
@@ -951,13 +949,13 @@
                 確定要刪除「<span id="confirm-remove-hotel-name" class="font-bold text-slate-900"></span>」嗎？
             </p>
             <div class="flex items-center justify-end gap-2.5 pt-1">
-                <button type="button" id="btn-cancel-remove-hotel" class="w-1/2 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
-                <button type="button" id="btn-confirm-remove-hotel-ok" class="w-1/2 py-2.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:scale-95 rounded-xl">確定刪除</button>
+                <button type="button" id="btn-cancel-remove-hotel" class="w-1/2 min-h-[44px] py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                <button type="button" id="btn-confirm-remove-hotel-ok" class="w-1/2 min-h-[44px] py-2.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:scale-95 rounded-xl">確定刪除</button>
             </div>
         </div>
     </div>
 
-    <!-- 刪除房間 -->
+    <!-- 原生二次確認 Modal: 刪除房間 -->
     <div id="confirm-remove-room-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4 border border-slate-100">
             <div class="flex items-center gap-3">
@@ -971,13 +969,13 @@
                 確定要刪除「<span id="confirm-remove-room-no" class="font-bold text-slate-900"></span>」嗎？
             </p>
             <div class="flex items-center justify-end gap-2.5 pt-1">
-                <button type="button" id="btn-cancel-remove-room" class="w-1/2 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
-                <button type="button" id="btn-confirm-remove-room-ok" class="w-1/2 py-2.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:scale-95 rounded-xl">確定刪除</button>
+                <button type="button" id="btn-cancel-remove-room" class="w-1/2 min-h-[44px] py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                <button type="button" id="btn-confirm-remove-room-ok" class="w-1/2 min-h-[44px] py-2.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:scale-95 rounded-xl">確定刪除</button>
             </div>
         </div>
     </div>
 
-    <!-- ==================== 新增支出 Modal ==================== -->
+    <!-- 新增支出 Modal -->
     <div id="add-expense-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -987,7 +985,7 @@
                     </div>
                     <h3 class="text-base font-bold text-slate-900">新增支出款項</h3>
                 </div>
-                <button type="button" id="btn-close-expense-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100">
+                <button type="button" id="btn-close-expense-modal" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -995,17 +993,17 @@
             <form id="form-add-expense" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">消費品項名稱</label>
-                    <input type="text" id="exp-title" required placeholder="例如：敘敘苑燒肉晚餐" class="w-full h-[46px] px-3.5 border border-slate-200 rounded-xl text-base bg-white">
+                    <input type="text" id="exp-title" required placeholder="例如：敘敘苑燒肉晚餐" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl text-base bg-white">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">金額 (NT$)</label>
-                    <input type="number" id="exp-amount" required placeholder="0" class="w-full h-[46px] px-3.5 border border-slate-200 rounded-xl text-base bg-white font-mono">
+                    <input type="number" id="exp-amount" required placeholder="0" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl text-base bg-white font-mono">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">扣款 / 分攤方式</label>
-                    <select id="exp-type" class="w-full h-[46px] px-3 border border-slate-200 rounded-xl text-base bg-white">
+                    <select id="exp-type" class="w-full h-11 px-3 border border-slate-200 rounded-xl text-base bg-white">
                         <option value="kitty">公費池扣款 (從公共資金支付)</option>
                         <option value="advance">成員個人墊付 (全體旅伴均分)</option>
                         <option value="taxi">搭車/包車分攤 (自選搭乘人員均分)</option>
@@ -1015,7 +1013,7 @@
 
                 <div id="box-exp-payer" class="hidden">
                     <label class="block text-xs font-bold text-slate-700 mb-1">代墊款項的人</label>
-                    <select id="exp-payer" class="w-full h-[46px] px-3 border border-slate-200 rounded-xl text-base bg-white"></select>
+                    <select id="exp-payer" class="w-full h-11 px-3 border border-slate-200 rounded-xl text-base bg-white"></select>
                 </div>
 
                 <div id="box-taxi-members" class="hidden space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
@@ -1024,14 +1022,14 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                    <button type="button" id="btn-cancel-expense-modal" class="w-1/2 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
-                    <button type="submit" class="w-1/2 py-2.5 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 rounded-xl transition-all shadow-xs">儲存支出</button>
+                    <button type="button" id="btn-cancel-expense-modal" class="w-1/2 min-h-[44px] py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                    <button type="submit" class="w-1/2 min-h-[44px] py-2.5 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 rounded-xl transition-all shadow-xs">儲存支出</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- ==================== 提交公費匯款 Modal ==================== -->
+    <!-- 提交公費匯款 Modal -->
     <div id="submit-payment-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -1041,7 +1039,7 @@
                     </div>
                     <h3 class="text-base font-bold text-slate-900">提交公費繳交紀錄</h3>
                 </div>
-                <button type="button" id="btn-close-payment-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100">
+                <button type="button" id="btn-close-payment-modal" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1049,16 +1047,16 @@
             <form id="form-submit-payment" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">匯款/繳交金額 (NT$)</label>
-                    <input type="number" id="pay-amount" required placeholder="5000" class="w-full h-[46px] px-3.5 border border-slate-200 rounded-xl text-base bg-white font-mono">
+                    <input type="number" id="pay-amount" required placeholder="5000" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl text-base bg-white font-mono">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">轉帳帳號末五碼 / 備註</label>
-                    <input type="text" id="pay-code" required placeholder="例如：88219" maxlength="8" class="w-full h-[46px] px-3.5 border border-slate-200 rounded-xl text-base bg-white uppercase font-mono">
+                    <input type="text" id="pay-code" required placeholder="例如：88219" maxlength="8" class="w-full h-11 px-3.5 border border-slate-200 rounded-xl text-base bg-white uppercase font-mono">
                 </div>
 
                 <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                    <button type="button" id="btn-cancel-payment-modal" class="w-1/2 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
-                    <button type="submit" class="w-1/2 py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-xl transition-all shadow-xs">送出審核</button>
+                    <button type="button" id="btn-cancel-payment-modal" class="w-1/2 min-h-[44px] py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+                    <button type="submit" class="w-1/2 min-h-[44px] py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-xl transition-all shadow-xs">送出審核</button>
                 </div>
             </form>
         </div>
