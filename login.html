@@ -100,45 +100,56 @@
     </footer>
 
     <script type="module">
-        import { loginWithGoogle, onAuthStateChange } from "./js/api/authApi.js";
-
-        const btnLogin = document.getElementById('btn-google-login');
-        const loginText = document.getElementById('login-text');
-
-        // 已登入狀態自動導回首頁行程列表
-        onAuthStateChange((user) => {
-            if (user) {
-                console.log("【驗證】偵測到已登入狀態，自動跳轉至 index.html");
-                window.location.replace("index.html");
-            }
-        });
-
-        // 監聽登入點擊
-        if (btnLogin) {
-            btnLogin.addEventListener('click', async (e) => {
-                e.preventDefault();
-                console.log("【點擊】已觸發 Google 登入按鈕");
-
-                try {
-                    btnLogin.disabled = true;
-                    btnLogin.classList.add('opacity-75', 'cursor-wait');
-                    if (loginText) loginText.innerText = "驗證中，請稍候...";
-
-                    await loginWithGoogle();
-                    window.location.replace("index.html");
-                } catch (err) {
-                    console.error("【登入失敗】", err);
-                    alert("Google 登入失敗: " + err.message);
-                    btnLogin.disabled = false;
-                    btnLogin.classList.remove('opacity-75', 'cursor-wait');
-                    if (loginText) loginText.innerText = "使用 Google 帳號快速登入";
-                }
-            });
+      import { loginWithGoogle, onAuthStateChange } from "./js/api/authApi.js";
+    
+      const btnLogin = document.getElementById('btn-google-login');
+      const loginText = document.getElementById('login-text');
+    
+      // 1. 已登入狀態自動轉址
+      onAuthStateChange((user) => {
+        if (user) {
+          console.log("【驗證】偵測到已登入狀態，跳轉至 index.html");
+          window.location.replace("index.html");
         }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            if (window.lucide) lucide.createIcons();
+      });
+    
+      // 2. 登入按鈕事件綁定
+      if (btnLogin) {
+        btnLogin.addEventListener('click', async (e) => {
+          e.preventDefault();
+          console.log("【點擊】已觸發 Google 登入按鈕");
+    
+          try {
+            btnLogin.disabled = true;
+            btnLogin.classList.add('opacity-75', 'cursor-wait');
+            if (loginText) loginText.innerText = "驗證中，請稍候...";
+    
+            await loginWithGoogle();
+            window.location.replace("index.html");
+          } catch (err) {
+            console.error("【登入錯誤詳情】", err);
+    
+            // 常見錯誤友善提示
+            if (err.code === "auth/popup-closed-by-user") {
+              console.warn("使用者自行關閉了登入視窗");
+            } else if (err.code === "auth/unauthorized-domain") {
+              alert("登入失敗：目前網域尚未加入 Firebase 授權清單（Authorized domains）。");
+            } else {
+              alert("登入失敗：" + (err.message || "請檢查網路或稍後再試"));
+            }
+    
+            btnLogin.disabled = false;
+            btnLogin.classList.remove('opacity-75', 'cursor-wait');
+            if (loginText) loginText.innerText = "使用 Google 帳號快速登入";
+          }
         });
+      } else {
+        console.error("找不到 #btn-google-login 按鈕節點");
+      }
+    
+      window.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) lucide.createIcons();
+      });
     </script>
 </body>
 </html>
