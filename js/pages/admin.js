@@ -5,7 +5,7 @@ import { subscribeSchema, saveSchema } from "../api/schemaApi.js";
 import { getAirlineTemplates, saveAirlineTemplate, deleteAirlineTemplate } from "../api/templateApi.js";
 import { CoverManager } from "../components/coverManager.js";
 
-// 身份驗證守門員 (未登入者立即導回登入頁)
+// 身份驗證守門員
 onAuthStateChange(user => {
     if (!user) {
         window.location.replace("login.html");
@@ -16,7 +16,8 @@ onAuthStateChange(user => {
 let currentCountries = [];
 let activeCountryId = null;
 let activeCountryData = null;
-let detailRegionGroups = []; // 兩層級地區結構：[{ name: "北海道", subRegions: ["札幌", "函館"] }]
+let detailRegionGroups = [];
+let detailEmbassies = []; // 駐外館處列表
 let searchQuery = "";
 
 let activeNoticeSchema = [];
@@ -55,7 +56,7 @@ window.addEventListener('beforeunload', (e) => {
     }
 });
 
-// ==================== 視圖切換與路由控制 (修復電腦與手機選單高亮) ====================
+// ==================== 視圖切換與路由控制 ====================
 export function switchView(viewName) {
     if (coverManager.isUploading) {
         const leave = confirm("圖片正在上傳中，離開將會終止上傳，確定要離開嗎？");
@@ -81,7 +82,6 @@ export function switchView(viewName) {
         if (el) el.classList.toggle('hidden', v !== viewName);
     });
 
-    // 只要進入國家清單或任何國家設定細節頁面，皆屬於「管理國家/地區」的範疇
     const isCountries = [
         'country-list', 
         'country-detail', 
@@ -96,7 +96,6 @@ export function switchView(viewName) {
     const isEmergencySchema = viewName === 'schema-emergency';
     const isAirlines = viewName === 'airlines';
 
-    // 電腦版側邊欄樣式切換
     const sideCountries = document.getElementById('sidebar-btn-countries');
     const sideNotice = document.getElementById('sidebar-btn-schema-notice');
     const sideEmergency = document.getElementById('sidebar-btn-schema-emergency');
@@ -110,7 +109,6 @@ export function switchView(viewName) {
     if (sideEmergency) sideEmergency.className = isEmergencySchema ? deskActiveCls : deskInactiveCls;
     if (sideAirlines) sideAirlines.className = isAirlines ? deskActiveCls : deskInactiveCls;
 
-    // 手機端抽屜選單樣式同步切換
     const drawerCountries = document.getElementById('drawer-btn-countries');
     const drawerNotice = document.getElementById('drawer-btn-schema-notice');
     const drawerEmergency = document.getElementById('drawer-btn-schema-emergency');
@@ -214,10 +212,10 @@ window.openCountryDetail = async function(countryId) {
         });
         renderRegionGroups();
 
-        // 填入行前資訊動態題目
+        // 渲染行前資訊
         renderDynamicFields('notice', activeNoticeSchema, activeCountryData.notice || {});
 
-        // 填入三大固定緊急電話 (支援 emergency 巢狀或頂層舊資料相容)
+        // 區塊一：三大緊急電話回填
         const emg = activeCountryData.emergency || {};
         const policeInput = document.getElementById('detail-emg-police');
         const ambulanceInput = document.getElementById('detail-emg-ambulance');
@@ -227,7 +225,26 @@ window.openCountryDetail = async function(countryId) {
         if (ambulanceInput) ambulanceInput.value = emg.ambulance || activeCountryData.ambulance || '';
         if (fireInput) fireInput.value = emg.fire || activeCountryData.fire || '';
 
-        // 填入急難救助其他公版自訂題目
+        // 區塊二：駐外使館列表回填
+        detailEmbassies = Array.isArray(activeCountryData.embassies) 
+            ? JSON.parse(JSON.stringify(activeCountryData.embassies)) 
+            : [];
+        
+        // 若以前存有舊的單一代表處欄位，自動無痛升級為陣列首筆
+        if (detailEmbassies.length === 0 && (emg.embassy || activeCountryData.foreignEmergency)) {
+            detailEmbassies.push({
+                id: 'emb_' + Date.now(),
+                name: '駐外代表處 (總處)',
+                type: 'main',
+                phone: emg.embassy || activeCountryData.foreignEmergency || '',
+                emergencyPhone: '',
+                address: '',
+                jurisdiction: ''
+            });
+        }
+        renderEmbassies();
+
+        // 區塊三：急難救助動態自訂題目
         renderDynamicFields('emergency', activeEmergencySchema, emg);
 
         renderCoupons();
@@ -246,6 +263,109 @@ window.deleteCountry = async function(id) {
     }
 };
 
+// ==================== 駐外館處管理邏輯 ====================
+function renderEmbassies() {
+    const container = document.getElementById('embassies-container');
+    if (!container) return;
+
+    if (detailEmbassies.length === 0) {
+        container.innerHTML = `
+            <div class="p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
+                尚未設定駐外館處資訊，點擊上方「新增駐外館處」按鈕建立。
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = detailEmbassies.map((emb, idx) => `
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-3.5 relative">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-lg text-[11px] font-bold ${emb.type === 'main' ? 'bg-brand-50 text-brand-700 border border-brand-200/60' : 'bg-slate-100 text-slate-600'}">
+                        ${emb.type === 'main' ? '總代表處 / 總領事館' : '分處 / 辦事處'}
+                    </span>
+                    <span class="text-sm font-bold text-slate-900">${emb.name || '未命名館處'}</span>
+                </div>
+                <button type="button" onclick="window.removeEmbassy(${idx})" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer" title="刪除此館處">
+                    <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600 block">館處名稱</label>
+                    <input type="text" value="${emb.name || ''}" oninput="window.updateEmbassyField(${idx}, 'name', this.value)" placeholder="例如：台北駐日經濟文化代表處" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600 block">館處類型</label>
+                    <select onchange="window.updateEmbassyField(${idx}, 'type', this.value)" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
+                        <option value="main" ${emb.type === 'main' ? 'selected' : ''}>總代表處 / 總領事館 (主要)</option>
+                        <option value="branch" ${emb.type === 'branch' ? 'selected' : ''}>分支辦事處 / 分處</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600 block">總機電話 / 諮詢電話</label>
+                    <input type="tel" value="${emb.phone || ''}" oninput="window.updateEmbassyField(${idx}, 'phone', this.value)" placeholder="例如：+81-3-3280-7811" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-slate-800">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-rose-600 block">24H 急難救助專線</label>
+                    <input type="tel" value="${emb.emergencyPhone || ''}" oninput="window.updateEmbassyField(${idx}, 'emergencyPhone', this.value)" placeholder="專供車禍、危急求助使用" class="w-full h-10 px-3 bg-rose-50/40 border border-rose-200 rounded-xl font-mono text-xs font-bold text-rose-700 placeholder:text-rose-300">
+                </div>
+
+                <div class="space-y-1 sm:col-span-2">
+                    <label class="text-[11px] font-bold text-slate-600 block">館處地址</label>
+                    <input type="text" value="${emb.address || ''}" oninput="window.updateEmbassyField(${idx}, 'address', this.value)" placeholder="當地語言或英文地址，供導航與計程車使用" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800">
+                </div>
+
+                <div class="space-y-1 sm:col-span-2">
+                    <label class="text-[11px] font-bold text-slate-600 block">轄區涵蓋或備註</label>
+                    <input type="text" value="${emb.jurisdiction || ''}" oninput="window.updateEmbassyField(${idx}, 'jurisdiction', this.value)" placeholder="例如：負責關東地區 (東京、神奈川、千葉、埼玉等)" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600">
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    if (window.lucide) lucide.createIcons();
+}
+
+window.addNewEmbassy = function() {
+    const isFirst = detailEmbassies.length === 0;
+    detailEmbassies.push({
+        id: 'emb_' + Date.now(),
+        name: isFirst ? '台北駐外經濟文化代表處' : '辦事處',
+        type: isFirst ? 'main' : 'branch',
+        phone: '',
+        emergencyPhone: '',
+        address: '',
+        jurisdiction: ''
+    });
+    renderEmbassies();
+};
+
+window.removeEmbassy = function(idx) {
+    if (!confirm(`確定刪除「${detailEmbassies[idx].name || '此館處'}」？`)) return;
+    detailEmbassies.splice(idx, 1);
+    renderEmbassies();
+};
+
+window.updateEmbassyField = function(idx, key, value) {
+    if (detailEmbassies[idx]) {
+        detailEmbassies[idx][key] = value;
+        // 若修改館處名稱或類型時即時更新上方 Header
+        if (key === 'name' || key === 'type') {
+            const card = document.getElementById('embassies-container').children[idx];
+            if (card) {
+                const titleSpan = card.querySelector('.text-sm.font-bold');
+                if (titleSpan) titleSpan.innerText = value || '未命名館處';
+            }
+        }
+    }
+};
+
+// ==================== 儲存國家公版設定 ====================
 window.saveCurrentCountryDetail = async function() {
     if (!activeCountryId) return;
 
@@ -265,7 +385,7 @@ window.saveCurrentCountryDetail = async function() {
             }
         }
 
-        // 自動吸收次級城市尚未按下 Enter 的文字防呆
+        // 自動吸收次級城市尚未按下 Enter 的文字
         detailRegionGroups.forEach((group, pIdx) => {
             const subInput = document.getElementById(`sub-region-input-${pIdx}`);
             if (subInput && subInput.value.trim()) {
@@ -279,24 +399,26 @@ window.saveCurrentCountryDetail = async function() {
 
         renderRegionGroups();
 
+        // 收集行前須知題目答案
         const dynamicNoticeData = {};
         activeNoticeSchema.forEach(field => {
             const el = document.getElementById(`dynamic-notice-${field.id}`);
             if (el) dynamicNoticeData[field.id] = el.value.trim();
         });
 
+        // 收集急難救助題目答案
         const dynamicEmergencyData = {};
         activeEmergencySchema.forEach(field => {
             const el = document.getElementById(`dynamic-emergency-${field.id}`);
             if (el) dynamicEmergencyData[field.id] = el.value.trim();
         });
 
-        // 提取固定三大緊急電話
+        // 提取區塊一三大直撥電話
         const policeVal = document.getElementById('detail-emg-police') ? document.getElementById('detail-emg-police').value.trim() : '';
         const ambulanceVal = document.getElementById('detail-emg-ambulance') ? document.getElementById('detail-emg-ambulance').value.trim() : '';
         const fireVal = document.getElementById('detail-emg-fire') ? document.getElementById('detail-emg-fire').value.trim() : '';
 
-        // 合併入 emergency 物件，同時保留頂層以利舊版相容
+        // 組裝 emergency 資訊物件
         const finalEmergencyData = {
             ...dynamicEmergencyData,
             police: policeVal,
@@ -311,6 +433,7 @@ window.saveCurrentCountryDetail = async function() {
             coverImages: coverManager.getCovers(),
             notice: dynamicNoticeData,
             emergency: finalEmergencyData,
+            embassies: detailEmbassies, // 儲存區塊二：駐外使館陣列
             police: policeVal,
             ambulance: ambulanceVal,
             fire: fireVal
@@ -498,9 +621,9 @@ function renderDynamicFields(type, schemaArray, dataObject) {
                     <div class="space-y-1.5 ${isFull ? 'md:col-span-2' : ''}">
                         <label class="text-sm font-bold text-slate-800 block">${field.label}</label>
                         ${field.type === 'textarea' ? `
-                            <textarea id="dynamic-${type}-${field.id}" rows="3" class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs">${val}</textarea>
+                            <textarea id="dynamic-${type}-${field.id}" rows="3" class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs focus:outline-none focus:bg-white">${val}</textarea>
                         ` : `
-                            <input type="${field.type || 'text'}" id="dynamic-${type}-${field.id}" value="${val}" class="w-full h-11 px-3.5 bg-slate-50/50 border border-slate-200/80 rounded-xl ${field.type === 'tel' ? 'font-mono font-bold text-slate-700' : ''} text-xs">
+                            <input type="${field.type || 'text'}" id="dynamic-${type}-${field.id}" value="${val}" class="w-full h-11 px-3.5 bg-slate-50/50 border border-slate-200/80 rounded-xl ${field.type === 'tel' ? 'font-mono font-bold text-slate-700' : ''} text-xs focus:outline-none focus:bg-white">
                         `}
                     </div>
                 `;
@@ -678,6 +801,7 @@ window.addEventListener('DOMContentLoaded', () => {
             coverImages: [], 
             notice: {}, 
             emergency: {},
+            embassies: [],
             police: "",
             ambulance: "",
             fire: ""
