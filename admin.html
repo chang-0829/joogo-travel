@@ -551,6 +551,14 @@
         let coverUploadAbortController = null;
         let isUploadingCovers = false;
 
+        window.addEventListener('beforeunload', (e) => {
+            if (isUploadingCovers) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+
         function showToast(msg) {
             const toast = document.getElementById('toast-message');
             const toastText = document.getElementById('toast-text');
