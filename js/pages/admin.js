@@ -1,16 +1,13 @@
 // js/pages/admin.js
-import { onAuthChanged } from "../api/authApi.js";
-onAuthStateChange(user => {
-    if (!user) {
-        window.location.replace("login.html");
-    }
-});
+
+// 1. 所有 import 統一放在最頂部
+import { onAuthStateChange } from "../api/authApi.js";
 import { subscribeCountries, getCountryDetail, saveCountryDetail, removeCountry } from "../api/countryApi.js";
 import { subscribeSchema, saveSchema } from "../api/schemaApi.js";
 import { CoverManager } from "../components/coverManager.js";
 
-// ==================== 身份驗證守門員 (未登入強制導向) ====================
-onAuthChanged(user => {
+// 2. 身份驗證守門員 (未登入強制導向，僅需執行一次)
+onAuthStateChange(user => {
     if (!user) {
         window.location.replace("login.html");
     }
