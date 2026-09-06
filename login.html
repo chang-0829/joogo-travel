@@ -106,36 +106,23 @@
     </footer>
 
     <script type="module">
-        import { loginWithGoogle, subscribeAuthState } from "./js/api/authApi.js";
-
-        const btnLogin = document.getElementById('btn-google-login');
-        const loginText = document.getElementById('login-text');
-
-        // 已登入自動跳轉
-        subscribeAuthState((user) => {
+        import { loginWithGoogle, onAuthStateChange } from './js/api/authApi.js';
+    
+        // 監聽登入狀態：若已登入則自動跳轉後台
+        onAuthStateChange(user => {
             if (user) {
-                window.location.href = "index.html";
+                window.location.replace('admin.html');
             }
         });
-
-        // 監聽點擊 Google 登入
-        btnLogin.addEventListener('click', async () => {
+    
+        const loginBtn = document.getElementById('login-btn');
+        loginBtn?.addEventListener('click', async () => {
             try {
-                btnLogin.disabled = true;
-                btnLogin.classList.add('opacity-75', 'cursor-wait');
-                loginText.innerText = "驗證中，請稍候...";
-
                 await loginWithGoogle();
-            } catch (err) {
-                alert("Google 登入失敗: " + err.message);
-                btnLogin.disabled = false;
-                btnLogin.classList.remove('opacity-75', 'cursor-wait');
-                loginText.innerText = "使用 Google 帳號快速登入";
+                window.location.replace('admin.html');
+            } catch (error) {
+                alert('登入失敗：' + error.message);
             }
-        });
-
-        window.addEventListener('DOMContentLoaded', () => {
-            if (window.lucide) lucide.createIcons();
         });
     </script>
 </body>
