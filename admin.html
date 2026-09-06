@@ -131,12 +131,12 @@
         </div>
     </aside>
 
-    <!-- ==================== 主管理區 ==================== -->
-    <main class="flex-1 max-w-4xl w-full mx-auto px-5 sm:px-6 py-6 space-y-5 overflow-y-auto">
+    <!-- ==================== 主管理區 (已移除 space-y-5，杜絕橘色 margin-top 干擾) ==================== -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-5 sm:px-6 py-6 overflow-y-auto">
 
         <!-- ==================== 1. 國家選擇頁 ==================== -->
         <section id="view-country-list" class="space-y-4">
-            <!-- 頂部首行：標題 + 新增按鈕 (與各子頁首行按鈕 Y 軸高度與右側紫線 100% 貼齊) -->
+            <!-- 頂部首行：標題 + 新增按鈕 (完全貼齊左右邊緣) -->
             <div class="flex items-center justify-between gap-4 h-11 w-full">
                 <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">管理國家/地區</h2>
                 
@@ -152,7 +152,7 @@
                 <input type="text" id="country-search-input" placeholder="搜尋國家或地區..." class="w-full h-11 pl-10 pr-4 bg-white border border-slate-200/80 rounded-2xl font-medium text-slate-800 placeholder:text-slate-400 focus:border-brand-500 transition-all shadow-xs">
             </div>
 
-            <!-- 各國卡片網格 (右邊界完全貼齊) -->
+            <!-- 各國卡片網格 (右邊緣精準對齊) -->
             <div id="countries-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-1"></div>
         </section>
 
@@ -171,7 +171,7 @@
                 </button>
             </div>
 
-            <!-- 次行：｛國家地區名稱｝ (高度對齊選擇頁的搜尋列) -->
+            <!-- 次行：｛國家地區名稱｝ (高度鎖定 h-11，對齊選擇頁的搜尋列) -->
             <div class="h-11 flex items-center">
                 <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight" id="detail-country-name">-</h3>
             </div>
@@ -254,7 +254,7 @@
             </div>
         </section>
 
-        <!-- ==================== 3. 封面圖片庫 (位置規格 100% 同步) ==================== -->
+        <!-- ==================== 3. 封面圖片庫 ==================== -->
         <section id="view-country-covers-page" class="hidden space-y-4 pb-12">
             <!-- 頂部首行：返回鍵 + 儲存按鈕 -->
             <div class="flex items-center justify-between gap-4 h-11 w-full">
@@ -268,13 +268,12 @@
                 </button>
             </div>
 
-            <!-- 次行：標題 -->
+            <!-- 次行：封面圖片庫標題 -->
             <div class="h-11 flex items-center">
                 <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">封面圖片庫</h2>
             </div>
 
-            <!-- 內容區塊 -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-4 shadow-xs pt-1">
+            <div class="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-4 shadow-xs">
                 <label class="border-2 border-dashed border-slate-200 hover:border-brand-500 bg-slate-50/60 hover:bg-brand-50/30 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]">
                     <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center">
                         <i data-lucide="image-plus" class="w-6 h-6"></i>
@@ -550,7 +549,7 @@
             }
         });
 
-        // ==================== 封面圖管理與預設選擇 ====================
+        // ==================== 封面圖滿版管理與預設選擇 ====================
         function renderCoverThumbnails() {
             const container = document.getElementById('cover-thumbnails-grid');
             const mainPageStrip = document.getElementById('detail-base-covers-preview-strip');
@@ -569,6 +568,7 @@
                 return `
                 <div class="relative group rounded-2xl overflow-hidden aspect-video bg-slate-100 border ${isDefault ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-slate-200/80'} shadow-2xs">
                     <img src="${imgUrl}" class="w-full h-full object-cover">
+                    
                     <div class="absolute top-1.5 left-1.5">
                         ${isDefault ? `
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-brand-500 text-white rounded-md shadow-xs flex items-center gap-1">
@@ -580,6 +580,7 @@
                             </button>
                         `}
                     </div>
+
                     <button type="button" onclick="window.removeCoverImage(${idx})" class="w-7 h-7 bg-slate-900/75 hover:bg-rose-600 text-white rounded-full flex items-center justify-center absolute top-1.5 right-1.5 shadow-md transition-all active:scale-90">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
@@ -730,38 +731,31 @@
 
             document.getElementById('detail-country-name').innerText = countryId;
 
-            // 更新所有滿版子頁的返回文字：返回 {國家地區名稱} 設定
             document.querySelectorAll('.back-to-country-text').forEach(el => {
                 el.innerText = `返回 ${countryId} 設定`;
             });
 
-            // 回填基本設定
             document.getElementById('detail-base-currency').value = activeCountryData.currency || '';
             document.getElementById('detail-base-timezone').value = activeCountryData.timezone || '';
             
-            // 封面圖
             currentCovers = [...(activeCountryData.coverImages || [])];
             renderCoverThumbnails();
 
-            // 地區標籤
             detailRegionTags = [...(activeCountryData.regions || [])];
             renderDetailRegionTags();
 
-            // 行前須知
             const n = activeCountryData.notice || {};
             document.getElementById('detail-notice-voltage').value = n.voltage || '';
             document.getElementById('detail-notice-visa').value = n.visa || '';
             document.getElementById('detail-notice-traffic').value = n.traffic || '';
             document.getElementById('detail-notice-tax').value = n.tax || '';
 
-            // 急難救助
             const emg = activeCountryData.emergency || {};
             document.getElementById('detail-emg-police').value = emg.police || activeCountryData.police || '';
             document.getElementById('detail-emg-ambulance').value = emg.ambulance || activeCountryData.ambulance || '';
             document.getElementById('detail-emg-embassy').value = emg.embassy || activeCountryData.foreignEmergency || '';
             document.getElementById('detail-emg-memo').value = emg.memo || activeCountryData.memo || '';
 
-            // 優惠券
             renderCoupons();
             switchView('country-detail');
         };
