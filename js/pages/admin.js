@@ -214,8 +214,21 @@ window.openCountryDetail = async function(countryId) {
         });
         renderRegionGroups();
 
+        // 填入行前資訊動態題目
         renderDynamicFields('notice', activeNoticeSchema, activeCountryData.notice || {});
-        renderDynamicFields('emergency', activeEmergencySchema, activeCountryData.emergency || {});
+
+        // 填入三大固定緊急電話 (支援 emergency 巢狀或頂層舊資料相容)
+        const emg = activeCountryData.emergency || {};
+        const policeInput = document.getElementById('detail-emg-police');
+        const ambulanceInput = document.getElementById('detail-emg-ambulance');
+        const fireInput = document.getElementById('detail-emg-fire');
+
+        if (policeInput) policeInput.value = emg.police || activeCountryData.police || '';
+        if (ambulanceInput) ambulanceInput.value = emg.ambulance || activeCountryData.ambulance || '';
+        if (fireInput) fireInput.value = emg.fire || activeCountryData.fire || '';
+
+        // 填入急難救助其他公版自訂題目
+        renderDynamicFields('emergency', activeEmergencySchema, emg);
 
         renderCoupons();
         switchView('country-detail');
@@ -278,13 +291,29 @@ window.saveCurrentCountryDetail = async function() {
             if (el) dynamicEmergencyData[field.id] = el.value.trim();
         });
 
+        // 提取固定三大緊急電話
+        const policeVal = document.getElementById('detail-emg-police') ? document.getElementById('detail-emg-police').value.trim() : '';
+        const ambulanceVal = document.getElementById('detail-emg-ambulance') ? document.getElementById('detail-emg-ambulance').value.trim() : '';
+        const fireVal = document.getElementById('detail-emg-fire') ? document.getElementById('detail-emg-fire').value.trim() : '';
+
+        // 合併入 emergency 物件，同時保留頂層以利舊版相容
+        const finalEmergencyData = {
+            ...dynamicEmergencyData,
+            police: policeVal,
+            ambulance: ambulanceVal,
+            fire: fireVal
+        };
+
         const updated = {
             currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
             timezone: document.getElementById('detail-base-timezone').value.trim(),
             regions: detailRegionGroups,
             coverImages: coverManager.getCovers(),
             notice: dynamicNoticeData,
-            emergency: dynamicEmergencyData
+            emergency: finalEmergencyData,
+            police: policeVal,
+            ambulance: ambulanceVal,
+            fire: fireVal
         };
 
         await saveCountryDetail(activeCountryId, updated);
@@ -294,7 +323,7 @@ window.saveCurrentCountryDetail = async function() {
     }
 };
 
-// ==================== 兩層級旅遊地區管理邏輯 (僅保留單一宣告) ====================
+// ==================== 兩層級旅遊地區管理邏輯 ====================
 function renderRegionGroups() {
     const count = detailRegionGroups.length;
     const countEl = document.getElementById('regions-page-count');
@@ -319,7 +348,6 @@ function renderRegionGroups() {
                     <span class="text-base font-bold text-slate-900">${group.name}</span>
                     <span class="text-xs text-slate-400 font-mono">(${group.subRegions.length} 個城市)</span>
                 </div>
-                <!-- 刪除區域按鈕：精緻危險色膠囊風格 -->
                 <button type="button" onclick="window.removeParentRegion(${pIdx})" class="h-8 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5 pointer-events-none"></i>
                     <span>刪除區域</span>
@@ -336,7 +364,6 @@ function renderRegionGroups() {
                     </span>
                 `).join('')}
 
-                <!-- 次級輸入框：美化膠囊外觀，含圖示與虛線邊框 -->
                 <div class="inline-flex items-center relative">
                     <i data-lucide="plus" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none"></i>
                     <input type="text" 
@@ -645,7 +672,15 @@ window.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const name = document.getElementById('create-country-name').value.trim();
         const initData = {
-            currency: "", timezone: "", regions: [], coverImages: [], notice: {}, emergency: {}
+            currency: "", 
+            timezone: "", 
+            regions: [], 
+            coverImages: [], 
+            notice: {}, 
+            emergency: {},
+            police: "",
+            ambulance: "",
+            fire: ""
         };
         await saveCountryDetail(name, initData);
         document.getElementById('modal-country').classList.add('hidden');
