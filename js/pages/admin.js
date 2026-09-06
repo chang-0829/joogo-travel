@@ -1,17 +1,26 @@
 // js/pages/admin.js
+import { onAuthChanged } from "../api/authApi.js";
 import { subscribeCountries, getCountryDetail, saveCountryDetail, removeCountry } from "../api/countryApi.js";
 import { subscribeSchema, saveSchema } from "../api/schemaApi.js";
 import { CoverManager } from "../components/coverManager.js";
+
+// ==================== 身份驗證守門員 (未登入強制導向) ====================
+onAuthChanged(user => {
+    if (!user) {
+        window.location.replace("login.html");
+    }
+});
 
 // ==================== 全域狀態 ====================
 let currentCountries = [];
 let activeCountryId = null;
 let activeCountryData = null;
-let detailRegionTags = [];
+let detailRegionGroups = []; // 兩層級地區：[{ name: "北海道", subRegions: ["札幌", "函館"] }]
 let searchQuery = "";
 
 let activeNoticeSchema = [];
 let activeEmergencySchema = [];
+let isOpeningCountry = false; // 防止重複觸控
 
 // ==================== Toast 提示 ====================
 export function showToast(msg) {
@@ -45,7 +54,7 @@ window.addEventListener('beforeunload', (e) => {
     }
 });
 
-// ==================== 視圖切換與路由控制 (支援 schema-notice 與 schema-emergency) ====================
+// ==================== 視圖切換與路由控制 ====================
 export function switchView(viewName) {
     if (coverManager.isUploading) {
         const leave = confirm("圖片正在上傳中，離開將會終止上傳，確定要離開嗎？");
@@ -91,7 +100,7 @@ export function switchView(viewName) {
 }
 window.switchView = switchView;
 
-// ==================== 國家清單渲染 ====================
+// ==================== 國家清單渲染 (修復觸控延遲與陰影卡死) ====================
 function renderCountries() {
     const grid = document.getElementById('countries-grid');
     if (!grid) return;
@@ -99,7 +108,16 @@ function renderCountries() {
     const filtered = currentCountries.filter(c => {
         if (!searchQuery) return true;
         const matchName = c.id.toLowerCase().includes(searchQuery);
-        const matchRegions = (c.regions || []).some(r => r.toLowerCase().includes(searchQuery));
+        // 支援新舊格式的搜尋檢索
+        const matchRegions = (c.regions || []).some(r => {
+            if (typeof r === 'string') return r.toLowerCase().includes(searchQuery);
+            if (r && r.name) {
+                const matchParent = r.name.toLowerCase().includes(searchQuery);
+                const matchSub = (r.subRegions || []).some(sub => sub.toLowerCase().includes(searchQuery));
+                return matchParent || matchSub;
+            }
+            return false;
+        });
         return matchName || matchRegions;
     });
 
@@ -120,12 +138,12 @@ function renderCountries() {
 
             <div class="p-4 flex items-center justify-between">
                 <h3 class="font-bold text-base text-slate-900 tracking-tight">${c.id}</h3>
-                <div class="flex items-center gap-1">
-                    <button onclick="window.openCountryDetail('${c.id}')" title="編輯" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-brand-600 rounded-xl hover:bg-slate-50 transition-colors">
-                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                <div class="flex items-center gap-1.5 relative z-10">
+                    <button type="button" onclick="window.openCountryDetail('${c.id}')" title="編輯" class="w-11 h-11 flex items-center justify-center text-slate-500 hover:text-brand-600 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors touch-manipulation cursor-pointer">
+                        <i data-lucide="pencil" class="w-5 h-5 pointer-events-none"></i>
                     </button>
-                    <button onclick="window.deleteCountry('${c.id}')" title="刪除" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-50 transition-colors">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <button type="button" onclick="window.deleteCountry('${c.id}')" title="刪除" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors touch-manipulation cursor-pointer">
+                        <i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i>
                     </button>
                 </div>
             </div>
@@ -136,29 +154,49 @@ function renderCountries() {
     if (window.lucide) lucide.createIcons();
 }
 
+// 點擊編輯國家 (加入防止連點鎖定)
 window.openCountryDetail = async function(countryId) {
-    activeCountryId = countryId;
-    activeCountryData = await getCountryDetail(countryId);
-    if (!activeCountryData) return;
+    if (isOpeningCountry) return;
+    isOpeningCountry = true;
 
-    document.getElementById('detail-country-name').innerText = countryId;
-    document.querySelectorAll('.back-to-country-text').forEach(el => {
-        el.innerText = `返回 ${countryId} 設定`;
-    });
+    try {
+        activeCountryId = countryId;
+        activeCountryData = await getCountryDetail(countryId);
+        if (!activeCountryData) return;
 
-    document.getElementById('detail-base-currency').value = activeCountryData.currency || '';
-    document.getElementById('detail-base-timezone').value = activeCountryData.timezone || '';
+        document.getElementById('detail-country-name').innerText = countryId;
+        document.querySelectorAll('.back-to-country-text').forEach(el => {
+            el.innerText = `返回 ${countryId} 設定`;
+        });
 
-    coverManager.setCovers(activeCountryData.coverImages || []);
+        document.getElementById('detail-base-currency').value = activeCountryData.currency || '';
+        document.getElementById('detail-base-timezone').value = activeCountryData.timezone || '';
 
-    detailRegionTags = [...(activeCountryData.regions || [])];
-    renderRegionTags();
+        coverManager.setCovers(activeCountryData.coverImages || []);
 
-    renderDynamicFields('notice', activeNoticeSchema, activeCountryData.notice || {});
-    renderDynamicFields('emergency', activeEmergencySchema, activeCountryData.emergency || {});
+        // 轉換新舊格式為標準雙層級資料結構
+        const rawRegions = activeCountryData.regions || [];
+        detailRegionGroups = rawRegions.map(r => {
+            if (typeof r === 'string') {
+                return { name: r, subRegions: [] };
+            }
+            return {
+                name: r.name || '',
+                subRegions: Array.isArray(r.subRegions) ? r.subRegions : []
+            };
+        });
+        renderRegionGroups();
 
-    renderCoupons();
-    switchView('country-detail');
+        renderDynamicFields('notice', activeNoticeSchema, activeCountryData.notice || {});
+        renderDynamicFields('emergency', activeEmergencySchema, activeCountryData.emergency || {});
+
+        renderCoupons();
+        switchView('country-detail');
+    } catch (err) {
+        showToast("讀取資料失敗：" + err.message);
+    } finally {
+        isOpeningCountry = false;
+    }
 };
 
 window.deleteCountry = async function(id) {
@@ -177,12 +215,10 @@ window.saveCurrentCountryDetail = async function() {
     }
 
     try {
-        const regionInput = document.getElementById('regions-page-tag-input');
-        const leftover = regionInput ? regionInput.value.trim() : '';
-        if (leftover && !detailRegionTags.includes(leftover)) {
-            detailRegionTags.push(leftover);
-            regionInput.value = '';
-            renderRegionTags();
+        // 自動吸收未完成的地區輸入
+        const parentInput = document.getElementById('regions-parent-input');
+        if (parentInput && parentInput.value.trim()) {
+            window.addParentRegion();
         }
 
         const dynamicNoticeData = {};
@@ -200,7 +236,7 @@ window.saveCurrentCountryDetail = async function() {
         const updated = {
             currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
             timezone: document.getElementById('detail-base-timezone').value.trim(),
-            regions: detailRegionTags,
+            regions: detailRegionGroups, // 儲存二層級結構
             coverImages: coverManager.getCovers(),
             notice: dynamicNoticeData,
             emergency: dynamicEmergencyData
@@ -213,51 +249,94 @@ window.saveCurrentCountryDetail = async function() {
     }
 };
 
-// ==================== 旅遊地區管理 ====================
-function renderRegionTags() {
-    const count = detailRegionTags.length;
+// ==================== 兩層級旅遊地區管理邏輯 ====================
+function renderRegionGroups() {
+    const count = detailRegionGroups.length;
     const countEl = document.getElementById('regions-page-count');
     const mainCountEl = document.getElementById('detail-base-regions-count');
-    const badgeList = document.getElementById('regions-page-badge-list');
+    const container = document.getElementById('regions-groups-container');
 
     if (countEl) countEl.innerText = count;
-    if (mainCountEl) mainCountEl.innerText = `已設定 ${count} 個地區`;
+    if (mainCountEl) mainCountEl.innerText = `已設定 ${count} 個區域`;
 
-    if (!badgeList) return;
+    if (!container) return;
 
     if (count === 0) {
-        badgeList.innerHTML = `<div class="py-4 text-xs text-slate-400">目前尚無地區，請於上方輸入新增。</div>`;
+        container.innerHTML = `<div class="py-8 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前尚無區域，請使用上方輸入框新增主要區域。</div>`;
         return;
     }
 
-    badgeList.innerHTML = detailRegionTags.map((tag, idx) => `
-        <span class="inline-flex items-center gap-1.5 pl-3.5 pr-2 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold rounded-xl transition-colors">
-            <span>${tag}</span>
-            <button type="button" onclick="window.removeRegionTag(${idx})" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 focus:outline-none">
-                <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-        </span>
+    container.innerHTML = detailRegionGroups.map((group, pIdx) => `
+        <div class="p-4 sm:p-5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+                    <span class="text-base font-bold text-slate-900">${group.name}</span>
+                    <span class="text-xs text-slate-400 font-mono">(${group.subRegions.length} 個城市)</span>
+                </div>
+                <button type="button" onclick="window.removeParentRegion(${pIdx})" class="text-xs font-bold text-rose-600 hover:text-rose-700 transition-colors p-1">
+                    刪除整個區域
+                </button>
+            </div>
+
+            <!-- 次級城市標籤列 -->
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+                ${group.subRegions.map((sub, sIdx) => `
+                    <span class="inline-flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl shadow-2xs">
+                        <span>${sub}</span>
+                        <button type="button" onclick="window.removeSubRegion(${pIdx}, ${sIdx})" class="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-rose-600">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </span>
+                `).join('')}
+
+                <!-- 新增次級城市快速輸入框 -->
+                <div class="inline-flex items-center">
+                    <input type="text" id="sub-region-input-${pIdx}" placeholder="+ 新增次級 (按 Enter)" class="h-8 px-2.5 bg-white border border-slate-200/80 rounded-xl text-xs font-medium text-slate-700 w-36 focus:w-44 transition-all" onkeydown="if(event.key==='Enter'){event.preventDefault(); window.addSubRegion(${pIdx});}">
+                </div>
+            </div>
+        </div>
     `).join('');
 
     if (window.lucide) lucide.createIcons();
 }
 
-window.removeRegionTag = function(idx) {
-    detailRegionTags.splice(idx, 1);
-    renderRegionTags();
-};
-
-window.addRegionTag = function() {
-    const input = document.getElementById('regions-page-tag-input');
+window.addParentRegion = function() {
+    const input = document.getElementById('regions-parent-input');
     const val = input ? input.value.trim() : '';
-    if (val && !detailRegionTags.includes(val)) {
-        detailRegionTags.push(val);
-        renderRegionTags();
+    if (val && !detailRegionGroups.some(g => g.name === val)) {
+        detailRegionGroups.push({ name: val, subRegions: [] });
+        renderRegionGroups();
         input.value = '';
     }
 };
 
-// ==================== Schema 題目設定與各自獨立儲存 ====================
+window.removeParentRegion = function(pIdx) {
+    if (!confirm(`確定刪除「${detailRegionGroups[pIdx].name}」及其下所有次級城市嗎？`)) return;
+    detailRegionGroups.splice(pIdx, 1);
+    renderRegionGroups();
+};
+
+window.addSubRegion = function(pIdx) {
+    const input = document.getElementById(`sub-region-input-${pIdx}`);
+    const val = input ? input.value.trim() : '';
+    if (val && !detailRegionGroups[pIdx].subRegions.includes(val)) {
+        detailRegionGroups[pIdx].subRegions.push(val);
+        renderRegionGroups();
+        // 自動聚焦回輸入框以利連續輸入
+        setTimeout(() => {
+            const nextInput = document.getElementById(`sub-region-input-${pIdx}`);
+            if (nextInput) nextInput.focus();
+        }, 50);
+    }
+};
+
+window.removeSubRegion = function(pIdx, sIdx) {
+    detailRegionGroups[pIdx].subRegions.splice(sIdx, 1);
+    renderRegionGroups();
+};
+
+// ==================== Schema 題目設定與動態欄位 ====================
 function renderSchemaEditor(type, schemaArray) {
     const container = document.getElementById(`schema-${type}-container`);
     if (!container) return;
@@ -311,7 +390,6 @@ window.removeSchemaItem = (type, idx) => {
     }
 };
 
-// 獨立儲存行前資訊設定
 window.saveNoticeSchema = async () => {
     try {
         await saveSchema('notice', activeNoticeSchema);
@@ -321,7 +399,6 @@ window.saveNoticeSchema = async () => {
     }
 };
 
-// 獨立儲存急難救助設定
 window.saveEmergencySchema = async () => {
     try {
         await saveSchema('emergency', activeEmergencySchema);
@@ -435,6 +512,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 抽屜選單
     const drawer = document.getElementById('drawer-menu');
     const backdrop = document.getElementById('drawer-backdrop');
     const openDrawer = () => {
@@ -453,6 +531,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-close-drawer')?.addEventListener('click', window.closeDrawer);
     backdrop?.addEventListener('click', window.closeDrawer);
 
+    // 新增國家彈窗
     document.getElementById('btn-add-country-modal')?.addEventListener('click', () => {
         document.getElementById('form-country-create').reset();
         document.getElementById('modal-country').classList.remove('hidden');
@@ -472,6 +551,7 @@ window.addEventListener('DOMContentLoaded', () => {
         window.openCountryDetail(name);
     });
 
+    // 優惠券彈窗
     document.getElementById('btn-close-coupon-modal')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('btn-cancel-coupon')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('form-coupon')?.addEventListener('submit', async (e) => {
@@ -493,13 +573,14 @@ window.addEventListener('DOMContentLoaded', () => {
         showToast("成功儲存優惠券！");
     });
 
-    document.getElementById('regions-page-tag-input')?.addEventListener('keydown', (e) => {
+    // 新增主要區域綁定
+    document.getElementById('regions-parent-input')?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            window.addRegionTag();
+            window.addParentRegion();
         }
     });
-    document.getElementById('btn-add-region-tag')?.addEventListener('click', window.addRegionTag);
+    document.getElementById('btn-add-parent-region')?.addEventListener('click', window.addParentRegion);
 
     if (window.lucide) lucide.createIcons();
 });
