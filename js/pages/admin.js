@@ -1,10 +1,11 @@
 // js/pages/admin.js
-import { onAuthStateChange, logout } from "../api/authApi.js";
+import { onAuthStateChange } from "../api/authApi.js";
 import { subscribeCountries, getCountryDetail, saveCountryDetail, removeCountry } from "../api/countryApi.js";
 import { subscribeSchema, saveSchema } from "../api/schemaApi.js";
+import { getAirlineTemplates, saveAirlineTemplate, deleteAirlineTemplate } from "../api/templateApi.js";
 import { CoverManager } from "../components/coverManager.js";
 
-// 身份驗證守門員
+// 身份驗證守門員 (未登入者立即導回登入頁)
 onAuthStateChange(user => {
     if (!user) {
         window.location.replace("login.html");
@@ -97,6 +98,10 @@ export function switchView(viewName) {
     if (sideNotice) sideNotice.className = isNoticeSchema ? activeCls : inactiveCls;
     if (sideEmergency) sideEmergency.className = isEmergencySchema ? activeCls : inactiveCls;
     if (sideAirlines) sideAirlines.className = isAirlines ? activeCls : inactiveCls;
+
+    if (isAirlines) {
+        loadAirlines();
+    }
 }
 window.switchView = switchView;
 
@@ -137,11 +142,11 @@ function renderCountries() {
 
             <div class="p-4 flex items-center justify-between">
                 <h3 class="font-bold text-base text-slate-900 tracking-tight">${c.id}</h3>
-                <div class="flex items-center gap-1.5 relative z-10">
-                    <button type="button" onclick="window.openCountryDetail('${c.id}')" title="編輯" class="w-11 h-11 flex items-center justify-center text-slate-500 hover:text-brand-600 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors touch-manipulation cursor-pointer">
+                <div class="flex items-center gap-1 relative z-10">
+                    <button type="button" onclick="window.openCountryDetail('${c.id}')" title="編輯" class="w-11 h-11 flex items-center justify-center text-slate-500 hover:text-brand-600 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer">
                         <i data-lucide="pencil" class="w-5 h-5 pointer-events-none"></i>
                     </button>
-                    <button type="button" onclick="window.deleteCountry('${c.id}')" title="刪除" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors touch-manipulation cursor-pointer">
+                    <button type="button" onclick="window.deleteCountry('${c.id}')" title="刪除" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer">
                         <i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i>
                     </button>
                 </div>
@@ -222,7 +227,7 @@ window.saveCurrentCountryDetail = async function() {
             }
         }
 
-        // 自動吸收各主要區域下尚未按下 Enter 的次級城市
+        // 自動吸收次級城市尚未按下 Enter 的文字
         detailRegionGroups.forEach((group, pIdx) => {
             const subInput = document.getElementById(`sub-region-input-${pIdx}`);
             if (subInput && subInput.value.trim()) {
@@ -264,7 +269,7 @@ window.saveCurrentCountryDetail = async function() {
     }
 };
 
-// ==================== 兩層級旅遊地區管理邏輯 ====================
+// ==================== 兩層級旅遊地區管理邏輯 (落實 44pt 熱區) ====================
 function renderRegionGroups() {
     const count = detailRegionGroups.length;
     const countEl = document.getElementById('regions-page-count');
@@ -289,23 +294,23 @@ function renderRegionGroups() {
                     <span class="text-base font-bold text-slate-900">${group.name}</span>
                     <span class="text-xs text-slate-400 font-mono">(${group.subRegions.length} 個城市)</span>
                 </div>
-                <button type="button" onclick="window.removeParentRegion(${pIdx})" class="text-xs font-bold text-rose-600 hover:text-rose-700 transition-colors p-1">
+                <button type="button" onclick="window.removeParentRegion(${pIdx})" class="min-h-[44px] px-2.5 text-xs font-bold text-rose-600 hover:text-rose-700 transition-colors flex items-center">
                     刪除整個區域
                 </button>
             </div>
 
             <div class="flex flex-wrap items-center gap-2 pt-1">
                 ${group.subRegions.map((sub, sIdx) => `
-                    <span class="inline-flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl shadow-2xs">
+                    <span class="inline-flex items-center pl-3 pr-1 py-1 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl shadow-2xs">
                         <span>${sub}</span>
-                        <button type="button" onclick="window.removeSubRegion(${pIdx}, ${sIdx})" class="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-rose-600">
-                            <i data-lucide="x" class="w-3 h-3"></i>
+                        <button type="button" onclick="window.removeSubRegion(${pIdx}, ${sIdx})" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-600 active:scale-90 transition-transform">
+                            <i data-lucide="x" class="w-3.5 h-3.5 pointer-events-none"></i>
                         </button>
                     </span>
                 `).join('')}
 
                 <div class="inline-flex items-center">
-                    <input type="text" id="sub-region-input-${pIdx}" placeholder="+ 新增次級 (按 Enter)" class="h-8 px-2.5 bg-white border border-slate-200/80 rounded-xl text-xs font-medium text-slate-700 w-36 focus:w-44 transition-all" onkeydown="if(event.key==='Enter'){event.preventDefault(); window.addSubRegion(${pIdx});}">
+                    <input type="text" id="sub-region-input-${pIdx}" placeholder="+ 新增次級 (按 Enter)" class="h-9 px-3 bg-white border border-slate-200/80 rounded-xl text-xs font-medium text-slate-700 w-40 focus:w-48 transition-all" onkeydown="if(event.key==='Enter'){event.preventDefault(); window.addSubRegion(${pIdx});}">
                 </div>
             </div>
         </div>
@@ -348,7 +353,7 @@ window.removeSubRegion = function(pIdx, sIdx) {
     renderRegionGroups();
 };
 
-// ==================== Schema 題目設定與動態欄位 ====================
+// ==================== Schema 題目設定 ====================
 function renderSchemaEditor(type, schemaArray) {
     const container = document.getElementById(`schema-${type}-container`);
     if (!container) return;
@@ -356,14 +361,14 @@ function renderSchemaEditor(type, schemaArray) {
     container.innerHTML = schemaArray.map((item, idx) => `
         <div class="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center gap-2">
             <span class="w-6 text-center text-xs font-bold text-slate-400 font-mono">${idx + 1}</span>
-            <input type="text" value="${item.label}" oninput="window.updateSchemaLabel('${type}', ${idx}, this.value)" placeholder="題目名稱" class="flex-1 h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
-            <select onchange="window.updateSchemaType('${type}', ${idx}, this.value)" class="h-10 px-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600">
+            <input type="text" value="${item.label}" oninput="window.updateSchemaLabel('${type}', ${idx}, this.value)" placeholder="題目名稱" class="flex-1 h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
+            <select onchange="window.updateSchemaType('${type}', ${idx}, this.value)" class="h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600">
                 <option value="text" ${item.type === 'text' ? 'selected' : ''}>單行文字</option>
                 <option value="textarea" ${item.type === 'textarea' ? 'selected' : ''}>多行長文</option>
                 <option value="tel" ${item.type === 'tel' ? 'selected' : ''}>電話格式</option>
             </select>
-            <button type="button" onclick="window.removeSchemaItem('${type}', ${idx})" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-200/60 transition-colors">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <button type="button" onclick="window.removeSchemaItem('${type}', ${idx})" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl hover:bg-slate-200/60 transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
             </button>
         </div>
     `).join('');
@@ -435,7 +440,7 @@ function renderDynamicFields(type, schemaArray, dataObject) {
                         ${field.type === 'textarea' ? `
                             <textarea id="dynamic-${type}-${field.id}" rows="3" class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs">${val}</textarea>
                         ` : `
-                            <input type="${field.type || 'text'}" id="dynamic-${type}-${field.id}" value="${val}" class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl ${field.type === 'tel' ? 'font-mono font-bold text-slate-700' : ''} text-xs">
+                            <input type="${field.type || 'text'}" id="dynamic-${type}-${field.id}" value="${val}" class="w-full h-11 px-3.5 bg-slate-50/50 border border-slate-200/80 rounded-xl ${field.type === 'tel' ? 'font-mono font-bold text-slate-700' : ''} text-xs">
                         `}
                     </div>
                 `;
@@ -468,8 +473,8 @@ function renderCoupons() {
                     ${cp.expiry ? `<div class="text-[11px] text-slate-400">有效期限：${cp.expiry}</div>` : ''}
                     ${cp.link ? `<a href="${cp.link}" target="_blank" class="text-[11px] text-brand-600 hover:underline inline-block mt-0.5 truncate max-w-xs">條碼或兌換連結 ↗</a>` : ''}
                 </div>
-                <button onclick="window.removeCoupon(${idx})" class="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-rose-600 rounded-xl shrink-0 transition-colors">
-                    <i data-lucide="trash" class="w-4 h-4"></i>
+                <button onclick="window.removeCoupon(${idx})" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl shrink-0 transition-colors">
+                    <i data-lucide="trash" class="w-4 h-4 pointer-events-none"></i>
                 </button>
             </div>
         `).join('')}
@@ -493,6 +498,58 @@ window.removeCoupon = async (index) => {
     showToast("已刪除優惠券！");
 };
 
+// ==================== 航空公司行李庫模組 ====================
+async function loadAirlines() {
+    try {
+        const airlines = await getAirlineTemplates();
+        renderAirlines(airlines);
+    } catch (err) {
+        showToast("載入航空公司失敗：" + err.message);
+    }
+}
+
+function renderAirlines(airlines) {
+    const grid = document.getElementById('airlines-grid');
+    if (!grid) return;
+
+    if (!airlines || airlines.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-16 text-center text-xs text-slate-400 bg-white rounded-3xl border border-slate-200/80">目前無航司行李資料，點擊右上角新增。</div>`;
+        return;
+    }
+
+    grid.innerHTML = airlines.map(al => `
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                <div>
+                    <h3 class="font-bold text-sm text-slate-900">${al.name}</h3>
+                    <span class="text-xs font-mono font-bold text-brand-600">${al.id}</span>
+                </div>
+                <button onclick="window.removeAirline('${al.id}')" class="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-xl transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                </button>
+            </div>
+            <div class="space-y-1.5 text-xs text-slate-600">
+                <div><span class="font-bold text-slate-800">托運行李：</span>${al.checkedQuota || '無'} (${al.checkedDim || '無限制'})</div>
+                <div><span class="font-bold text-slate-800">手提行李：</span>${al.carryQuota || '無'} (${al.carryDim || '無限制'})</div>
+                <div><span class="font-bold text-slate-800">隨身包：</span>${al.personalQuota || '無'}</div>
+            </div>
+        </div>
+    `).join('');
+
+    if (window.lucide) lucide.createIcons();
+}
+
+window.removeAirline = async (code) => {
+    if (!confirm(`確定要刪除航司「${code}」的行李規範嗎？`)) return;
+    try {
+        await deleteAirlineTemplate(code);
+        showToast("已刪除航司！");
+        await loadAirlines();
+    } catch (err) {
+        showToast("刪除失敗：" + err.message);
+    }
+};
+
 // ==================== 初始化綁定 ====================
 window.addEventListener('DOMContentLoaded', () => {
     subscribeCountries(countries => {
@@ -512,7 +569,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     subscribeSchema('emergency', schema => {
         activeEmergencySchema = schema;
-        // 修正：呼叫正確的通用渲染函式
         renderSchemaEditor('emergency', activeEmergencySchema);
         if (activeCountryData) renderDynamicFields('emergency', activeEmergencySchema, activeCountryData.emergency || {});
     });
@@ -525,6 +581,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 抽屜選單
     const drawer = document.getElementById('drawer-menu');
     const backdrop = document.getElementById('drawer-backdrop');
     const openDrawer = () => {
@@ -543,6 +600,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-close-drawer')?.addEventListener('click', window.closeDrawer);
     backdrop?.addEventListener('click', window.closeDrawer);
 
+    // 新增國家彈窗
     document.getElementById('btn-add-country-modal')?.addEventListener('click', () => {
         document.getElementById('form-country-create').reset();
         document.getElementById('modal-country').classList.remove('hidden');
@@ -562,6 +620,7 @@ window.addEventListener('DOMContentLoaded', () => {
         window.openCountryDetail(name);
     });
 
+    // 優惠券彈窗
     document.getElementById('btn-close-coupon-modal')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('btn-cancel-coupon')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('form-coupon')?.addEventListener('submit', async (e) => {
@@ -583,6 +642,7 @@ window.addEventListener('DOMContentLoaded', () => {
         showToast("成功儲存優惠券！");
     });
 
+    // 新增主要區域綁定
     document.getElementById('regions-parent-input')?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -590,6 +650,25 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
     document.getElementById('btn-add-parent-region')?.addEventListener('click', window.addParentRegion);
+
+    // 新增航司規範
+    document.getElementById('btn-add-airline')?.addEventListener('click', async () => {
+        const code = prompt("請輸入航空公司 2 碼代號 (例如：BR, JX)：");
+        if (!code) return;
+        const name = prompt("請輸入航空公司全名 (例如：長榮航空)：");
+        if (!name) return;
+        
+        await saveAirlineTemplate(code, {
+            name: `${name} (${code.toUpperCase()})`,
+            checkedQuota: "2 件 (每件 23 kg)",
+            checkedDim: "三邊總和 ≤ 158 cm",
+            carryQuota: "1 件 (7 kg)",
+            carryDim: "55 x 40 x 23 cm",
+            personalQuota: "1 件 (隨身包/筆電包)"
+        });
+        showToast(`已建立 ${name} 行李公版！`);
+        await loadAirlines();
+    });
 
     if (window.lucide) lucide.createIcons();
 });
