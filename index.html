@@ -247,7 +247,7 @@
     <!-- 首頁邏輯 -->
     <script type="module">
         import { createTrip, getUserTrips, joinTripByCode } from "./js/api/tripApi.js";
-        import { subscribeAuthState, logoutUser } from "./js/api/authApi.js";
+        import { onAuthStateChange, logout } from "./js/api/authApi.js";
 
         // 動態登入使用者資料容器
         let currentUser = {
@@ -470,17 +470,15 @@
         // 點擊大頭貼登出
         document.getElementById('btn-user-profile').addEventListener('click', async () => {
             if (confirm(`確定要登出「${currentUser.name}」嗎？`)) {
-                await logoutUser();
+                await logout();
             }
         });
 
         // ==================== 身份狀態驗證與初始化 ====================
-        subscribeAuthState((user) => {
+        onAuthStateChange((user) => {
             if (!user) {
-                // 未登入直接導回登入頁
                 window.location.href = "login.html";
             } else {
-                // 已登入：載入使用者真實資料
                 currentUser.uid = user.uid;
                 currentUser.name = user.displayName || user.email.split('@')[0];
                 currentUser.avatar = user.photoURL || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120";
@@ -488,7 +486,6 @@
                 document.getElementById('user-display-name').innerText = currentUser.name;
                 document.getElementById('user-avatar').src = currentUser.avatar;
 
-                // 預設日期
                 const today = new Date();
                 const future = new Date();
                 future.setDate(today.getDate() + 6);
