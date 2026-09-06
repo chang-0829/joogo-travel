@@ -5,7 +5,7 @@ import { subscribeSchema, saveSchema } from "../api/schemaApi.js";
 import { getAirlineTemplates, saveAirlineTemplate, deleteAirlineTemplate } from "../api/templateApi.js";
 import { CoverManager } from "../components/coverManager.js";
 
-// 身份驗證守門員
+// 身份驗證守門員 (未登入者立即導回登入頁)
 onAuthStateChange(user => {
     if (!user) {
         window.location.replace("login.html");
@@ -16,9 +16,10 @@ onAuthStateChange(user => {
 let currentCountries = [];
 let activeCountryId = null;
 let activeCountryData = null;
-let detailRegionGroups = [];
-let detailEmbassies = []; // 駐外館處列表
+let detailRegionGroups = []; // 兩層級地區結構：[{ name: "北海道", subRegions: ["札幌", "函館"] }]
+let detailEmbassies = [];    // 駐外館處列表
 let searchQuery = "";
+let currentContinentFilter = "ALL"; // 洲別篩選：ALL, 亞洲, 歐洲, 美洲, 大洋洲, 非洲, 其他
 
 let activeNoticeSchema = [];
 let activeEmergencySchema = [];
@@ -96,6 +97,7 @@ export function switchView(viewName) {
     const isEmergencySchema = viewName === 'schema-emergency';
     const isAirlines = viewName === 'airlines';
 
+    // 電腦版側欄樣式切換
     const sideCountries = document.getElementById('sidebar-btn-countries');
     const sideNotice = document.getElementById('sidebar-btn-schema-notice');
     const sideEmergency = document.getElementById('sidebar-btn-schema-emergency');
@@ -109,6 +111,7 @@ export function switchView(viewName) {
     if (sideEmergency) sideEmergency.className = isEmergencySchema ? deskActiveCls : deskInactiveCls;
     if (sideAirlines) sideAirlines.className = isAirlines ? deskActiveCls : deskInactiveCls;
 
+    // 手機端抽屜樣式切換
     const drawerCountries = document.getElementById('drawer-btn-countries');
     const drawerNotice = document.getElementById('drawer-btn-schema-notice');
     const drawerEmergency = document.getElementById('drawer-btn-schema-emergency');
@@ -128,12 +131,33 @@ export function switchView(viewName) {
 }
 window.switchView = switchView;
 
+// ==================== 洲別篩選切換 ====================
+window.setContinentFilter = function(continent) {
+    currentContinentFilter = continent;
+    
+    document.querySelectorAll('.continent-tab-btn').forEach(btn => {
+        const isMatch = btn.getAttribute('data-continent') === continent;
+        if (isMatch) {
+            btn.className = "continent-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-brand-500 text-white shadow-xs";
+        } else {
+            btn.className = "continent-tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all";
+        }
+    });
+
+    renderCountries();
+};
+
 // ==================== 國家清單渲染 ====================
 function renderCountries() {
     const grid = document.getElementById('countries-grid');
     if (!grid) return;
 
     const filtered = currentCountries.filter(c => {
+        const countryContinent = c.continent || "亞洲";
+        if (currentContinentFilter !== "ALL" && countryContinent !== currentContinentFilter) {
+            return false;
+        }
+
         if (!searchQuery) return true;
         const matchName = c.id.toLowerCase().includes(searchQuery);
         const matchRegions = (c.regions || []).some(r => {
@@ -157,10 +181,15 @@ function renderCountries() {
         const cover = (c.coverImages && c.coverImages.length > 0) 
             ? c.coverImages[0] 
             : 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=600';
+        const continentTag = c.continent || "亞洲";
+
         return `
         <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between">
             <div class="relative h-36 w-full bg-slate-100 overflow-hidden">
                 <img src="${cover}" class="w-full h-full object-cover">
+                <span class="absolute top-3 left-3 px-2.5 py-1 bg-slate-900/60 backdrop-blur-xs text-white text-[10px] font-bold rounded-lg tracking-wider">
+                    ${continentTag}
+                </span>
             </div>
 
             <div class="p-4 flex items-center justify-between">
@@ -195,6 +224,10 @@ window.openCountryDetail = async function(countryId) {
             el.innerText = `返回 ${countryId} 設定`;
         });
 
+        // 洲別、幣別與時區
+        const continentSelect = document.getElementById('detail-base-continent');
+        if (continentSelect) continentSelect.value = activeCountryData.continent || '亞洲';
+
         document.getElementById('detail-base-currency').value = activeCountryData.currency || '';
         document.getElementById('detail-base-timezone').value = activeCountryData.timezone || '';
 
@@ -212,10 +245,10 @@ window.openCountryDetail = async function(countryId) {
         });
         renderRegionGroups();
 
-        // 渲染行前資訊
+        // 渲染行前須知
         renderDynamicFields('notice', activeNoticeSchema, activeCountryData.notice || {});
 
-        // 區塊一：三大緊急電話回填
+        // 區塊一：三大緊急直撥電話回填
         const emg = activeCountryData.emergency || {};
         const policeInput = document.getElementById('detail-emg-police');
         const ambulanceInput = document.getElementById('detail-emg-ambulance');
@@ -230,11 +263,10 @@ window.openCountryDetail = async function(countryId) {
             ? JSON.parse(JSON.stringify(activeCountryData.embassies)) 
             : [];
         
-        // 若以前存有舊的單一代表處欄位，自動無痛升級為陣列首筆
         if (detailEmbassies.length === 0 && (emg.embassy || activeCountryData.foreignEmergency)) {
             detailEmbassies.push({
                 id: 'emb_' + Date.now(),
-                name: '駐外代表處 (總處)',
+                name: '台北駐外經濟文化代表處',
                 type: 'main',
                 phone: emg.embassy || activeCountryData.foreignEmergency || '',
                 emergencyPhone: '',
@@ -244,7 +276,7 @@ window.openCountryDetail = async function(countryId) {
         }
         renderEmbassies();
 
-        // 區塊三：急難救助動態自訂題目
+        // 區塊三：急難救助自訂題目
         renderDynamicFields('emergency', activeEmergencySchema, emg);
 
         renderCoupons();
@@ -354,7 +386,6 @@ window.removeEmbassy = function(idx) {
 window.updateEmbassyField = function(idx, key, value) {
     if (detailEmbassies[idx]) {
         detailEmbassies[idx][key] = value;
-        // 若修改館處名稱或類型時即時更新上方 Header
         if (key === 'name' || key === 'type') {
             const card = document.getElementById('embassies-container').children[idx];
             if (card) {
@@ -418,7 +449,6 @@ window.saveCurrentCountryDetail = async function() {
         const ambulanceVal = document.getElementById('detail-emg-ambulance') ? document.getElementById('detail-emg-ambulance').value.trim() : '';
         const fireVal = document.getElementById('detail-emg-fire') ? document.getElementById('detail-emg-fire').value.trim() : '';
 
-        // 組裝 emergency 資訊物件
         const finalEmergencyData = {
             ...dynamicEmergencyData,
             police: policeVal,
@@ -427,13 +457,14 @@ window.saveCurrentCountryDetail = async function() {
         };
 
         const updated = {
+            continent: document.getElementById('detail-base-continent') ? document.getElementById('detail-base-continent').value : (activeCountryData.continent || '亞洲'),
             currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
             timezone: document.getElementById('detail-base-timezone').value.trim(),
             regions: detailRegionGroups,
             coverImages: coverManager.getCovers(),
             notice: dynamicNoticeData,
             emergency: finalEmergencyData,
-            embassies: detailEmbassies, // 儲存區塊二：駐外使館陣列
+            embassies: detailEmbassies,
             police: policeVal,
             ambulance: ambulanceVal,
             fire: fireVal
@@ -446,7 +477,7 @@ window.saveCurrentCountryDetail = async function() {
     }
 };
 
-// ==================== 兩層級旅遊地區管理邏輯 ====================
+// ==================== 兩層級旅遊地區管理邏輯 (重塑現代化質感輸入框) ====================
 function renderRegionGroups() {
     const count = detailRegionGroups.length;
     const countEl = document.getElementById('regions-page-count');
@@ -814,7 +845,9 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-country-create')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('create-country-name').value.trim();
+        const continent = document.getElementById('create-country-continent').value;
         const initData = {
+            continent: continent,
             currency: "", 
             timezone: "", 
             regions: [], 
