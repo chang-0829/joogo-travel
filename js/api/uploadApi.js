@@ -19,7 +19,7 @@ export async function uploadToCloudinary(file, signal) {
   const response = await fetch(url, {
     method: "POST",
     body: formData,
-    signal: signal // 支援中斷請求
+    signal: signal // 補上中斷信號
   });
 
   if (!response.ok) {
