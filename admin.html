@@ -47,9 +47,10 @@
 </head>
 <body class="h-full flex flex-col lg:flex-row font-sans text-slate-800 antialiased bg-[#f8fafc] overflow-hidden">
 
-    <!-- 電腦版專用：專業 SaaS 左側固定側邊欄 -->
+    <!-- ==================== 電腦版專用：專業 SaaS 左側固定側邊欄 ==================== -->
     <aside id="desktop-sidebar" class="hidden lg:flex lg:flex-col lg:w-64 bg-white border-r border-slate-200/80 h-full shrink-0 z-20 select-none justify-between">
         <div class="p-5 space-y-6 overflow-y-auto no-scrollbar">
+            <!-- 品牌識別 -->
             <div class="flex items-center gap-3 pb-2 border-b border-slate-100">
                 <div class="w-10 h-10 rounded-2xl bg-brand-50 border border-brand-100 text-brand-600 flex items-center justify-center font-black text-sm shrink-0">
                     J
@@ -62,25 +63,36 @@
                 </div>
             </div>
 
+            <!-- 分組 1：資料庫管理 (已拆分為 行前資訊設定 與 急難救助設定) -->
             <div class="space-y-1">
                 <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">公版資料庫管理</div>
                 
+                <!-- 管理國家/地區 -->
                 <button type="button" onclick="switchView('country-list')" id="sidebar-btn-countries" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold bg-brand-50 text-brand-600 transition-all cursor-pointer">
                     <i data-lucide="globe" class="w-4 h-4 shrink-0"></i>
                     <span class="truncate">管理國家/地區</span>
                 </button>
 
-                <button type="button" onclick="switchView('schema-settings')" id="sidebar-btn-schemas" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
-                    <i data-lucide="sliders-horizontal" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">公版題目設定</span>
+                <!-- 行前資訊設定 -->
+                <button type="button" onclick="switchView('schema-notice')" id="sidebar-btn-schema-notice" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
+                    <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
+                    <span class="truncate">行前資訊設定</span>
                 </button>
 
+                <!-- 急難救助設定 -->
+                <button type="button" onclick="switchView('schema-emergency')" id="sidebar-btn-schema-emergency" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
+                    <i data-lucide="phone-call" class="w-4 h-4 shrink-0"></i>
+                    <span class="truncate">急難救助設定</span>
+                </button>
+
+                <!-- 航空公司行李庫 -->
                 <button type="button" onclick="switchView('airlines')" id="sidebar-btn-airlines" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
                     <i data-lucide="plane" class="w-4 h-4 shrink-0"></i>
                     <span class="truncate">航空公司行李庫</span>
                 </button>
             </div>
 
+            <!-- 分組 2：前台服務捷徑 -->
             <div class="space-y-1 pt-2">
                 <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">前台服務</div>
                 <a href="index.html" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
@@ -96,7 +108,7 @@
         </div>
     </aside>
 
-    <!-- 右側主舞台容器 -->
+    <!-- ==================== 右側主舞台容器 ==================== -->
     <div class="flex-1 flex flex-col h-full overflow-hidden">
 
         <!-- 手機端專用頁首 -->
@@ -142,10 +154,18 @@
                         <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
                     </button>
 
-                    <button onclick="switchView('schema-settings'); closeDrawer();" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <button onclick="switchView('schema-notice'); closeDrawer();" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
                         <div class="flex items-center gap-2.5">
-                            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-sky-600"></i>
-                            <span>公版題目設定</span>
+                            <i data-lucide="info" class="w-4 h-4 text-sky-600"></i>
+                            <span>行前資訊設定</span>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
+                    </button>
+
+                    <button onclick="switchView('schema-emergency'); closeDrawer();" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                        <div class="flex items-center gap-2.5">
+                            <i data-lucide="phone-call" class="w-4 h-4 text-rose-600"></i>
+                            <span>急難救助設定</span>
                         </div>
                         <i data-lucide="chevron-right" class="w-4 h-4 opacity-70"></i>
                     </button>
@@ -171,7 +191,7 @@
         <!-- 主內容管理區 -->
         <main class="flex-1 max-w-5xl xl:max-w-6xl w-full mx-auto px-5 sm:px-8 py-6 overflow-y-auto">
 
-            <!-- VIEW 1: 國家選擇頁 -->
+            <!-- ==================== VIEW 1: 國家選擇頁 ==================== -->
             <section id="view-country-list" class="space-y-4">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">管理國家/地區</h2>
@@ -189,54 +209,65 @@
                 <div id="countries-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pt-1"></div>
             </section>
 
-            <!-- VIEW 2: 公版題目設定獨立管理頁 -->
-            <section id="view-schema-settings" class="hidden space-y-4 pb-12">
+            <!-- ==================== VIEW 2: 行前資訊設定 (獨立分頁) ==================== -->
+            <section id="view-schema-notice" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
-                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">公版題目設定</h2>
-                    <button onclick="saveAllSchemas()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                            <i data-lucide="info" class="w-4 h-4"></i>
+                        </div>
+                        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">行前資訊設定</h2>
+                    </div>
+                    
+                    <button onclick="saveNoticeSchema()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
                         <i data-lucide="check" class="w-4 h-4"></i>
-                        <span>儲存題目設定</span>
+                        <span>儲存設定</span>
                     </button>
                 </div>
 
-                <p class="text-xs text-slate-400">在此設定行前須知與急難救助的公版題目架構，所有國家與前台行程將自動依據此題目規格呈現。</p>
+                <div class="flex items-center justify-between">
+                    <p class="text-xs text-slate-400">定義全域各國行程共用的行前須知公版題目與格式欄位。</p>
+                    <button type="button" onclick="addSchemaItem('notice')" class="h-9 px-3.5 text-xs font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-xl transition-all flex items-center gap-1 shrink-0 cursor-pointer">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        <span>增加題目</span>
+                    </button>
+                </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2 items-start">
-                    <div class="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 space-y-4 shadow-xs">
-                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
-                                    <i data-lucide="info" class="w-4 h-4"></i>
-                                </div>
-                                <h3 class="text-base font-bold text-slate-900">行前須知題目</h3>
-                            </div>
-                            <button type="button" onclick="addSchemaItem('notice')" class="h-9 px-3 text-xs font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-xl transition-all flex items-center gap-1">
-                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                                <span>增加題目</span>
-                            </button>
-                        </div>
-                        <div id="schema-notice-container" class="space-y-3"></div>
-                    </div>
-
-                    <div class="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 space-y-4 shadow-xs">
-                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-                                    <i data-lucide="phone-call" class="w-4 h-4"></i>
-                                </div>
-                                <h3 class="text-base font-bold text-slate-900">急難救助題目</h3>
-                            </div>
-                            <button type="button" onclick="addSchemaItem('emergency')" class="h-9 px-3 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all flex items-center gap-1">
-                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                                <span>增加題目</span>
-                            </button>
-                        </div>
-                        <div id="schema-emergency-container" class="space-y-3"></div>
-                    </div>
+                <div class="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-xs">
+                    <div id="schema-notice-container" class="space-y-3"></div>
                 </div>
             </section>
 
-            <!-- VIEW 3: 各國家地區設定頁 -->
+            <!-- ==================== VIEW 3: 急難救助設定 (獨立分頁) ==================== -->
+            <section id="view-schema-emergency" class="hidden space-y-4 pb-12">
+                <div class="flex items-center justify-between gap-4 h-11 w-full">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                            <i data-lucide="phone-call" class="w-4 h-4"></i>
+                        </div>
+                        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">急難救助設定</h2>
+                    </div>
+                    
+                    <button onclick="saveEmergencySchema()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>儲存設定</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <p class="text-xs text-slate-400">定義全域各國行程共用的急難救助專線與聯絡窗口題目。</p>
+                    <button type="button" onclick="addSchemaItem('emergency')" class="h-9 px-3.5 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all flex items-center gap-1 shrink-0 cursor-pointer">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        <span>增加題目</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-xs">
+                    <div id="schema-emergency-container" class="space-y-3"></div>
+                </div>
+            </section>
+
+            <!-- ==================== VIEW 4: 各國家地區設定頁 ==================== -->
             <section id="view-country-detail" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-list')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
@@ -401,7 +432,7 @@
 
                 <div class="h-11 flex items-center justify-between">
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">公版行前須知</h2>
-                    <button onclick="switchView('schema-settings')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                    <button onclick="switchView('schema-notice')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 cursor-pointer">
                         <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
                         <span>編輯題目規範</span>
                     </button>
@@ -425,7 +456,7 @@
 
                 <div class="h-11 flex items-center justify-between">
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">急難救助資訊</h2>
-                    <button onclick="switchView('schema-settings')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                    <button onclick="switchView('schema-emergency')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 cursor-pointer">
                         <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
                         <span>編輯題目規範</span>
                     </button>
@@ -460,7 +491,7 @@
                 <div id="coupons-grid" class="pt-1"></div>
             </section>
 
-            <!-- VIEW 4: 航司行李庫 -->
+            <!-- VIEW 5: 航司行李庫 -->
             <section id="view-airlines" class="hidden space-y-4">
                 <div class="flex items-center justify-between">
                     <h2 class="text-2xl font-bold text-slate-900 tracking-tight">航空公司行李規範庫</h2>
