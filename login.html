@@ -106,23 +106,39 @@
     </footer>
 
     <script type="module">
-        import { loginWithGoogle, onAuthStateChange } from './js/api/authApi.js';
-    
-        // 監聽登入狀態：若已登入則自動跳轉後台
-        onAuthStateChange(user => {
+        import { loginWithGoogle, onAuthStateChange } from "./js/api/authApi.js";
+
+        const btnLogin = document.getElementById('btn-google-login');
+        const loginText = document.getElementById('login-text');
+
+        // 已登入狀態自動導回首頁行程列表
+        onAuthStateChange((user) => {
             if (user) {
-                window.location.replace('admin.html');
+                window.location.replace("index.html");
             }
         });
-    
-        const loginBtn = document.getElementById('login-btn');
-        loginBtn?.addEventListener('click', async () => {
-            try {
-                await loginWithGoogle();
-                window.location.replace('admin.html');
-            } catch (error) {
-                alert('登入失敗：' + error.message);
-            }
+
+        // 監聽登入點擊
+        if (btnLogin) {
+            btnLogin.addEventListener('click', async () => {
+                try {
+                    btnLogin.disabled = true;
+                    btnLogin.classList.add('opacity-75', 'cursor-wait');
+                    if (loginText) loginText.innerText = "驗證中，請稍候...";
+
+                    await loginWithGoogle();
+                    // 成功後 onAuthStateChange 會自動觸發跳轉回 index.html
+                } catch (err) {
+                    alert("Google 登入失敗: " + err.message);
+                    btnLogin.disabled = false;
+                    btnLogin.classList.remove('opacity-75', 'cursor-wait');
+                    if (loginText) loginText.innerText = "使用 Google 帳號快速登入";
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) lucide.createIcons();
         });
     </script>
 </body>
