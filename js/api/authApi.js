@@ -30,12 +30,16 @@ export const logout = async () => {
     }
 };
 
-// 監聽登入狀態改變 (補上此匯出)
+// 監聽登入狀態改變 (同時提供 subscribeAuthState 與 onAuthStateChange 以相容不同頁面)
+export const subscribeAuthState = (callback) => {
+    return onAuthStateChanged(auth, callback);
+};
+
 export const onAuthStateChange = (callback) => {
     return onAuthStateChanged(auth, callback);
 };
 
-// 取得當前使用者
+// 取得當前登入者
 export const getCurrentUser = () => {
     return auth.currentUser;
 };
