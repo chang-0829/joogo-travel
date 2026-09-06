@@ -459,42 +459,71 @@ function renderRegionGroups() {
     if (!container) return;
 
     if (count === 0) {
-        container.innerHTML = `<div class="py-8 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前尚無區域，請使用上方輸入框新增主要區域。</div>`;
+        container.innerHTML = `
+            <div class="py-12 flex flex-col items-center justify-center text-center bg-slate-50/60 rounded-3xl border-2 border-dashed border-slate-200/80">
+                <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-xs text-slate-400 mb-2.5">
+                    <i data-lucide="map-pin" class="w-5 h-5"></i>
+                </div>
+                <p class="text-xs font-bold text-slate-600 mb-0.5">尚未建立旅遊區域</p>
+                <p class="text-[11px] text-slate-400">請由上方輸入框建立第一個主要區域（例如：北海道、關東）</p>
+            </div>
+        `;
+        if (window.lucide) lucide.createIcons();
         return;
     }
 
     container.innerHTML = detailRegionGroups.map((group, pIdx) => `
-        <div class="p-4 sm:p-5 bg-white border border-slate-200/80 rounded-2xl space-y-3.5 shadow-2xs">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
-                    <span class="text-base font-bold text-slate-900">${group.name}</span>
-                    <span class="text-xs text-slate-400 font-mono">(${group.subRegions.length} 個城市)</span>
+        <div class="bg-white border border-slate-200/80 hover:border-slate-300 rounded-2xl shadow-xs transition-all duration-200 overflow-hidden">
+            <!-- 區域頂部 Header -->
+            <div class="px-4 py-3 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-2 h-2 rounded-full bg-brand-500 ring-4 ring-brand-100"></span>
+                    <span class="text-sm font-extrabold text-slate-900 tracking-tight">${group.name}</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold text-slate-500 bg-white border border-slate-200/80 rounded-lg">
+                        ${group.subRegions.length} 個城市
+                    </span>
                 </div>
-                <button type="button" onclick="window.removeParentRegion(${pIdx})" class="h-8 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
+                <button type="button" 
+                    onclick="window.removeParentRegion(${pIdx})" 
+                    class="h-7 px-2 text-[11px] font-semibold text-slate-400 hover:text-rose-600 hover:bg-rose-50/80 rounded-lg flex items-center gap-1 transition-colors cursor-pointer" 
+                    title="刪除此區域與轄下城市">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5 pointer-events-none"></i>
                     <span>刪除區域</span>
                 </button>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
-                ${group.subRegions.map((sub, sIdx) => `
-                    <span class="inline-flex items-center pl-3 pr-1.5 py-1 bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-slate-800 text-xs font-semibold rounded-xl transition-all shadow-2xs">
-                        <span>${sub}</span>
-                        <button type="button" onclick="window.removeSubRegion(${pIdx}, ${sIdx})" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-rose-600 active:scale-90 transition-transform">
-                            <i data-lucide="x" class="w-3.5 h-3.5 pointer-events-none"></i>
-                        </button>
-                    </span>
-                `).join('')}
+            <!-- 次級城市清單與快速輸入 -->
+            <div class="p-3.5 sm:p-4">
+                <div class="flex flex-wrap items-center gap-2">
+                    ${group.subRegions.map((sub, sIdx) => `
+                        <span class="inline-flex items-center h-8 pl-3 pr-1.5 bg-slate-50 hover:bg-slate-100/90 border border-slate-200/90 text-slate-700 text-xs font-semibold rounded-xl transition-all shadow-2xs group">
+                            <span>${sub}</span>
+                            <button type="button" 
+                                onclick="window.removeSubRegion(${pIdx}, ${sIdx})" 
+                                class="w-5 h-5 ml-1 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-white rounded-md transition-colors" 
+                                title="刪除 ${sub}">
+                                <i data-lucide="x" class="w-3 h-3 pointer-events-none"></i>
+                            </button>
+                        </span>
+                    `).join('')}
 
-                <div class="inline-flex items-center relative">
-                    <i data-lucide="plus" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none"></i>
-                    <input type="text" 
-                        id="sub-region-input-${pIdx}" 
-                        placeholder="新增次級城市 (按 Enter)" 
-                        class="h-8 pl-7 pr-3 bg-slate-50 hover:bg-white focus:bg-white border border-dashed border-slate-300 focus:border-brand-500 rounded-xl text-xs font-medium text-slate-700 placeholder:text-slate-400 w-44 focus:w-52 transition-all shadow-2xs" 
-                        onkeydown="if(event.key==='Enter'){event.preventDefault(); window.addSubRegion(${pIdx});}">
+                    <!-- 內嵌式膠囊輸入框 -->
+                    <div class="inline-flex items-center relative">
+                        <i data-lucide="plus" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none"></i>
+                        <input type="text" 
+                            id="sub-region-input-${pIdx}" 
+                            placeholder="新增城市 (按 Enter)" 
+                            class="h-8 pl-7 pr-3 bg-white focus:bg-white border border-dashed border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 rounded-xl text-xs font-medium text-slate-800 placeholder:text-slate-400 w-36 focus:w-48 transition-all shadow-2xs focus:outline-none" 
+                            onkeydown="if(event.key==='Enter'){event.preventDefault(); window.addSubRegion(${pIdx});}">
+                    </div>
                 </div>
+
+                ${group.subRegions.length === 0 ? `
+                    <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1 font-medium">
+                        <i data-lucide="info" class="w-3 h-3 text-slate-300"></i>
+                        目前尚無城市，可直接於上方輸入框新增此分區的主要城市。
+                    </p>
+                ` : ''}
             </div>
         </div>
     `).join('');
