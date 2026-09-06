@@ -45,7 +45,7 @@ window.addEventListener('beforeunload', (e) => {
     }
 });
 
-// ==================== 視圖切換與路由控制 ====================
+// ==================== 視圖切換與路由控制 (支援 schema-notice 與 schema-emergency) ====================
 export function switchView(viewName) {
     if (coverManager.isUploading) {
         const leave = confirm("圖片正在上傳中，離開將會終止上傳，確定要離開嗎？");
@@ -55,7 +55,8 @@ export function switchView(viewName) {
 
     const views = [
         'country-list', 
-        'schema-settings',
+        'schema-notice',
+        'schema-emergency',
         'country-detail', 
         'country-regions-page',
         'country-covers-page', 
@@ -71,18 +72,21 @@ export function switchView(viewName) {
     });
 
     const isCountries = viewName === 'country-list';
-    const isSchemas = viewName === 'schema-settings';
+    const isNoticeSchema = viewName === 'schema-notice';
+    const isEmergencySchema = viewName === 'schema-emergency';
     const isAirlines = viewName === 'airlines';
 
     const sideCountries = document.getElementById('sidebar-btn-countries');
-    const sideSchemas = document.getElementById('sidebar-btn-schemas');
+    const sideNotice = document.getElementById('sidebar-btn-schema-notice');
+    const sideEmergency = document.getElementById('sidebar-btn-schema-emergency');
     const sideAirlines = document.getElementById('sidebar-btn-airlines');
 
     const activeCls = "w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold bg-brand-50 text-brand-600 transition-all cursor-pointer";
     const inactiveCls = "w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer";
 
     if (sideCountries) sideCountries.className = isCountries ? activeCls : inactiveCls;
-    if (sideSchemas) sideSchemas.className = isSchemas ? activeCls : inactiveCls;
+    if (sideNotice) sideNotice.className = isNoticeSchema ? activeCls : inactiveCls;
+    if (sideEmergency) sideEmergency.className = isEmergencySchema ? activeCls : inactiveCls;
     if (sideAirlines) sideAirlines.className = isAirlines ? activeCls : inactiveCls;
 }
 window.switchView = switchView;
@@ -209,7 +213,7 @@ window.saveCurrentCountryDetail = async function() {
     }
 };
 
-// ==================== 地區管理 ====================
+// ==================== 旅遊地區管理 ====================
 function renderRegionTags() {
     const count = detailRegionTags.length;
     const countEl = document.getElementById('regions-page-count');
@@ -253,7 +257,7 @@ window.addRegionTag = function() {
     }
 };
 
-// ==================== Schema 題目設定與動態欄位 ====================
+// ==================== Schema 題目設定與各自獨立儲存 ====================
 function renderSchemaEditor(type, schemaArray) {
     const container = document.getElementById(`schema-${type}-container`);
     if (!container) return;
@@ -289,10 +293,10 @@ window.updateSchemaType = (type, idx, val) => {
 window.addSchemaItem = (type) => {
     const newId = 'field_' + Date.now();
     if (type === 'notice') {
-        activeNoticeSchema.push({ id: newId, label: '新增題目', type: 'text' });
+        activeNoticeSchema.push({ id: newId, label: '新增行前題目', type: 'text' });
         renderSchemaEditor('notice', activeNoticeSchema);
     } else {
-        activeEmergencySchema.push({ id: newId, label: '新增題目', type: 'text' });
+        activeEmergencySchema.push({ id: newId, label: '新增求助題目', type: 'text' });
         renderSchemaEditor('emergency', activeEmergencySchema);
     }
 };
@@ -307,11 +311,21 @@ window.removeSchemaItem = (type, idx) => {
     }
 };
 
-window.saveAllSchemas = async () => {
+// 獨立儲存行前資訊設定
+window.saveNoticeSchema = async () => {
     try {
         await saveSchema('notice', activeNoticeSchema);
+        showToast("行前資訊設定已儲存！");
+    } catch (err) {
+        showToast("儲存失敗：" + err.message);
+    }
+};
+
+// 獨立儲存急難救助設定
+window.saveEmergencySchema = async () => {
+    try {
         await saveSchema('emergency', activeEmergencySchema);
-        showToast("公版題目設定已全部儲存！");
+        showToast("急難救助設定已儲存！");
     } catch (err) {
         showToast("儲存失敗：" + err.message);
     }
@@ -392,7 +406,6 @@ window.removeCoupon = async (index) => {
 
 // ==================== 初始化綁定 ====================
 window.addEventListener('DOMContentLoaded', () => {
-    // 監聽國家清單
     subscribeCountries(countries => {
         currentCountries = countries;
         renderCountries();
@@ -402,7 +415,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }, err => showToast("即時監聽失敗：" + err.message));
 
-    // 監聽 Schemas
     subscribeSchema('notice', schema => {
         activeNoticeSchema = schema;
         renderSchemaEditor('notice', activeNoticeSchema);
@@ -411,11 +423,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     subscribeSchema('emergency', schema => {
         activeEmergencySchema = schema;
-        renderEmergencySchemaEditor();
+        renderSchemaEditor('emergency', activeEmergencySchema);
         if (activeCountryData) renderDynamicFields('emergency', activeEmergencySchema, activeCountryData.emergency || {});
     });
 
-    // 搜尋監聽
     const searchInput = document.getElementById('country-search-input');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -424,7 +435,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 抽屜選單綁定
     const drawer = document.getElementById('drawer-menu');
     const backdrop = document.getElementById('drawer-backdrop');
     const openDrawer = () => {
@@ -443,7 +453,6 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-close-drawer')?.addEventListener('click', window.closeDrawer);
     backdrop?.addEventListener('click', window.closeDrawer);
 
-    // 新增國家彈窗
     document.getElementById('btn-add-country-modal')?.addEventListener('click', () => {
         document.getElementById('form-country-create').reset();
         document.getElementById('modal-country').classList.remove('hidden');
@@ -463,7 +472,6 @@ window.addEventListener('DOMContentLoaded', () => {
         window.openCountryDetail(name);
     });
 
-    // 優惠券彈窗
     document.getElementById('btn-close-coupon-modal')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('btn-cancel-coupon')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('form-coupon')?.addEventListener('submit', async (e) => {
@@ -485,7 +493,6 @@ window.addEventListener('DOMContentLoaded', () => {
         showToast("成功儲存優惠券！");
     });
 
-    // 旅遊地區輸入
     document.getElementById('regions-page-tag-input')?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
