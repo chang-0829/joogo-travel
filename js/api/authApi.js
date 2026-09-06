@@ -9,7 +9,9 @@ import {
 
 const provider = new GoogleAuthProvider();
 
-// Google 登入
+/**
+ * 使用 Google 帳號登入
+ */
 export const loginWithGoogle = async () => {
     try {
         const result = await signInWithPopup(auth, provider);
@@ -20,7 +22,9 @@ export const loginWithGoogle = async () => {
     }
 };
 
-// 登出
+/**
+ * 登出
+ */
 export const logout = async () => {
     try {
         await signOut(auth);
@@ -30,16 +34,16 @@ export const logout = async () => {
     }
 };
 
-// 監聽登入狀態改變 (同時提供 subscribeAuthState 與 onAuthStateChange 以相容不同頁面)
-export const subscribeAuthState = (callback) => {
-    return onAuthStateChanged(auth, callback);
-};
-
+/**
+ * 監聽登入狀態改變
+ */
 export const onAuthStateChange = (callback) => {
     return onAuthStateChanged(auth, callback);
 };
 
-// 取得當前登入者
+/**
+ * 取得當前使用者
+ */
 export const getCurrentUser = () => {
     return auth.currentUser;
 };
