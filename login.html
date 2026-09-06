@@ -120,21 +120,31 @@
 
         // 監聽登入點擊
         if (btnLogin) {
-            btnLogin.addEventListener('click', async () => {
+            btnLogin.addEventListener('click', async (e) => {
+                e.preventDefault();
+                console.log("【除錯】按鈕已成功觸發點擊！");
+        
                 try {
                     btnLogin.disabled = true;
                     btnLogin.classList.add('opacity-75', 'cursor-wait');
                     if (loginText) loginText.innerText = "驗證中，請稍候...";
-
-                    await loginWithGoogle();
-                    // 成功後 onAuthStateChange 會自動觸發跳轉回 index.html
+        
+                    console.log("【除錯】正在呼叫 loginWithGoogle()...");
+                    const user = await loginWithGoogle();
+                    console.log("【除錯】登入成功，使用者資料：", user);
+        
+                    // 成功後立即手動跳轉，避免 onAuthStateChange 延遲
+                    window.location.replace("index.html");
                 } catch (err) {
+                    console.error("【除錯】登入拋出例外：", err);
                     alert("Google 登入失敗: " + err.message);
                     btnLogin.disabled = false;
                     btnLogin.classList.remove('opacity-75', 'cursor-wait');
                     if (loginText) loginText.innerText = "使用 Google 帳號快速登入";
                 }
             });
+        } else {
+            console.error("【錯誤】找不到 #btn-google-login DOM 元素！");
         }
 
         window.addEventListener('DOMContentLoaded', () => {
