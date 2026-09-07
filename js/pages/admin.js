@@ -191,16 +191,13 @@ function renderCountryContinentSelection() {
         const isSelected = cont === currentSelected;
         return `
             <div onclick="window.selectCountryContinent('${cont}')" 
-                class="p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                class="h-12 px-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between select-none ${
                     isSelected 
-                        ? 'bg-brand-50/70 border-brand-500 shadow-2xs' 
-                        : 'bg-slate-50/60 hover:bg-slate-100/80 border-slate-200/80'
+                        ? 'bg-brand-500 text-white border-brand-500 shadow-xs' 
+                        : 'bg-slate-50/80 hover:bg-slate-100 text-slate-800 border-slate-200/80'
                 }">
-                <div class="flex items-center gap-3">
-                    <span class="w-2.5 h-2.5 rounded-full ${isSelected ? 'bg-brand-500 ring-4 ring-brand-100' : 'bg-slate-300'}"></span>
-                    <span class="text-sm font-bold ${isSelected ? 'text-brand-900' : 'text-slate-800'}">${cont}</span>
-                </div>
-                ${isSelected ? '<i data-lucide="check" class="w-4 h-4 text-brand-600 pointer-events-none"></i>' : ''}
+                <span class="text-xs font-bold truncate">${cont}</span>
+                ${isSelected ? '<i data-lucide="check" class="w-4 h-4 shrink-0 text-white pointer-events-none"></i>' : ''}
             </div>
         `;
     }).join('');
