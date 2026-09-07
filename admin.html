@@ -379,13 +379,13 @@
                         <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">基本設定</div>
                         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
                             <!-- 所屬洲別微膠囊選單 -->
-                            <div class="p-3.5 px-4 flex items-center justify-between gap-3 min-h-[52px]">
-                                <span class="text-sm font-bold text-slate-800">所屬洲別</span>
-                                <div class="relative flex items-center">
-                                    <select id="detail-base-continent" class="h-9 pl-3.5 pr-8 bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200/90 focus:border-brand-500 rounded-xl text-xs font-bold text-slate-800 appearance-none transition-all cursor-pointer focus:outline-none"></select>
-                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-2.5 pointer-events-none"></i>
+                            <button type="button" onclick="switchView('country-continent-page')" class="w-full p-4 flex items-center justify-between hover:bg-slate-50/80 active:bg-slate-100 transition-colors text-left cursor-pointer">
+                                <span class="text-sm font-bold text-slate-800 block">所屬洲別</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-brand-600 bg-brand-50 border border-brand-100/80 px-2.5 py-1 rounded-lg" id="detail-base-continent-text">未設定</span>
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
                                 </div>
-                            </div>
+                            </button>
 
                             <div class="p-3.5 px-4 flex items-center justify-between min-h-[52px]">
                                 <span class="text-sm font-bold text-slate-800">通用幣別</span>
@@ -450,6 +450,34 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- 滿版子頁面：所屬洲別選擇頁 (點進 > 裡面修改) -->
+            <section id="view-country-continent-page" class="hidden space-y-4 pb-12">
+                <div class="flex items-center justify-between gap-4 h-11 w-full">
+                    <button type="button" onclick="switchView('country-detail')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                        <span class="back-to-country-text">返回設定</span>
+                    </button>
+                    <button type="button" onclick="saveCurrentCountryDetail()" class="h-11 px-5 flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-95 rounded-2xl transition-all shadow-xs shrink-0 cursor-pointer">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>儲存</span>
+                    </button>
+                </div>
+            
+                <div class="h-11 flex items-center">
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">選擇所屬洲別</h2>
+                </div>
+            
+                <div class="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 space-y-4 shadow-xs">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">系統現有洲別分類</span>
+                        <span class="text-xs text-slate-400">點擊即可選取變更</span>
+                    </div>
+            
+                    <!-- 單選清單容器 -->
+                    <div id="country-continents-selection-list" class="space-y-2.5"></div>
                 </div>
             </section>
 
