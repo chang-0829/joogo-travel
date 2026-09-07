@@ -212,6 +212,9 @@ window.selectCountryContinent = function(selectedContinent) {
     showToast(`已選擇：${selectedContinent}`);
 };
 
+// ==================== 管理洲別分類與所屬國家排序邏輯 ====================
+let editingContinentIdx = null;
+
 function renderContinentsSortEditor() {
     const list = document.getElementById('continents-sort-list');
     const countEl = document.getElementById('continents-count');
@@ -222,54 +225,130 @@ function renderContinentsSortEditor() {
         list.innerHTML = `
             <div class="py-12 flex flex-col items-center justify-center text-center bg-slate-50/70 rounded-2xl border border-dashed border-slate-200">
                 <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-xs text-slate-400 mb-2">
-                    <i data-lucide="map-pin" class="w-5 h-5"></i>
+                    <i data-lucide="map" class="w-5 h-5"></i>
                 </div>
                 <p class="text-xs font-bold text-slate-600">尚未建立任何洲別</p>
-                <p class="text-[11px] text-slate-400 mt-0.5">請先使用上方輸入框新增洲別名稱</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">請使用上方輸入框新增洲別分類</p>
             </div>
         `;
         if (window.lucide) lucide.createIcons();
         return;
     }
 
-    list.innerHTML = activeContinentsList.map((item, idx) => `
-        <div class="bg-white border border-slate-200/90 rounded-2xl shadow-xs transition-all duration-150 overflow-hidden">
-            <div class="px-4 py-3 bg-slate-50/60 border-b border-slate-100 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-brand-500 ring-4 ring-brand-100/80"></span>
-                    <span class="text-sm font-bold text-slate-900">${item}</span>
-                    <span class="text-[11px] font-medium text-slate-400">順序：第 ${idx + 1} 位</span>
+    const defaultContinent = activeContinentsList[0] || "亞洲";
+
+    list.innerHTML = activeContinentsList.map((contName, cIdx) => {
+        // 抓出屬於該洲的所有國家
+        const matchedCountries = currentCountries.filter(c => (c.continent || defaultContinent) === contName);
+        const isEditing = editingContinentIdx === cIdx;
+
+        return `
+        <div class="bg-white border border-slate-200/90 rounded-2xl shadow-xs transition-all overflow-hidden">
+            <!-- 頂部標題列 -->
+            <div class="px-4 py-3 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <!-- 順序在前：使用 #{X} 顯示 -->
+                    <span class="px-2 py-0.5 rounded-md bg-brand-50 text-brand-600 font-mono text-xs font-black border border-brand-100">
+                        #${cIdx + 1}
+                    </span>
+
+                    ${!isEditing ? `
+                        <span class="text-sm font-extrabold text-slate-900">${contName}</span>
+                        <!-- 鉛筆符號按鈕：切換改名模式 -->
+                        <button type="button" onclick="window.toggleEditContinentName(${cIdx})" title="修改名稱" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 transition-colors cursor-pointer">
+                            <i data-lucide="pencil" class="w-3.5 h-3.5 pointer-events-none"></i>
+                        </button>
+                    ` : `
+                        <div class="flex items-center gap-1.5">
+                            <input type="text" id="edit-continent-input-${cIdx}" value="${contName}" class="h-8 px-2.5 bg-white border border-brand-500 rounded-lg text-xs font-bold text-slate-800 outline-none w-36 shadow-2xs">
+                            <button type="button" onclick="window.confirmEditContinentName(${cIdx})" class="h-8 px-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer">
+                                完成
+                            </button>
+                            <button type="button" onclick="window.toggleEditContinentName(null)" class="h-8 px-2 text-slate-400 hover:text-slate-600 text-xs transition-all cursor-pointer">
+                                取消
+                            </button>
+                        </div>
+                    `}
+                    
+                    <span class="text-[11px] font-medium text-slate-400">(${matchedCountries.length} 個國家/地區)</span>
                 </div>
+
+                <!-- 洲別本身的上移 / 下移 / 刪除 -->
                 <div class="flex items-center gap-1">
-                    <button type="button" onclick="window.moveContinentOrder(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} 
-                        class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 disabled:opacity-20 disabled:hover:bg-transparent transition-all cursor-pointer" title="往上移">
+                    <button type="button" onclick="window.moveContinentOrder(${cIdx}, -1)" ${cIdx === 0 ? 'disabled' : ''} 
+                        class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 disabled:opacity-20 disabled:hover:bg-transparent transition-all cursor-pointer" title="洲別往上移">
                         <i data-lucide="chevron-up" class="w-4 h-4 pointer-events-none"></i>
                     </button>
-                    <button type="button" onclick="window.moveContinentOrder(${idx}, 1)" ${idx === activeContinentsList.length - 1 ? 'disabled' : ''} 
-                        class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 disabled:opacity-20 disabled:hover:bg-transparent transition-all cursor-pointer" title="往下移">
+                    <button type="button" onclick="window.moveContinentOrder(${cIdx}, 1)" ${cIdx === activeContinentsList.length - 1 ? 'disabled' : ''} 
+                        class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 disabled:opacity-20 disabled:hover:bg-transparent transition-all cursor-pointer" title="洲別往下移">
                         <i data-lucide="chevron-down" class="w-4 h-4 pointer-events-none"></i>
                     </button>
                     <div class="w-px h-4 bg-slate-200 mx-1"></div>
-                    <button type="button" onclick="window.removeContinentItem(${idx})" 
+                    <button type="button" onclick="window.removeContinentItem(${cIdx})" 
                         class="h-7 px-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all flex items-center gap-1 cursor-pointer" title="刪除此洲別">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5 pointer-events-none"></i>
                         <span>刪除</span>
                     </button>
                 </div>
             </div>
-            <div class="p-3.5 sm:p-4">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-medium text-slate-500">修改名稱：</span>
-                    <input type="text" value="${item}" 
-                        onchange="window.updateContinentName(${idx}, this.value)" 
-                        class="h-8 px-3 bg-slate-50 focus:bg-white border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 rounded-xl text-xs font-medium text-slate-800 transition-all focus:outline-none w-48">
-                </div>
+
+            <!-- 卡片下方：顯示納入的國家與地區，並可直接左右微調排序 -->
+            <div class="p-3.5 sm:p-4 bg-white">
+                ${matchedCountries.length === 0 ? `
+                    <div class="py-3 text-center text-xs text-slate-400">目前尚無國家歸納於此洲別</div>
+                ` : `
+                    <div class="flex flex-wrap items-center gap-2">
+                        ${matchedCountries.map((country, kIdx) => `
+                            <div class="inline-flex items-center h-8 px-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 rounded-xl text-xs font-medium text-slate-800 transition-colors gap-1.5 shadow-2xs">
+                                <span>${country.id}</span>
+                                <div class="flex items-center gap-0.5 ml-1 border-l border-slate-200/80 pl-1">
+                                    <button type="button" onclick="window.moveCountryOrderInContinent('${contName}', ${kIdx}, -1)" ${kIdx === 0 ? 'disabled' : ''} 
+                                        class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-brand-600 disabled:opacity-20 disabled:hover:text-slate-400 cursor-pointer" title="往前移">
+                                        <i data-lucide="chevron-left" class="w-3 h-3 pointer-events-none"></i>
+                                    </button>
+                                    <button type="button" onclick="window.moveCountryOrderInContinent('${contName}', ${kIdx}, 1)" ${kIdx === matchedCountries.length - 1 ? 'disabled' : ''} 
+                                        class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-brand-600 disabled:opacity-20 disabled:hover:text-slate-400 cursor-pointer" title="往後移">
+                                        <i data-lucide="chevron-right" class="w-3 h-3 pointer-events-none"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `}
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 
     if (window.lucide) lucide.createIcons();
 }
+
+// 鉛筆按鈕切換編輯
+window.toggleEditContinentName = function(idx) {
+    editingContinentIdx = idx;
+    renderContinentsSortEditor();
+    if (idx !== null) {
+        setTimeout(() => {
+            const input = document.getElementById(`edit-continent-input-${idx}`);
+            if (input) input.focus();
+        }, 50);
+    }
+};
+
+window.confirmEditContinentName = function(idx) {
+    const input = document.getElementById(`edit-continent-input-${idx}`);
+    const newVal = input ? input.value.trim() : '';
+    if (newVal && newVal !== activeContinentsList[idx]) {
+        const oldName = activeContinentsList[idx];
+        activeContinentsList[idx] = newVal;
+        // 同步更新當前所有已載入國家的洲別指向
+        currentCountries.forEach(c => {
+            if (c.continent === oldName) c.continent = newVal;
+        });
+    }
+    editingContinentIdx = null;
+    renderContinentsSortEditor();
+};
 
 window.addNewContinentItem = function() {
     const input = document.getElementById('new-continent-input');
@@ -284,6 +363,7 @@ window.addNewContinentItem = function() {
     renderContinentsSortEditor();
 };
 
+// 調整洲別排序
 window.moveContinentOrder = function(idx, direction) {
     const targetIdx = idx + direction;
     if (targetIdx < 0 || targetIdx >= activeContinentsList.length) return;
@@ -293,12 +373,29 @@ window.moveContinentOrder = function(idx, direction) {
     renderContinentsSortEditor();
 };
 
-window.updateContinentName = function(idx, val) {
-    const trimmed = val.trim();
-    if (trimmed && trimmed !== activeContinentsList[idx]) {
-        activeContinentsList[idx] = trimmed;
-        renderContinentsSortEditor();
+// 調整該洲底下各國家的前後順序
+window.moveCountryOrderInContinent = function(continentName, countryIdx, direction) {
+    const targetIdx = countryIdx + direction;
+    const defaultContinent = activeContinentsList[0] || "亞洲";
+    
+    // 取得當前該洲別下的國家列表
+    const continentCountries = currentCountries.filter(c => (c.continent || defaultContinent) === continentName);
+    if (targetIdx < 0 || targetIdx >= continentCountries.length) return;
+
+    // 交換兩國在 currentCountries 總陣列中的相對位置
+    const c1 = continentCountries[countryIdx];
+    const c2 = continentCountries[targetIdx];
+
+    const idxInTotal1 = currentCountries.indexOf(c1);
+    const idxInTotal2 = currentCountries.indexOf(c2);
+
+    if (idxInTotal1 !== -1 && idxInTotal2 !== -1) {
+        currentCountries[idxInTotal1] = c2;
+        currentCountries[idxInTotal2] = c1;
     }
+
+    renderContinentsSortEditor();
+    renderCountries();
 };
 
 window.removeContinentItem = function(idx) {
