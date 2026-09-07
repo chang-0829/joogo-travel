@@ -38,7 +38,6 @@
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
         }
-        /* 防止 iOS Safari 聚焦放大 */
         input, select, textarea {
             font-size: 16px !important;
             outline: none !important;
@@ -48,6 +47,27 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 側邊欄收合時的隱藏樣式控制 */
+        .sidebar-collapsed {
+            width: 5rem !important; /* w-20 */
+        }
+        .sidebar-collapsed .sidebar-text,
+        .sidebar-collapsed .sidebar-heading,
+        .sidebar-collapsed .sidebar-footer {
+            display: none !important;
+        }
+        .sidebar-collapsed .sidebar-btn {
+            justify-content: center !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        .sidebar-collapsed .sidebar-header-expanded {
+            display: none !important;
+        }
+        .sidebar-collapsed .sidebar-header-collapsed {
+            display: flex !important;
+        }
     </style>
 </head>
 <body class="h-full flex flex-col lg:flex-row font-sans text-slate-800 antialiased bg-[#f8fafc] overflow-hidden">
@@ -58,63 +78,78 @@
         <span id="toast-text">已更新</span>
     </div>
 
-    <!-- ==================== 電腦版專用：專業 SaaS 左側固定側邊欄 ==================== -->
-    <aside id="desktop-sidebar" class="hidden lg:flex lg:flex-col lg:w-64 bg-white border-r border-slate-200/80 h-full shrink-0 z-20 select-none justify-between">
-        <div class="p-5 space-y-6 overflow-y-auto no-scrollbar">
-            <!-- 品牌識別 -->
-            <div class="flex items-center gap-3 pb-2 border-b border-slate-100">
-                <div class="w-10 h-10 rounded-2xl bg-brand-50 border border-brand-100 text-brand-600 flex items-center justify-center font-black text-sm shrink-0">
-                    J
+    <!-- ==================== 電腦版專用：專業 SaaS 左側可收合固定側邊欄 ==================== -->
+    <aside id="desktop-sidebar" class="hidden lg:flex lg:flex-col w-64 bg-white border-r border-slate-200/80 h-full shrink-0 z-20 select-none justify-between transition-all duration-300">
+        
+        <!-- 上方導覽內容 -->
+        <div class="p-4 space-y-5 overflow-y-auto no-scrollbar">
+            
+            <!-- 品牌標題區：展開狀態 (與手機版完全一致的標題與膠囊設計) -->
+            <div class="sidebar-header-expanded flex items-center justify-between pb-3 border-b border-slate-100 min-h-[52px]">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="font-extrabold text-lg tracking-tight text-slate-900 flex items-center gap-1.5 shrink-0">
+                        <span>揪行</span>
+                        <span class="font-mono text-brand-600">JooGO</span>
+                    </span>
+                    <span class="px-2 py-0.5 text-xs font-bold bg-sky-50 text-sky-600 border border-sky-200/70 rounded-lg shrink-0">
+                        後台管理
+                    </span>
                 </div>
-                <div class="min-w-0">
-                    <div class="flex items-center gap-1.5">
-                        <span class="font-extrabold text-base text-slate-900 tracking-tight font-mono">揪行 JooGO</span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 truncate">公版資料庫管理中心</p>
-                </div>
+                <!-- 展開時的收合按鈕 -->
+                <button type="button" id="btn-toggle-sidebar" title="收合選單" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 active:scale-95 transition-all cursor-pointer">
+                    <i data-lucide="panel-left-close" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- 品牌標題區：收合狀態 (置中圖示與展開按鈕) -->
+            <div class="sidebar-header-collapsed hidden flex-col items-center justify-center pb-3 border-b border-slate-100 min-h-[52px] gap-2">
+                <button type="button" id="btn-expand-sidebar" title="展開選單" class="w-10 h-10 rounded-2xl bg-brand-50 border border-brand-100 text-brand-600 flex items-center justify-center font-black text-sm hover:bg-brand-100 active:scale-95 transition-all cursor-pointer">
+                    <i data-lucide="panel-left-open" class="w-5 h-5"></i>
+                </button>
             </div>
 
             <!-- 分組 1：公版資料庫管理 -->
             <div class="space-y-1">
-                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">公版資料庫管理</div>
+                <div class="sidebar-heading text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">公版資料庫管理</div>
                 
-                <button type="button" onclick="switchView('country-list')" id="sidebar-btn-countries" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold bg-brand-50 text-brand-600 transition-all cursor-pointer">
+                <button type="button" onclick="switchView('country-list')" id="sidebar-btn-countries" title="管理國家/地區" class="sidebar-btn w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold bg-brand-50 text-brand-600 transition-all cursor-pointer">
                     <i data-lucide="globe" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">管理國家/地區</span>
+                    <span class="sidebar-text truncate">管理國家/地區</span>
                 </button>
 
-                <button type="button" onclick="switchView('schema-continents')" id="sidebar-btn-schema-continents" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
+                <button type="button" onclick="switchView('schema-continents')" id="sidebar-btn-schema-continents" title="洲別分類與排序" class="sidebar-btn w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
                     <i data-lucide="map" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">洲別分類與排序</span>
+                    <span class="sidebar-text truncate">洲別分類與排序</span>
                 </button>
 
-                <button type="button" onclick="switchView('schema-notice')" id="sidebar-btn-schema-notice" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
+                <button type="button" onclick="switchView('schema-notice')" id="sidebar-btn-schema-notice" title="行前資訊設定" class="sidebar-btn w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
                     <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">行前資訊設定</span>
+                    <span class="sidebar-text truncate">行前資訊設定</span>
                 </button>
 
-                <button type="button" onclick="switchView('schema-emergency')" id="sidebar-btn-schema-emergency" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
+                <button type="button" onclick="switchView('schema-emergency')" id="sidebar-btn-schema-emergency" title="急難救助設定" class="sidebar-btn w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
                     <i data-lucide="phone-call" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">急難救助設定</span>
+                    <span class="sidebar-text truncate">急難救助設定</span>
                 </button>
 
-                <button type="button" onclick="switchView('airlines')" id="sidebar-btn-airlines" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
+                <button type="button" onclick="switchView('airlines')" id="sidebar-btn-airlines" title="航空公司行李庫" class="sidebar-btn w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
                     <i data-lucide="plane" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">航空公司行李庫</span>
+                    <span class="sidebar-text truncate">航空公司行李庫</span>
                 </button>
             </div>
 
             <!-- 分組 2：前台服務捷徑 -->
             <div class="space-y-1 pt-2">
-                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">前台服務</div>
-                <a href="index.html" class="w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
+                <div class="sidebar-heading text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">前台服務</div>
+                <a href="index.html" title="前往前台首頁" class="sidebar-btn w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer">
                     <i data-lucide="external-link" class="w-4 h-4 shrink-0"></i>
-                    <span class="truncate">前往前台首頁</span>
+                    <span class="sidebar-text truncate">前往前台首頁</span>
                 </a>
             </div>
         </div>
 
-        <div class="p-5 border-t border-slate-100/80 text-center space-y-0.5">
+        <!-- 側欄底部資訊 -->
+        <div class="sidebar-footer p-4 border-t border-slate-100/80 text-center space-y-0.5">
             <p class="text-[11px] text-slate-400 font-mono">Copyright © 2026</p>
             <p class="text-[11px] text-slate-400">揪行 JooGO All Rights Reserved.</p>
         </div>
@@ -123,15 +158,15 @@
     <!-- ==================== 右側主舞台容器 ==================== -->
     <div class="flex-1 flex flex-col h-full overflow-hidden">
 
-        <!-- 手機端專用頁首 -->
+        <!-- 手機端專用頁首 (一致的品牌與標籤) -->
         <header class="lg:hidden sticky top-0 z-30 bg-[#f8fafc]/95 backdrop-blur-md pt-[env(safe-area-inset-top)] border-b border-slate-200/50 shrink-0">
             <div class="max-w-4xl mx-auto px-5 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
+                <div class="flex items-center gap-2">
                     <span class="font-extrabold text-lg tracking-tight text-slate-900 flex items-center gap-1.5">
                         <span>揪行</span>
                         <span class="font-mono text-brand-600">JooGO</span>
                     </span>
-                    <span class="px-2.5 py-0.5 text-xs font-bold bg-sky-50 text-sky-600 border border-sky-200/70 rounded-lg">
+                    <span class="px-2 py-0.5 text-xs font-bold bg-sky-50 text-sky-600 border border-sky-200/70 rounded-lg">
                         後台管理
                     </span>
                 </div>
@@ -208,7 +243,7 @@
             </div>
         </aside>
 
-        <!-- 主內容管理區 -->
+        <!-- 主內容管理區：滿版展開，無多餘留白外距 -->
         <main class="flex-1 w-full p-5 sm:p-8 overflow-y-auto">
 
             <!-- VIEW 1: 國家選擇頁 -->
@@ -246,7 +281,6 @@
                 </div>
 
                 <div class="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 space-y-5 shadow-xs">
-                    <!-- 新增主要區域同款設計 -->
                     <div class="space-y-2">
                         <label class="text-sm font-bold text-slate-800 block">新增洲別分類</label>
                         <div class="flex items-center gap-2">
@@ -322,7 +356,7 @@
                 </div>
             </section>
 
-            <!-- VIEW 4: 各國家地區設定頁 (5:7 雙欄 SaaS 儀表板) -->
+            <!-- VIEW 4: 各國家地區設定頁 (5:7 雙欄儀表板) -->
             <section id="view-country-detail" class="hidden space-y-4 pb-12">
                 <div class="flex items-center justify-between gap-4 h-11 w-full">
                     <button onclick="switchView('country-list')" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 active:scale-95 transition-all">
