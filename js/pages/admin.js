@@ -1074,5 +1074,28 @@ window.addEventListener('DOMContentLoaded', () => {
         await loadAirlines();
     });
 
+    const desktopSidebar = document.getElementById('desktop-sidebar');
+    const btnToggle = document.getElementById('btn-toggle-sidebar');
+    const btnExpand = document.getElementById('btn-expand-sidebar');
+
+    function setSidebarState(collapsed) {
+        if (!desktopSidebar) return;
+        if (collapsed) {
+            desktopSidebar.classList.add('sidebar-collapsed');
+            localStorage.setItem('joogo_sidebar_collapsed', 'true');
+        } else {
+            desktopSidebar.classList.remove('sidebar-collapsed');
+            localStorage.setItem('joogo_sidebar_collapsed', 'false');
+        }
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // 初始化讀取本地記憶 (重整時維持先前的收合狀態)
+    const isSavedCollapsed = localStorage.getItem('joogo_sidebar_collapsed') === 'true';
+    setSidebarState(isSavedCollapsed);
+
+    btnToggle?.addEventListener('click', () => setSidebarState(true));
+    btnExpand?.addEventListener('click', () => setSidebarState(false));
+
     if (window.lucide) lucide.createIcons();
 });
