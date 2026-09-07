@@ -5,30 +5,30 @@ import { subscribeSchema, saveSchema } from "../api/schemaApi.js";
 import { getAirlineTemplates, saveAirlineTemplate, deleteAirlineTemplate } from "../api/templateApi.js";
 import { CoverManager } from "../components/coverManager.js";
 
-// 身份驗證守門員
+// 身份驗證守門員 (未登入者立即導回登入頁)[cite: 3, 5]
 onAuthStateChange(user => {
     if (!user) {
         window.location.replace("login.html");
     }
 });
 
-// ==================== 全域狀態 ====================
+// ==================== 全域狀態 ====================[cite: 3, 5]
 let currentCountries = [];
 let activeCountryId = null;
 let activeCountryData = null;
-let detailRegionGroups = [];
+let detailRegionGroups = []; // 兩層級地區結構：[{ name: "北海道", subRegions: ["札幌", "函館"] }][cite: 3, 5]
 let detailEmbassies = [];
 let searchQuery = "";
 let currentContinentFilter = "ALL";
 
-// 洲別自訂清單
+// 洲別自訂清單 (可排序、可自訂)[cite: 3]
 let activeContinentsList = ["亞洲", "歐洲", "美洲", "大洋洲", "非洲", "其他"];
 
 let activeNoticeSchema = [];
 let activeEmergencySchema = [];
 let isOpeningCountry = false;
 
-// ==================== Toast 提示 ====================
+// ==================== Toast 提示 ====================[cite: 3, 5]
 export function showToast(msg) {
     const toast = document.getElementById('toast-message');
     const toastText = document.getElementById('toast-text');
@@ -39,7 +39,7 @@ export function showToast(msg) {
     }
 }
 
-// ==================== 封面圖元件實例 ====================
+// ==================== 封面圖元件實例 ====================[cite: 3, 5]
 const coverManager = new CoverManager({
     containerId: 'cover-thumbnails-grid',
     previewStripId: 'detail-base-covers-preview-strip',
@@ -51,7 +51,7 @@ const coverManager = new CoverManager({
     onToast: showToast
 });
 
-// F5 瀏覽器防呆
+// F5 瀏覽器防呆[cite: 3, 5]
 window.addEventListener('beforeunload', (e) => {
     if (coverManager.isUploading) {
         e.preventDefault();
@@ -60,7 +60,7 @@ window.addEventListener('beforeunload', (e) => {
     }
 });
 
-// ==================== 視圖切換與路由控制 ====================
+// ==================== 視圖切換與路由控制 ====================[cite: 3]
 export function switchView(viewName) {
     if (coverManager.isUploading) {
         const leave = confirm("圖片正在上傳中，離開將會終止上傳，確定要離開嗎？");
@@ -88,6 +88,7 @@ export function switchView(viewName) {
         if (el) el.classList.toggle('hidden', v !== viewName);
     });
 
+    // 只要進入國家清單或任何國家設定細節頁面，皆屬於「管理國家/地區」的範疇[cite: 3, 5]
     const isCountries = [
         'country-list', 
         'country-detail', 
@@ -104,15 +105,15 @@ export function switchView(viewName) {
     const isEmergencySchema = viewName === 'schema-emergency';
     const isAirlines = viewName === 'airlines';
 
-    // 電腦版側欄樣式切換
+    // 電腦版側邊欄樣式切換[cite: 3, 5]
     const sideCountries = document.getElementById('sidebar-btn-countries');
     const sideContinents = document.getElementById('sidebar-btn-schema-continents');
     const sideNotice = document.getElementById('sidebar-btn-schema-notice');
     const sideEmergency = document.getElementById('sidebar-btn-schema-emergency');
     const sideAirlines = document.getElementById('sidebar-btn-airlines');
 
-    const deskActiveCls = "w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold bg-brand-50 text-brand-600 transition-all cursor-pointer";
-    const deskInactiveCls = "w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer";
+    const deskActiveCls = "sidebar-btn w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-bold bg-brand-50 text-brand-600 transition-all cursor-pointer";
+    const deskInactiveCls = "sidebar-btn w-full h-11 px-3.5 rounded-xl flex items-center gap-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer";
 
     if (sideCountries) sideCountries.className = isCountries ? deskActiveCls : deskInactiveCls;
     if (sideContinents) sideContinents.className = isContinentsSchema ? deskActiveCls : deskInactiveCls;
@@ -120,7 +121,7 @@ export function switchView(viewName) {
     if (sideEmergency) sideEmergency.className = isEmergencySchema ? deskActiveCls : deskInactiveCls;
     if (sideAirlines) sideAirlines.className = isAirlines ? deskActiveCls : deskInactiveCls;
 
-    // 手機端抽屜樣式切換
+    // 手機端抽屜選單樣式同步切換[cite: 3, 5]
     const drawerCountries = document.getElementById('drawer-btn-countries');
     const drawerContinents = document.getElementById('drawer-btn-schema-continents');
     const drawerNotice = document.getElementById('drawer-btn-schema-notice');
@@ -139,11 +140,12 @@ export function switchView(viewName) {
     if (isAirlines) {
         loadAirlines();
     }
+
     if (window.lucide) lucide.createIcons();
 }
 window.switchView = switchView;
 
-// ==================== 洲別管理、排序與 Tab 渲染邏輯 ====================
+// ==================== 洲別管理、排序與 Tab 渲染邏輯 ====================[cite: 3]
 function renderContinentTabs() {
     const container = document.getElementById('continent-tabs-container');
     if (!container) return;
@@ -160,20 +162,58 @@ function renderContinentTabs() {
 }
 
 function renderContinentSelectOptions() {
-    const selects = [
-        document.getElementById('create-country-continent'),
-        document.getElementById('detail-base-continent')
-    ];
-
-    selects.forEach(sel => {
-        if (!sel) return;
-        const currentVal = sel.value;
-        sel.innerHTML = activeContinentsList.map(c => `<option value="${c}">${c}</option>`).join('');
+    const createSelect = document.getElementById('create-country-continent');
+    if (createSelect) {
+        const currentVal = createSelect.value;
+        createSelect.innerHTML = activeContinentsList.map(c => `<option value="${c}">${c}</option>`).join('');
         if (currentVal && activeContinentsList.includes(currentVal)) {
-            sel.value = currentVal;
+            createSelect.value = currentVal;
         }
-    });
+    }
 }
+
+// 渲染點進 > 之後的所屬洲別獨立選取清單
+function renderCountryContinentSelection() {
+    const container = document.getElementById('country-continents-selection-list');
+    const badgeText = document.getElementById('detail-base-continent-text');
+    
+    const currentSelected = (activeCountryData && activeCountryData.continent) 
+        ? activeCountryData.continent 
+        : (activeContinentsList[0] || '亞洲');
+
+    if (badgeText) {
+        badgeText.innerText = currentSelected;
+    }
+
+    if (!container) return;
+
+    container.innerHTML = activeContinentsList.map(cont => {
+        const isSelected = cont === currentSelected;
+        return `
+            <div onclick="window.selectCountryContinent('${cont}')" 
+                class="p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                    isSelected 
+                        ? 'bg-brand-50/70 border-brand-500 shadow-2xs' 
+                        : 'bg-slate-50/60 hover:bg-slate-100/80 border-slate-200/80'
+                }">
+                <div class="flex items-center gap-3">
+                    <span class="w-2.5 h-2.5 rounded-full ${isSelected ? 'bg-brand-500 ring-4 ring-brand-100' : 'bg-slate-300'}"></span>
+                    <span class="text-sm font-bold ${isSelected ? 'text-brand-900' : 'text-slate-800'}">${cont}</span>
+                </div>
+                ${isSelected ? '<i data-lucide="check" class="w-4 h-4 text-brand-600 pointer-events-none"></i>' : ''}
+            </div>
+        `;
+    }).join('');
+
+    if (window.lucide) lucide.createIcons();
+}
+
+window.selectCountryContinent = function(selectedContinent) {
+    if (!activeCountryData) return;
+    activeCountryData.continent = selectedContinent;
+    renderCountryContinentSelection();
+    showToast(`已選擇：${selectedContinent}`);
+};
 
 function renderContinentsSortEditor() {
     const list = document.getElementById('continents-sort-list');
@@ -280,6 +320,7 @@ window.saveContinentsSchema = async function() {
         await saveSchema('continents', { list: activeContinentsList });
         renderContinentTabs();
         renderContinentSelectOptions();
+        renderCountryContinentSelection();
         renderCountries();
         showToast("洲別設定已成功儲存至資料庫！");
     } catch (err) {
@@ -293,7 +334,7 @@ window.setContinentFilter = function(continent) {
     renderCountries();
 };
 
-// ==================== 國家清單渲染 ====================
+// ==================== 國家清單渲染 ====================[cite: 3]
 function renderCountries() {
     const grid = document.getElementById('countries-grid');
     if (!grid) return;
@@ -387,11 +428,8 @@ window.openCountryDetail = async function(countryId) {
             el.innerText = `返回 ${countryId} 設定`;
         });
 
-        renderContinentSelectOptions();
-        const continentSelect = document.getElementById('detail-base-continent');
-        if (continentSelect) {
-            continentSelect.value = activeCountryData.continent || activeContinentsList[0] || '亞洲';
-        }
+        // 渲染所屬洲別文字及清單
+        renderCountryContinentSelection();
 
         document.getElementById('detail-base-currency').value = activeCountryData.currency || '';
         document.getElementById('detail-base-timezone').value = activeCountryData.timezone || '';
@@ -457,7 +495,7 @@ window.deleteCountry = async function(id) {
     }
 };
 
-// ==================== 駐外館處管理邏輯 ====================
+// ==================== 駐外館處管理邏輯 ====================[cite: 3]
 function renderEmbassies() {
     const container = document.getElementById('embassies-container');
     if (!container) return;
@@ -558,7 +596,7 @@ window.updateEmbassyField = function(idx, key, value) {
     }
 };
 
-// ==================== 儲存國家公版設定 ====================
+// ==================== 儲存國家公版設定 ====================[cite: 3]
 window.saveCurrentCountryDetail = async function() {
     if (!activeCountryId) return;
 
@@ -615,7 +653,7 @@ window.saveCurrentCountryDetail = async function() {
 
         const defaultContinent = activeContinentsList[0] || '亞洲';
         const updated = {
-            continent: document.getElementById('detail-base-continent') ? document.getElementById('detail-base-continent').value : (activeCountryData.continent || defaultContinent),
+            continent: (activeCountryData && activeCountryData.continent) ? activeCountryData.continent : defaultContinent,
             currency: document.getElementById('detail-base-currency').value.trim().toUpperCase(),
             timezone: document.getElementById('detail-base-timezone').value.trim(),
             regions: detailRegionGroups,
@@ -629,13 +667,14 @@ window.saveCurrentCountryDetail = async function() {
         };
 
         await saveCountryDetail(activeCountryId, updated);
+        renderCountryContinentSelection();
         showToast(`已儲存「${activeCountryId}」所有資料！`);
     } catch (err) {
         showToast("儲存失敗：" + err.message);
     }
 };
 
-// ==================== 兩層級旅遊地區管理邏輯 ====================
+// ==================== 兩層級旅遊地區管理邏輯 ====================[cite: 3]
 function renderRegionGroups() {
     const count = detailRegionGroups.length;
     const countEl = document.getElementById('regions-page-count');
@@ -742,7 +781,7 @@ window.removeSubRegion = function(pIdx, sIdx) {
     renderRegionGroups();
 };
 
-// ==================== Schema 題目設定 ====================
+// ==================== Schema 題目設定 ====================[cite: 3]
 function renderSchemaEditor(type, schemaArray) {
     const container = document.getElementById(`schema-${type}-container`);
     if (!container) return;
@@ -838,7 +877,7 @@ function renderDynamicFields(type, schemaArray, dataObject) {
     `;
 }
 
-// ==================== 優惠券管理 ====================
+// ==================== 優惠券管理 ====================[cite: 3]
 function renderCoupons() {
     const coupons = (activeCountryData && activeCountryData.coupons) ? activeCountryData.coupons : [];
     const grid = document.getElementById('coupons-grid');
@@ -887,7 +926,7 @@ window.removeCoupon = async (index) => {
     showToast("已刪除優惠券！");
 };
 
-// ==================== 航空公司行李庫模組 ====================
+// ==================== 航空公司行李庫模組 ====================[cite: 3]
 async function loadAirlines() {
     try {
         const airlines = await getAirlineTemplates();
@@ -939,7 +978,7 @@ window.removeAirline = async (code) => {
     }
 };
 
-// ==================== 初始化綁定 ====================
+// ==================== 初始化綁定 ====================[cite: 3]
 window.addEventListener('DOMContentLoaded', () => {
     subscribeCountries(countries => {
         currentCountries = countries;
@@ -957,6 +996,7 @@ window.addEventListener('DOMContentLoaded', () => {
         renderContinentTabs();
         renderContinentSelectOptions();
         renderContinentsSortEditor();
+        renderCountryContinentSelection();
         renderCountries();
     });
 
@@ -980,6 +1020,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 抽屜選單開關[cite: 3]
     const drawer = document.getElementById('drawer-menu');
     const backdrop = document.getElementById('drawer-backdrop');
     const openDrawer = () => {
@@ -998,6 +1039,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-close-drawer')?.addEventListener('click', window.closeDrawer);
     backdrop?.addEventListener('click', window.closeDrawer);
 
+    // 新增國家彈窗[cite: 3]
     document.getElementById('btn-add-country-modal')?.addEventListener('click', () => {
         document.getElementById('form-country-create').reset();
         renderContinentSelectOptions();
@@ -1009,7 +1051,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-country-create')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('create-country-name').value.trim();
-        const continent = document.getElementById('create-country-continent').value || activeContinentsList[0] || '亞洲';
+        const continentSelect = document.getElementById('create-country-continent');
+        const continent = (continentSelect && continentSelect.value) ? continentSelect.value : (activeContinentsList[0] || '亞洲');
         const initData = {
             continent: continent,
             currency: "", 
@@ -1029,6 +1072,7 @@ window.addEventListener('DOMContentLoaded', () => {
         window.openCountryDetail(name);
     });
 
+    // 優惠券彈窗[cite: 3]
     document.getElementById('btn-close-coupon-modal')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('btn-cancel-coupon')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('form-coupon')?.addEventListener('submit', async (e) => {
@@ -1050,6 +1094,7 @@ window.addEventListener('DOMContentLoaded', () => {
         showToast("成功儲存優惠券！");
     });
 
+    // 新增主要區域綁定[cite: 3]
     document.getElementById('regions-parent-input')?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -1058,6 +1103,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('btn-add-parent-region')?.addEventListener('click', window.addParentRegion);
 
+    // 新增航司規範[cite: 3]
     document.getElementById('btn-add-airline')?.addEventListener('click', async () => {
         const code = prompt("請輸入航空公司 2 碼代號 (例如：BR, JX)：");
         if (!code) return;
@@ -1076,6 +1122,7 @@ window.addEventListener('DOMContentLoaded', () => {
         await loadAirlines();
     });
 
+    // 電腦版側邊欄收合/展開邏輯
     const desktopSidebar = document.getElementById('desktop-sidebar');
     const btnToggle = document.getElementById('btn-toggle-sidebar');
     const btnExpand = document.getElementById('btn-expand-sidebar');
@@ -1092,7 +1139,6 @@ window.addEventListener('DOMContentLoaded', () => {
         if (window.lucide) lucide.createIcons();
     }
 
-    // 初始化讀取本地記憶 (重整時維持先前的收合狀態)
     const isSavedCollapsed = localStorage.getItem('joogo_sidebar_collapsed') === 'true';
     setSidebarState(isSavedCollapsed);
 
