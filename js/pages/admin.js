@@ -446,6 +446,7 @@ window.openCountryDetail = async function(countryId) {
 
         renderCoupons();
         switchView('country-detail');
+        if (window.lucide) lucide.createIcons();
     } catch (err) {
         showToast("讀取資料失敗：" + err.message);
     } finally {
