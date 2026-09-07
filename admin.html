@@ -382,11 +382,11 @@
                             <button type="button" onclick="switchView('country-continent-page')" class="w-full p-4 flex items-center justify-between hover:bg-slate-50/80 active:bg-slate-100 transition-colors text-left cursor-pointer">
                                 <span class="text-sm font-bold text-slate-800 block">所屬洲別</span>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="text-xs font-semibold text-slate-500" id="detail-base-continent-text">未設定</span>
+                                    <!-- 改為 text-sm (14px) 配合 font-medium，大小視覺與其他欄位完全一致 -->
+                                    <span class="text-sm font-medium text-slate-600" id="detail-base-continent-text">未設定</span>
                                     <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
                                 </div>
                             </button>
-
                             <div class="p-3.5 px-4 flex items-center justify-between min-h-[52px]">
                                 <span class="text-sm font-bold text-slate-800">通用幣別</span>
                                 <input type="text" id="detail-base-currency" class="text-right font-mono font-bold text-slate-700 uppercase bg-transparent border-none w-36 p-0">
