@@ -21,7 +21,7 @@ let detailEmbassies = [];
 let searchQuery = "";
 let currentContinentFilter = "ALL";
 
-// 洲別自訂清單 (可排序、可自訂)
+// 洲別自訂清單
 let activeContinentsList = ["亞洲", "歐洲", "美洲", "大洋洲", "非洲", "其他"];
 
 let activeNoticeSchema = [];
@@ -137,6 +137,7 @@ export function switchView(viewName) {
     if (isAirlines) {
         loadAirlines();
     }
+    if (window.lucide) lucide.createIcons();
 }
 window.switchView = switchView;
 
@@ -297,7 +298,6 @@ function renderCountries() {
 
     const defaultContinent = activeContinentsList[0] || "亞洲";
 
-    // 1. 篩選
     let filtered = currentCountries.filter(c => {
         const countryContinent = c.continent || defaultContinent;
         if (currentContinentFilter !== "ALL" && countryContinent !== currentContinentFilter) {
@@ -318,7 +318,6 @@ function renderCountries() {
         return matchName || matchRegions;
     });
 
-    // 2. 排序：當在全部 (ALL) 時，嚴格依據 activeContinentsList 的自訂順序排列國家
     filtered.sort((a, b) => {
         const contA = a.continent || defaultContinent;
         const contB = b.continent || defaultContinent;
@@ -331,7 +330,7 @@ function renderCountries() {
         if (idxA !== idxB) {
             return idxA - idxB;
         }
-        return a.id.localeCompare(b.id, 'zh-Hant'); // 同洲別時依國名筆劃排序
+        return a.id.localeCompare(b.id, 'zh-Hant');
     });
 
     if (filtered.length === 0) {
@@ -386,7 +385,6 @@ window.openCountryDetail = async function(countryId) {
             el.innerText = `返回 ${countryId} 設定`;
         });
 
-        // 重新同步下拉選單
         renderContinentSelectOptions();
         const continentSelect = document.getElementById('detail-base-continent');
         if (continentSelect) {
@@ -410,10 +408,8 @@ window.openCountryDetail = async function(countryId) {
         });
         renderRegionGroups();
 
-        // 渲染行前須知
         renderDynamicFields('notice', activeNoticeSchema, activeCountryData.notice || {});
 
-        // 區塊一：三大緊急直撥電話回填
         const emg = activeCountryData.emergency || {};
         const policeInput = document.getElementById('detail-emg-police');
         const ambulanceInput = document.getElementById('detail-emg-ambulance');
@@ -423,7 +419,6 @@ window.openCountryDetail = async function(countryId) {
         if (ambulanceInput) ambulanceInput.value = emg.ambulance || activeCountryData.ambulance || '';
         if (fireInput) fireInput.value = emg.fire || activeCountryData.fire || '';
 
-        // 區塊二：駐外使館列表回填
         detailEmbassies = Array.isArray(activeCountryData.embassies) 
             ? JSON.parse(JSON.stringify(activeCountryData.embassies)) 
             : [];
@@ -441,11 +436,10 @@ window.openCountryDetail = async function(countryId) {
         }
         renderEmbassies();
 
-        // 區塊三：急難救助自訂題目
         renderDynamicFields('emergency', activeEmergencySchema, emg);
-
         renderCoupons();
         switchView('country-detail');
+
         if (window.lucide) lucide.createIcons();
     } catch (err) {
         showToast("讀取資料失敗：" + err.message);
@@ -831,9 +825,9 @@ function renderDynamicFields(type, schemaArray, dataObject) {
                     <div class="space-y-1.5 ${isFull ? 'md:col-span-2' : ''}">
                         <label class="text-sm font-bold text-slate-800 block">${field.label}</label>
                         ${field.type === 'textarea' ? `
-                            <textarea id="dynamic-${type}-${field.id}" rows="3" class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs focus:outline-none focus:bg-white">${val}</textarea>
+                            <textarea id="dynamic-${type}-${field.id}" rows="3" class="w-full p-3 bg-slate-50/50 border border-slate-200/80 rounded-xl text-xs focus:bg-white">${val}</textarea>
                         ` : `
-                            <input type="${field.type || 'text'}" id="dynamic-${type}-${field.id}" value="${val}" class="w-full h-11 px-3.5 bg-slate-50/50 border border-slate-200/80 rounded-xl ${field.type === 'tel' ? 'font-mono font-bold text-slate-700' : ''} text-xs focus:outline-none focus:bg-white">
+                            <input type="${field.type || 'text'}" id="dynamic-${type}-${field.id}" value="${val}" class="w-full h-11 px-3.5 bg-slate-50/50 border border-slate-200/80 rounded-xl ${field.type === 'tel' ? 'font-mono font-bold text-slate-700' : ''} text-xs focus:bg-white">
                         `}
                     </div>
                 `;
@@ -954,7 +948,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }, err => showToast("即時監聽失敗：" + err.message));
 
-    // 監聽洲別 Schema 並即時同步排序清單、Tab 與所有下拉選單
     subscribeSchema('continents', schema => {
         if (schema && Array.isArray(schema.list) && schema.list.length > 0) {
             activeContinentsList = schema.list;
@@ -985,7 +978,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 抽屜選單開關
     const drawer = document.getElementById('drawer-menu');
     const backdrop = document.getElementById('drawer-backdrop');
     const openDrawer = () => {
@@ -1004,7 +996,6 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-close-drawer')?.addEventListener('click', window.closeDrawer);
     backdrop?.addEventListener('click', window.closeDrawer);
 
-    // 新增國家彈窗
     document.getElementById('btn-add-country-modal')?.addEventListener('click', () => {
         document.getElementById('form-country-create').reset();
         renderContinentSelectOptions();
@@ -1036,7 +1027,6 @@ window.addEventListener('DOMContentLoaded', () => {
         window.openCountryDetail(name);
     });
 
-    // 優惠券彈窗
     document.getElementById('btn-close-coupon-modal')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('btn-cancel-coupon')?.addEventListener('click', () => document.getElementById('modal-coupon').classList.add('hidden'));
     document.getElementById('form-coupon')?.addEventListener('submit', async (e) => {
@@ -1058,7 +1048,6 @@ window.addEventListener('DOMContentLoaded', () => {
         showToast("成功儲存優惠券！");
     });
 
-    // 新增主要區域綁定
     document.getElementById('regions-parent-input')?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -1067,7 +1056,6 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('btn-add-parent-region')?.addEventListener('click', window.addParentRegion);
 
-    // 新增航司規範
     document.getElementById('btn-add-airline')?.addEventListener('click', async () => {
         const code = prompt("請輸入航空公司 2 碼代號 (例如：BR, JX)：");
         if (!code) return;
