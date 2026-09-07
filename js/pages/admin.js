@@ -74,6 +74,7 @@ export function switchView(viewName) {
         'schema-notice',
         'schema-emergency',
         'country-detail', 
+        'country-continent-page',
         'country-regions-page',
         'country-covers-page', 
         'country-notice-page', 
@@ -90,6 +91,7 @@ export function switchView(viewName) {
     const isCountries = [
         'country-list', 
         'country-detail', 
+        'country-continent-page',
         'country-regions-page', 
         'country-covers-page', 
         'country-notice-page', 
