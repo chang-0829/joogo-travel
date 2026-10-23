@@ -1,155 +1,253 @@
-  <!-- 快捷操作按鈕 -->
-  <div class="flex items-center space-x-3">
-    <a href="#features" class="hidden sm:inline-block text-xs font-semibold text-slate-600 hover:text-brand-600 transition-colors px-2 py-1">
-      核心功能
-    </a>
-    <a href="#faq" class="hidden sm:inline-block text-xs font-semibold text-slate-600 hover:text-brand-600 transition-colors px-2 py-1">
-      常見問題
-    </a>
-    <a href="app.html" class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/25 active:scale-95 transition-all">
-      <span>開啟 App</span>
-      <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-    </a>
-  </div>
-</div>
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>JooGO 揪行 - 專為團體出遊設計的協作行程與智慧分帳 App</title>
+  
+  <!-- Tailwind CSS 官方 Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
 
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-brand-500 selection:text-white min-h-screen flex flex-col justify-between">
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-  <!-- 標籤 -->
-  <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-semibold mb-6 shadow-sm">
-    <span class="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse"></span>
-    <span>專為多人團體出遊量身打造</span>
-  </div>
-
-  <!-- 主標題 -->
-  <h1 class="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight sm:leading-tight mb-5">
-    別再讓群組洗版。<br class="hidden sm:inline" />
-    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">揪團行程、算帳平帳</span>，一指搞定。
-  </h1>
-
-  <!-- 副標題 -->
-  <p class="text-sm sm:text-lg text-slate-500 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed font-normal">
-    主揪不用再當保母，團員不再重複詢問「等下去哪」。結合即時多人協作日程與智慧平帳計算，讓出遊只留下最棒的旅行回憶。
-  </p>
-
-  <!-- 快速行動 Call To Action -->
-  <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
-    <a href="app.html" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-7 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-xl shadow-slate-900/15 active:scale-95 transition-all">
-      <i data-lucide="play" class="w-4 h-4 fill-white"></i>
-      <span>免費建立行程</span>
-    </a>
-    <a href="#features" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-sm shadow-sm active:scale-95 transition-all">
-      <span>了解功能細節</span>
-      <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
-    </a>
-  </div>
-
-  <!-- 免安裝標籤提示 -->
-  <div class="mt-8 flex items-center justify-center space-x-4 text-[11px] sm:text-xs text-slate-400 font-medium">
-    <span class="flex items-center"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500 mr-1"></i> 手機瀏覽器即開即用</span>
-    <span class="flex items-center"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500 mr-1"></i> 免繁瑣註冊快速加入</span>
-    <span class="flex items-center"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500 mr-1"></i> 雲端即時同步</span>
-  </div>
-</div>
-
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-    <!-- 傳統方式 -->
-    <div class="p-6 rounded-2xl bg-rose-50/50 border border-rose-100/70">
-      <div class="flex items-center space-x-2 text-rose-600 font-bold text-sm mb-4">
-        <i data-lucide="x-circle" class="w-5 h-5"></i>
-        <span>傳統團體旅遊的混亂日常</span>
+  <!-- 頂部導航列 -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+          <i data-lucide="compass" class="w-5 h-5"></i>
+        </div>
+        <span class="font-bold text-xl tracking-tight text-slate-900">JooGO <span class="text-brand-600 font-extrabold text-sm uppercase px-1.5 py-0.5 rounded-full bg-brand-50">揪行</span></span>
       </div>
-      <ul class="space-y-3 text-xs sm:text-sm text-slate-600">
-        <li class="flex items-start"><span class="text-rose-400 mr-2 font-bold">•</span>LINE 群組貼文被洗掉，景點地址、時間總得重複貼。</li>
-        <li class="flex items-start"><span class="text-rose-400 mr-2 font-bold">•</span>Excel 表格手機難以瀏覽，多人同時編輯容易互相覆蓋。</li>
-        <li class="flex items-start"><span class="text-rose-400 mr-2 font-bold">•</span>有人墊車資、有人買門票，旅程結束平帳算到頭痛。</li>
-      </ul>
-    </div>
-
-    <!-- JooGO 方式 -->
-    <div class="p-6 rounded-2xl bg-blue-50/50 border border-blue-100/70">
-      <div class="flex items-center space-x-2 text-blue-600 font-bold text-sm mb-4">
-        <i data-lucide="check-circle" class="w-5 h-5"></i>
-        <span>使用 JooGO 的全新體驗</span>
+      <div class="flex items-center gap-3">
+        <a href="app.html" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 transition rounded-xl shadow-sm shadow-brand-600/25">
+          <span>開啟 App</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
       </div>
-      <ul class="space-y-3 text-xs sm:text-sm text-slate-700">
-        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">•</span>直覺時間軸排程，隨時點開立刻知道當前行程與導航。</li>
-        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">•</span>雲端即時同步，每位團員更新時大家秒速看見。</li>
-        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">•</span>智慧 AA 帳本，自動算出轉帳次數最少的結算建議。</li>
-      </ul>
     </div>
-  </div>
-</div>
+  </header>
 
+  <!-- 主視覺 Hero Section -->
+  <main class="flex-grow">
+    <section class="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-32 bg-gradient-to-b from-white via-brand-50/40 to-slate-50">
+      <div class="max-w-5xl mx-auto px-4 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-brand-700 text-xs font-semibold mb-6">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>告別旅遊混亂・極簡出遊新體驗</span>
+        </div>
+        
+        <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight md:leading-snug">
+          別再讓群組洗版。<br class="hidden sm:inline" />
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600">揪團行程、算帳平帳</span>，一指搞定。
+        </h1>
+        
+        <p class="mt-5 text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          主揪不用再當保母，團員不再重複詢問「等下去哪」。結合即時多人協作日程與智慧平帳計算，讓出遊只留下最棒的旅行回憶。
+        </p>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <!-- 功能 1 -->
-    <div class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-      <div class="w-12 h-12 rounded-2xl bg-blue-50 text-brand-600 flex items-center justify-center mb-5">
-        <i data-lucide="calendar" class="w-6 h-6"></i>
+        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-sm sm:max-w-none mx-auto">
+          <a href="app.html" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-base shadow-lg shadow-brand-600/30 transition transform hover:-translate-y-0.5 active:translate-y-0">
+            免費建立行程
+          </a>
+          <a href="#features" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-base transition">
+            了解功能細節
+          </a>
+        </div>
+
+        <div class="mt-10 flex items-center justify-center gap-6 text-xs text-slate-600">
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="smartphone" class="w-4 h-4 text-slate-700"></i>
+            <span>手機瀏覽器即開即用</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="zap" class="w-4 h-4 text-amber-600"></i>
+            <span>免繁瑣註冊快速加入</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+            <span>雲端即時同步</span>
+          </div>
+        </div>
       </div>
-      <h4 class="text-base font-bold text-slate-900 mb-2">協同時間軸排程</h4>
-      <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
-        支援多天數自訂日程，景點時間、交通時間與重要提醒一目了然，並能快速開啟外部地圖直接導航。
-      </p>
-    </div>
+    </section>
 
-    <!-- 功能 2 -->
-    <div class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-      <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-5">
-        <i data-lucide="receipt" class="w-6 h-6"></i>
+    <!-- 痛點對比區 -->
+    <section class="py-16 bg-white border-y border-slate-200">
+      <div class="max-w-5xl mx-auto px-4">
+        <div class="text-center mb-12">
+          <h2 class="text-2xl md:text-3xl font-bold text-slate-900">為什麼需要 JooGO？</h2>
+          <p class="text-slate-600 text-sm md:text-base mt-2">終結每次出遊必發生的溝通災難與算帳尷尬</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- 過去痛點 -->
+          <div class="p-6 md:p-8 rounded-3xl bg-rose-50/50 border border-rose-100">
+            <div class="flex items-center gap-2.5 text-rose-600 font-bold mb-4">
+              <i data-lucide="x-circle" class="w-5 h-5"></i>
+              <span>傳統團體旅遊的混亂日常</span>
+            </div>
+            <ul class="space-y-3 text-sm text-slate-600">
+              <li class="flex items-start gap-2.5">
+                <span class="text-rose-600 font-bold">•</span>
+                <span>LINE 群組貼文被洗掉，景點地址、時間總得重複貼。</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-rose-600 font-bold">•</span>
+                <span>Excel 表格手機難以瀏覽，多人同時編輯容易互相覆蓋。</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-rose-600 font-bold">•</span>
+                <span>有人墊車資、有人買門票，旅程結束平帳算到頭痛。</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- JooGO 解決方案 -->
+          <div class="p-6 md:p-8 rounded-3xl bg-blue-50/50 border border-blue-100">
+            <div class="flex items-center gap-2.5 text-brand-600 font-bold mb-4">
+              <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+              <span>使用 JooGO 的全新體驗</span>
+            </div>
+            <ul class="space-y-3 text-sm text-slate-700">
+              <li class="flex items-start gap-2.5">
+                <span class="text-brand-600 font-bold">•</span>
+                <span>直覺時間軸排程，隨時點開立刻知道當前行程與導航。</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-brand-600 font-bold">•</span>
+                <span>雲端即時同步，每位團員更新時大家秒速看見。</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-brand-600 font-bold">•</span>
+                <span>智慧 AA 帳本，自動算出轉帳次數最少的結算建議。</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
-      <h4 class="text-base font-bold text-slate-900 mb-2">多人智慧分帳</h4>
-      <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
-        誰代墊、誰分攤都能自由勾選，內建「最佳平帳演算法」，結算時精算出最少筆數的轉帳清單，不再算到頭昏。
-      </p>
-    </div>
+    </section>
 
-    <!-- 功能 3 -->
-    <div class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-      <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-5">
-        <i data-lucide="qr-code" class="w-6 h-6"></i>
+    <!-- 核心功能區 -->
+    <section id="features" class="py-16 md:py-24 bg-slate-50">
+      <div class="max-w-5xl mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-2xl md:text-3xl font-bold text-slate-900">核心專屬功能</h2>
+          <p class="text-slate-600 text-sm md:text-base mt-2">專為朋友結伴、家庭同樂出遊打造的貼心配備</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <!-- 功能 1 -->
+          <div class="bg-white p-7 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+            <div class="w-12 h-12 rounded-2xl bg-blue-100 text-brand-600 flex items-center justify-center mb-5">
+              <i data-lucide="calendar" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">協同時間軸排程</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              支援多天數自訂日程，景點時間、交通時間與重要提醒一目了然，並能快速開啟外部地圖直接導航。
+            </p>
+          </div>
+
+          <!-- 功能 2 -->
+          <div class="bg-white p-7 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-5">
+              <i data-lucide="receipt" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">多人智慧分帳</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              誰代墊、誰分攤都能自由勾選，內建「最佳平帳演算法」，結算時精算出最少筆數的轉帳清單，不再算到頭昏。
+            </p>
+          </div>
+
+          <!-- 功能 3 -->
+          <div class="bg-white p-7 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-5">
+              <i data-lucide="share-2" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">6 位碼一鍵入團</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              朋友免去複雜的註冊下載手續，透過主揪產生的專屬代碼或連結，手機點開立刻無縫加入旅程。
+            </p>
+          </div>
+        </div>
       </div>
-      <h4 class="text-base font-bold text-slate-900 mb-2">6 位碼一鍵入團</h4>
-      <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
-        朋友免去複雜的註冊下載手續，透過主揪產生的專屬代碼或連結，手機點開立刻無縫加入旅程。
-      </p>
+    </section>
+
+    <!-- FAQ 常見問題 -->
+    <section class="py-16 bg-white border-t border-slate-200">
+      <div class="max-w-3xl mx-auto px-4">
+        <h2 class="text-2xl font-bold text-slate-900 text-center mb-8">常見問答</h2>
+        <div class="space-y-4">
+          <details class="group bg-slate-50 p-5 rounded-2xl border border-slate-200/80 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+            <summary class="flex items-center justify-between font-semibold text-slate-900">
+              <span>團員需要特別下載 APP 嗎？</span>
+              <span class="transition group-open:rotate-180">
+                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-600"></i>
+              </span>
+            </summary>
+            <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+              不需要！只要傳送網址或邀請碼，團員使用手機內建瀏覽器（Safari 或 Chrome）即可即時查看與協作。
+            </p>
+          </details>
+
+          <details class="group bg-slate-50 p-5 rounded-2xl border border-slate-200/80 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+            <summary class="flex items-center justify-between font-semibold text-slate-900">
+              <span>分帳支援不同的分攤比例嗎？</span>
+              <span class="transition group-open:rotate-180">
+                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-600"></i>
+              </span>
+            </summary>
+            <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+              支援平分（AA 制）與自訂指定金額分攤，有人先離席或沒吃到的品項都能靈活勾選分開計費。
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- 底部行動號召 CTA -->
+    <section class="py-16 bg-gradient-to-r from-brand-600 to-indigo-600 text-white text-center">
+      <div class="max-w-4xl mx-auto px-4">
+        <h2 class="text-2xl md:text-3xl font-extrabold mb-3">準備好規劃下一趟旅程了嗎？</h2>
+        <p class="text-blue-100 text-sm md:text-base mb-8">現在就開始，邀請好友一起把旅行變得輕鬆好玩！</p>
+        <a href="app.html" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-white text-brand-700 font-bold text-base hover:bg-blue-50 active:scale-95 transition shadow-lg">
+          <span>立即開始使用</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- 頁尾 Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-xs text-center">
+    <div class="max-w-5xl mx-auto px-4 space-y-2">
+      <p>© 2026 JooGO Travel. All rights reserved.</p>
     </div>
-  </div>
-</div>
+  </footer>
 
-
-  <div class="space-y-4">
-    <details class="group bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/70 [&_summary::-webkit-details-marker]:hidden">
-      <summary class="flex items-center justify-between cursor-pointer font-bold text-sm text-slate-800">
-        <span>團員需要特別下載 APP 嗎？</span>
-        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
-      </summary>
-      <p class="mt-3 text-xs sm:text-sm text-slate-500 leading-relaxed">
-        不需要！JooGO 採用現代 Web 網頁架構，支援各種智慧型手機瀏覽器（iOS Safari、Chrome 等），也可以透過「加入主畫面」像一般 App 一樣快速啟動。
-      </p>
-    </details>
-
-    <details class="group bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/70 [&_summary::-webkit-details-marker]:hidden">
-      <summary class="flex items-center justify-between cursor-pointer font-bold text-sm text-slate-800">
-        <span>分帳支援不同的分攤比例嗎？</span>
-        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
-      </summary>
-      <p class="mt-3 text-xs sm:text-sm text-slate-500 leading-relaxed">
-        支援！預設為全員平分（AA 制），若有特定團員不參與該項花費（如不喝酒、自費行程），只要取消勾選或輸入指定金額即可自動重新配算。
-      </p>
-    </details>
-  </div>
-</div>
-
-
-  <a href="app.html" class="inline-flex items-center space-x-2 px-8 py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-lg shadow-brand-600/30 active:scale-95 transition-all">
-    <span>立即開始使用</span>
-    <i data-lucide="arrow-right" class="w-4 h-4"></i>
-  </a>
-
-  <div class="mt-12 pt-6 border-t border-slate-800 text-slate-500 text-[11px]">
-    © 2026 JooGO Travel. All rights reserved.
-  </div>
-</div>
+  <script>
+    // 初始化 Lucide 圖示
+    lucide.createIcons();
+  </script>
+</body>
+</html>
